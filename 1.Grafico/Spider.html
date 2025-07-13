@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gráfico de Habilidades</title>
+    <!-- Carga de Tailwind CSS para estilos básicos -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Estilos para el cuerpo que ahora ocupa todo el espacio */
+        body {
+            font-family: 'Inter', sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh; /* Ocupa el 100% del alto del viewport */
+            width: 100vw; /* Ocupa el 100% del ancho del viewport */
+            margin: 0; /* Elimina márgenes por defecto del body */
+            overflow: hidden; /* Evita barras de desplazamiento si el contenido excede el viewport */
+            background-color: #111111; /* Fondo muy oscuro, tomado del contenedor anterior */
+            color: #eeeeee; /* Texto claro */
+        }
+        /* El canvas ahora es el elemento principal que se ajusta al body */
+        canvas {
+            background-color: #2a2a2a; /* Fondo más oscuro para el canvas */
+            border-radius: 0.75rem; /* Bordes redondeados para el canvas */
+            border: 1px solid #444444; /* Borde sutil oscuro */
+            display: block; /* Para eliminar margen inferior por defecto */
+            margin: 0 auto; /* Centrar el canvas */
+            width: 100%; /* Ocupa el 100% del ancho del contenedor (body) */
+            height: 100%; /* Ocupa el 100% del alto del contenedor (body) */
+        }
+    </style>
+</head>
+<body>
+    <!-- El div chart-container ha sido eliminado. El canvas ahora es el elemento principal. -->
+    <canvas id="spiderChart"></canvas>
+
+    <script>
+        // Datos de ejemplo del personaje en formato JSON.
+        // Estos datos se usarán si no se puede cargar el archivo JSON externo.
+        const characterData = {
+            "characterName": "Aventurero Estelar",
+            "characterLevel": 15,
+            "skills": [
+                { "name": "Venture", "value": 6 },
+                { "name": "Power", "value": 4 },
+                { "name": "Masterful", "value": 6 },
+                { "name": "Intellect", "value": 3 },
+                { "name": "Culinary", "value": 5 },
+                { "name": "Linguistics", "value": 6 }
+            ]
+        };
+
+        // Función asíncrona para cargar datos desde un archivo JSON externo
+        async function loadCharacterData() {
+            try {
+                // **********************************************************************************
+                // * ¡ATENCIÓN! ESTE ES EL MOTIVO DEL ERROR "Failed to parse URL":                 *
+                // * *
+                // * El código HTML es CORRECTO. El problema es CÓMO lo estás abriendo.           *
+                // * Los navegadores, por seguridad, NO permiten que un archivo HTML abierto        *
+                // * directamente desde tu disco duro (con una URL que empieza por 'file:///')     *
+                // * haga peticiones 'fetch' a otros archivos locales (como 'data/personaje.json').*
+                // * *
+                // * SOLUCIÓN: Debes servir este archivo HTML a través de un SERVIDOR WEB.          *
+                // * *
+                // * La forma más fácil y compartible es usando GitHub Pages:                       *
+                // * 1. Sube tu 'index.html' y la carpeta 'data' (con 'personaje.json') a tu repositorio de GitHub.*
+                // * 2. En GitHub, ve a tu repositorio -> Settings -> Pages.                        *
+                // * 3. Configura la rama (ej. 'main') y la carpeta (ej. '/public' o '/root') donde está tu HTML.*
+                // * 4. GitHub te dará una URL (ej. https://tu-usuario.github.io/tu-repositorio/).*
+                // * Abre esa URL en tu navegador. ¡Ahí funcionará correctamente!                  *
+                // **********************************************************************************
+                // RUTA ACTUALIZADA: Ahora busca el JSON dentro de 'Notion_Leveling/1.Grafico/'
+                const response = await fetch('Notion_Leveling/1.Grafico/personaje.json');
+
+                if (!response.ok) {
+                    console.warn(`No se pudo cargar el archivo JSON de datos del personaje (${response.status}). Usando datos de ejemplo.`);
+                    return characterData; // Retorna los datos de ejemplo si no se puede cargar el JSON
+                }
+
+                const data = await response.json();
+                // Asegúrate de que la estructura de 'data' coincida con lo que esperas
+                // Si n8n genera un array de objetos, podrías necesitar 'data[0]'
+                if (Array.isArray(data) && data.length > 0) {
+                    // Si n8n devuelve un array de un solo objeto (como suele hacer), toma el primer elemento
+                    return {
+                        characterName: data[0].characterName,
+                        characterLevel: data[0].characterLevel,
+                        skills: data[0].skills || characterData.skills // Usa skills del JSON o los de ejemplo si no están
+                    };
+                } else if (typeof data === 'object' && data !== null) {
+                    // Si n8n devuelve directamente el objeto
+                    return {
+                        characterName: data.characterName,
+                        characterLevel: data.characterLevel,
+                        skills: data.skills || characterData.skills
+                    };
+                } else {
+                    console.warn("Formato de datos JSON inesperado. Usando datos de ejemplo.");
+                    return characterData;
+                }
+
+            } catch (error) {
+                console.error("Error al cargar los datos del personaje:", error);
+                console.warn("Usando datos de ejemplo para el gráfico.");
+                return characterData; // Retorna los datos de ejemplo en caso de error
+            }
+        }
+
+        // Función para dibujar el gráfico de araña
+        // maxSkillValue se ajusta a 6, según la escala de la imagen
+        // Recibe cssSize para cálculos de dimensiones lógicas
+        function drawSpiderChart(ctx, skills, cssSize, maxSkillValue = 6) {
+            // Margen en píxeles lógicos (CSS) para que el gráfico no toque los bordes del canvas
+            const margin = 60; // Aumentado para dejar más espacio para etiquetas
+            
+            // Área efectiva de dibujo dentro del canvas, considerando los márgenes
+            const effectiveSize = cssSize - 2 * margin;
+
+            // Centro del área de dibujo, ajustado por el margen
+            const centerX = effectiveSize / 2 + margin;
+            const centerY = effectiveSize / 2 + margin;
+            
+            // Factor para el radio que asegura que las etiquetas también quepan
+            // Si las etiquetas están a 'radius * labelFactor', entonces el radio máximo es effectiveSize / 2 / labelFactor
+            const labelFactor = 1.3; // Factor para la distancia de las etiquetas desde el centro
+            const radius = effectiveSize / 2 / labelFactor; // Radio ajustado para que todo quepa
+
+            const numSkills = skills.length;
+            const angleIncrement = (Math.PI * 2) / numSkills; // Ángulo entre cada habilidad
+
+            // Limpiar el canvas (usa las dimensiones físicas para limpiar todo)
+            ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+
+            // Todas las operaciones de dibujo a continuación usan coordenadas lógicas (CSS pixels)
+            // ctx.scale(dpr, dpr) ya aplicado en window.onload maneja la renderización de alta resolución.
+
+            // Dibujar la "tela de araña" (polígonos concéntricos)
+            ctx.strokeStyle = '#555555'; /* Color de línea claro (gris oscuro) */
+            ctx.lineWidth = 1;
+
+            const numLevels = maxSkillValue; // Número de niveles en la telaraña (igual al valor máximo de habilidad)
+            for (let i = 1; i <= numLevels; i++) {
+                const currentRadius = radius * (i / numLevels);
+                ctx.beginPath();
+                for (let j = 0; j < numSkills; j++) {
+                    const angle = j * angleIncrement - Math.PI / 2; // -PI/2 para que el primer eje apunte hacia arriba
+                    const x = centerX + currentRadius * Math.cos(angle);
+                    const y = centerY + currentRadius * Math.sin(angle);
+                    if (j === 0) {
+                        ctx.moveTo(x, y);
+                    } else {
+                        ctx.lineTo(x, y);
+                    }
+                }
+                ctx.closePath();
+                ctx.stroke();
+            }
+
+            // Dibujar los ejes desde el centro
+            ctx.strokeStyle = '#777777'; /* Color de línea un poco más brillante */
+            for (let i = 0; i < numSkills; i++) {
+                const angle = i * angleIncrement - Math.PI / 2;
+                const x = centerX + radius * Math.cos(angle);
+                const y = centerY + radius * Math.sin(angle);
+                ctx.beginPath();
+                ctx.moveTo(centerX, centerY);
+                ctx.lineTo(x, y);
+                ctx.stroke();
+            }
+
+            // Dibujar el polígono de los datos del personaje
+            ctx.beginPath();
+            ctx.fillStyle = 'rgba(60, 0, 60, 0.8)'; /* Púrpura oscuro semitransparente para el relleno */
+            ctx.strokeStyle = '#FF00FF'; /* Borde magenta */
+            ctx.lineWidth = 2;
+
+            skills.forEach((skill, index) => {
+                const skillValueRatio = skill.value / maxSkillValue;
+                const pointRadius = radius * skillValueRatio;
+                const angle = index * angleIncrement - Math.PI / 2;
+                const x = centerX + pointRadius * Math.cos(angle);
+                const y = centerY + pointRadius * Math.sin(angle);
+
+                if (index === 0) {
+                    ctx.moveTo(x, y);
+                } else {
+                    ctx.lineTo(x, y);
+                }
+            });
+            ctx.closePath();
+            ctx.fill();
+            ctx.stroke();
+
+            // Dibujar los puntos de los datos
+            ctx.fillStyle = '#FF00FF'; /* Magenta para los puntos */
+            skills.forEach((skill, index) => {
+                const skillValueRatio = skill.value / maxSkillValue;
+                const pointRadius = radius * skillValueRatio;
+                const angle = index * angleIncrement - Math.PI / 2;
+                const x = centerX + pointRadius * Math.cos(angle);
+                const y = centerY + pointRadius * Math.sin(angle);
+                ctx.beginPath();
+                ctx.arc(x, y, 4, 0, Math.PI * 2); // Círculo pequeño
+                ctx.fill();
+            });
+
+            // Añadir etiquetas de las habilidades
+            ctx.fillStyle = '#FFFFFF'; /* Texto blanco para las etiquetas */
+            ctx.font = '16px Inter'; // Tamaño de fuente en píxeles lógicos
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+
+            skills.forEach((skill, index) => {
+                const angle = index * angleIncrement - Math.PI / 2;
+                // Posicionar las etiquetas usando el labelFactor
+                const labelX = centerX + (radius * labelFactor) * Math.cos(angle);
+                const labelY = centerY + (radius * labelFactor) * Math.sin(angle);
+
+                // Ajustar alineación del texto para que no se superponga con los ejes
+                const textOffset = 8; // Pequeño offset para alejar el texto de los ejes
+                if (Math.abs(Math.cos(angle)) < 0.01) { // Eje vertical (arriba/abajo)
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = (Math.sin(angle) > 0) ? 'top' : 'bottom';
+                } else if (Math.cos(angle) > 0) { // Lado derecho
+                    ctx.textAlign = 'left';
+                    ctx.textBaseline = 'middle';
+                } else { // Lado izquierdo
+                    ctx.textAlign = 'right';
+                    ctx.textBaseline = 'middle';
+                }
+
+                ctx.fillText(skill.name, labelX, labelY);
+            });
+
+            // Dibujar los números de la escala en los ejes
+            ctx.fillStyle = '#AAAAAA'; // Color para los números de la escala
+            ctx.font = '12px Inter'; // Tamaño de fuente en píxeles lógicos
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            for (let i = 1; i <= numLevels; i++) {
+                const currentRadius = radius * (i / numLevels);
+                // Posicionar los números a lo largo del primer eje (Venture, que apunta hacia arriba)
+                const angle = 0 * angleIncrement - Math.PI / 2; // Ángulo del primer eje (Venture)
+                let x = centerX + currentRadius * Math.cos(angle);
+                let y = centerY + currentRadius * Math.sin(angle);
+                
+                // Ajustar posición de los números para que estén dentro del gráfico y no se superpongan con las líneas
+                // Mover a la derecha del eje (Venture) y un poco hacia abajo para centrarlo mejor
+                x += 15; 
+                y += 5; 
+
+                ctx.fillText(i.toString(), x, y);
+            }
+        }
+
+        // Función principal que se ejecuta cuando la página carga
+        window.onload = async () => {
+            const canvas = document.getElementById('spiderChart');
+            const ctx = canvas.getContext('2d');
+
+            // --- SOLUCIÓN PARA TEXTO NÍTIDO EN PANTALLAS DE ALTA RESOLUCIÓN (RETINA) ---
+            const dpr = window.devicePixelRatio || 1; // Obtener la relación de píxeles del dispositivo
+            // Usar el tamaño del viewport para el cssSize para que el canvas ocupe toda la pantalla
+            const cssSize = Math.min(window.innerWidth, window.innerHeight); 
+
+            // Establecer el tamaño real del canvas en píxeles físicos
+            canvas.width = cssSize * dpr;
+            canvas.height = cssSize * dpr;
+
+            // Escalar el contexto de dibujo para que se adapte al tamaño CSS
+            ctx.scale(dpr, dpr);
+
+            // Establecer el tamaño del canvas en CSS para que se muestre correctamente
+            canvas.style.width = cssSize + 'px';
+            canvas.style.height = cssSize + 'px';
+            // ---------------------------------------------------------------------
+
+            // Cargar los datos del personaje (desde JSON externo o datos de ejemplo)
+            const loadedData = await loadCharacterData();
+
+            // Dibujar el gráfico con las habilidades cargadas
+            // Asegúrate de que 'skills' en tu JSON tenga la estructura [{ name: "Habilidad", value: X }]
+            if (loadedData.skills && loadedData.skills.length === 6) {
+                // Pasar cssSize a la función de dibujo para cálculos lógicos
+                drawSpiderChart(ctx, loadedData.skills, cssSize);
+            } else {
+                console.error("Los datos de habilidades no son válidos o o no tienen 6 elementos.");
+                // Puedes dibujar un gráfico de error o un mensaje aquí
+                ctx.font = '16px Inter'; // Fuente en tamaño CSS
+                ctx.fillStyle = 'red';
+                ctx.textAlign = 'center';
+                // Posicionar el texto de error en el centro lógico
+                ctx.fillText('Error: Datos de habilidades no válidos o incompletos.', cssSize / 2, cssSize / 2);
+            }
+        };
+
+        // Listener para redimensionar el canvas si la ventana cambia de tamaño
+        window.addEventListener('resize', () => {
+            const canvas = document.getElementById('spiderChart');
+            const ctx = canvas.getContext('2d');
+
+            // --- SOLUCIÓN PARA TEXTO NÍTIDO EN PANTALLAS DE ALTA RESOLUCIÓN (RETINA) ---
+            const dpr = window.devicePixelRatio || 1;
+            const cssSize = Math.min(window.innerWidth, window.innerHeight); 
+
+            canvas.width = cssSize * dpr;
+            canvas.height = cssSize * dpr;
+
+            ctx.scale(dpr, dpr);
+
+            canvas.style.width = cssSize + 'px';
+            canvas.style.height = cssSize + 'px';
+            // ---------------------------------------------------------------------
+
+            // Redibujar el gráfico después de redimensionar
+            loadCharacterData().then(loadedData => {
+                if (loadedData.skills && loadedData.skills.length === 6) {
+                    // Pasar cssSize a la función de dibujo para cálculos lógicos
+                    drawSpiderChart(ctx, loadedData.skills, cssSize);
+                } else {
+                    ctx.font = '16px Inter'; // Fuente en tamaño CSS
+                    ctx.fillStyle = 'red';
+                    ctx.textAlign = 'center';
+                    // Posicionar el texto de error en el centro lógico
+                    ctx.fillText('Error: Datos de habilidades no válidos o incompletos.', cssSize / 2, cssSize / 2);
+                }
+            });
+        });
+    </script>
+</body>
+</html>
