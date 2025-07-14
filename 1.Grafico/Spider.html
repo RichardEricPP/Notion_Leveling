@@ -12,7 +12,7 @@
             margin: 0;
             padding: 0;
             overflow: hidden; /* Evita barras de desplazamiento */
-            background-color: transparent; /* Mantiene el body transparente por si acaso */
+            background-color: #191919; /* Fondo de todo el documento */
         }
         body {
             font-family: 'Inter', sans-serif;
@@ -102,12 +102,12 @@
     <script>
         const defaultGraphData = {
             "skills": [
-                { "name": "Venture", "value": 6 },
-                { "name": "Power", "value": 4 },
-                { "name": "Masterful", "value": 6 },
-                { "name": "Intellect", "value": 3 },
-                { "name": "Culinary", "value": 5 },
-                { "name": "Linguistics", "value": 6 }
+                { "name": "Venture", "value": 21 },
+                { "name": "Power", "value": 15 },
+                { "name": "Masterful", "value": 15 },
+                { "name": "Intellect", "value": 21 },
+                { "name": "Culinary", "value": 50 },
+                { "name": "Linguistics", "value": 32 }
             ]
         };
 
@@ -154,29 +154,9 @@
 
             ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
 
-            ctx.strokeStyle = '#555555';
+            // 1. Dibuja las líneas radiales (desde el centro a los vértices)
+            ctx.strokeStyle = '#777777'; // Más visible
             ctx.lineWidth = 1;
-
-            // Usa el valor máximo dinámico para dibujar los niveles
-            const numLevels = dynamicMaxSkillValue; 
-            for (let i = 1; i <= numLevels; i++) {
-                const currentRadius = radius * (i / numLevels);
-                ctx.beginPath();
-                for (let j = 0; j < numSkills; j++) {
-                    const angle = j * angleIncrement - Math.PI / 2;
-                    const x = centerX + currentRadius * Math.cos(angle);
-                    const y = centerY + currentRadius * Math.sin(angle);
-                    if (j === 0) {
-                        ctx.moveTo(x, y);
-                    } else {
-                        ctx.lineTo(x, y);
-                    }
-                }
-                ctx.closePath();
-                ctx.stroke();
-            }
-
-            ctx.strokeStyle = '#777777';
             for (let i = 0; i < numSkills; i++) {
                 const angle = i * angleIncrement - Math.PI / 2;
                 const x = centerX + radius * Math.cos(angle);
@@ -187,13 +167,14 @@
                 ctx.stroke();
             }
 
+            // 2. Dibuja el polígono de datos (área rellena)
             ctx.beginPath();
-            ctx.fillStyle = 'rgba(60, 0, 60, 0.8)';
-            ctx.strokeStyle = '#FF00FF';
-            ctx.lineWidth = 2;
+            ctx.fillStyle = 'rgba(138, 26, 255, 0.4)'; // Morado vibrante con transparencia
+            ctx.strokeStyle = '#8A1AFF'; // Borde del polígono, morado sólido
+            ctx.lineWidth = 2; // Borde más grueso para el polígono de datos
 
             skills.forEach((skill, index) => {
-                const skillValueRatio = skill.value / numLevels; // Usa numLevels (dynamicMaxSkillValue)
+                const skillValueRatio = skill.value / dynamicMaxSkillValue; // Usa dynamicMaxSkillValue
                 const pointRadius = radius * skillValueRatio;
                 const angle = index * angleIncrement - Math.PI / 2;
                 const x = centerX + pointRadius * Math.cos(angle);
@@ -207,18 +188,114 @@
             });
             ctx.closePath();
             ctx.fill();
-            ctx.stroke();
+            ctx.stroke(); // Dibuja el borde del polígono
 
-            // Dibuja los puntos y el valor de la habilidad sobre ellos
+            // 3. Dibuja las líneas concéntricas (la "telaraña") y sus números
+            ctx.strokeStyle = '#666666'; // Un poco más claro para mejor contraste
+            ctx.lineWidth = 1;
+
+            let levelInterval = 1;
+            const maxVisibleLines = 5; // Desired maximum number of concentric lines
+
+            if (dynamicMaxSkillValue > 1) { // Only calculate interval if max is greater than 1
+                // Calculate an initial interval to get roughly maxVisibleLines
+                levelInterval = Math.ceil(dynamicMaxSkillValue / (maxVisibleLines - 1)); 
+                
+                // Adjust interval to a "nice" rounded number for better readability
+                if (levelInterval <= 1) {
+                    levelInterval = 1;
+                } else if (levelInterval <= 2) {
+                    levelInterval = 2;
+                } else if (levelInterval <= 5) {
+                    levelInterval = 5;
+                } else if (levelInterval <= 10) {
+                    levelInterval = 10;
+                } else {
+                    // For larger intervals, round to the nearest 10, 25, 50, or 100
+                    const orderOfMagnitude = Math.pow(10, Math.floor(Math.log10(levelInterval)));
+                    if (levelInterval / orderOfMagnitude <= 2) {
+                        levelInterval = orderOfMagnitude * 2;
+                    } else if (levelInterval / orderOfMagnitude <= 5) {
+                        levelInterval = orderOfMagnitude * 5;
+                    } else {
+                        levelInterval = orderOfMagnitude * 10;
+                    }
+                }
+            }
+            // Ensure levelInterval is never 0
+            if (levelInterval === 0) levelInterval = 1;
+
+            for (let i = levelInterval; i <= dynamicMaxSkillValue; i += levelInterval) {
+                const currentRadius = radius * (i / dynamicMaxSkillValue);
+                ctx.beginPath();
+                for (let j = 0; j < numSkills; j++) {
+                    const angle = j * angleIncrement - Math.PI / 2;
+                    const x = centerX + currentRadius * Math.cos(angle);
+                    const y = centerY + currentRadius * Math.sin(angle);
+                    if (j === 0) {
+                        ctx.moveTo(x, y);
+                    } else {
+                        ctx.lineTo(x, y);
+                    }
+                }
+                ctx.closePath();
+                ctx.stroke(); // Dibuja la línea concéntrica
+
+                // Dibuja el número del nivel
+                ctx.fillStyle = '#AAAAAA';
+                ctx.font = '11px Inter';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                let xText = centerX + currentRadius * Math.cos(0 * angleIncrement - Math.PI / 2);
+                let yText = centerY + currentRadius * Math.sin(0 * angleIncrement - Math.PI / 2);
+                
+                xText += 15;
+                yText += 5; 
+
+                ctx.fillText(i.toString(), xText, yText);
+            }
+            // Asegurarse de que la línea del nivel máximo siempre se dibuje si no es un múltiplo exacto
+            // y si dynamicMaxSkillValue es mayor que el último intervalo dibujado
+            if (dynamicMaxSkillValue > 0 && (dynamicMaxSkillValue % levelInterval !== 0 || dynamicMaxSkillValue === 1)) {
+                const currentRadius = radius; // La línea del nivel máximo siempre está en el radio completo
+                ctx.beginPath();
+                for (let j = 0; j < numSkills; j++) {
+                    const angle = j * angleIncrement - Math.PI / 2;
+                    const x = centerX + currentRadius * Math.cos(angle);
+                    const y = centerY + currentRadius * Math.sin(angle);
+                    if (j === 0) {
+                        ctx.moveTo(x, y);
+                    } else {
+                        ctx.lineTo(x, y);
+                    }
+                }
+                ctx.closePath();
+                ctx.stroke(); // Dibuja la línea concéntrica final
+
+                // Dibuja el número del nivel máximo
+                ctx.fillStyle = '#AAAAAA';
+                ctx.font = '11px Inter';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                let xText = centerX + currentRadius * Math.cos(0 * angleIncrement - Math.PI / 2);
+                let yText = centerY + currentRadius * Math.sin(0 * angleIncrement - Math.PI / 2);
+                
+                xText += 15;
+                yText += 5; 
+                ctx.fillText(dynamicMaxSkillValue.toString(), xText, yText);
+            }
+
+
+            // 4. Dibuja los puntos de datos y sus valores
             skills.forEach((skill, index) => {
-                const skillValueRatio = skill.value / numLevels; // Usa numLevels (dynamicMaxSkillValue)
+                const skillValueRatio = skill.value / dynamicMaxSkillValue; // Usa dynamicMaxSkillValue
                 const pointRadius = radius * skillValueRatio;
                 const angle = index * angleIncrement - Math.PI / 2;
                 const x = centerX + pointRadius * Math.cos(angle);
                 const y = centerY + pointRadius * Math.sin(angle);
 
                 // Dibuja el círculo del punto
-                ctx.fillStyle = '#FF00FF';
+                ctx.fillStyle = '#FF00FF'; // Color del punto
                 ctx.beginPath();
                 ctx.arc(x, y, 4, 0, Math.PI * 2);
                 ctx.fill();
@@ -231,6 +308,7 @@
                 ctx.fillText(skill.value.toString(), x, y); // Dibuja el valor en las coordenadas del punto
             });
 
+            // 5. Dibuja las etiquetas de las habilidades
             ctx.fillStyle = '#FFFFFF';
             ctx.font = '15px Inter'; /* Reducido a 15px */
             ctx.textAlign = 'center';
@@ -241,36 +319,19 @@
                 const labelX = centerX + (radius * labelFactor) * Math.cos(angle);
                 const labelY = centerY + (radius * labelFactor) * Math.sin(angle);
 
-                const textOffset = 8;
-                if (Math.abs(Math.cos(angle)) < 0.01) {
+                if (Math.abs(Math.cos(angle)) < 0.01) { // Cerca del eje Y
                     ctx.textAlign = 'center';
                     ctx.textBaseline = (Math.sin(angle) > 0) ? 'top' : 'bottom';
-                } else if (Math.cos(angle) > 0) {
+                } else if (Math.cos(angle) > 0) { // Lado derecho
                     ctx.textAlign = 'left';
                     ctx.textBaseline = 'middle';
-                } else {
+                } else { // Lado izquierdo
                     ctx.textAlign = 'right';
                     ctx.textBaseline = 'middle';
                 }
 
                 ctx.fillText(skill.name, labelX, labelY);
             });
-
-            ctx.fillStyle = '#AAAAAA';
-            ctx.font = '11px Inter'; /* Reducido a 11px */
-            ctx.textAlign = 'center';
-            ctx.textBaseline = 'middle';
-            for (let i = 1; i <= numLevels; i++) {
-                const currentRadius = radius * (i / numLevels);
-                const angle = 0 * angleIncrement - Math.PI / 2;
-                let x = centerX + currentRadius * Math.cos(angle);
-                let y = centerY + currentRadius * Math.sin(angle);
-                
-                x += 15;
-                y += 5; 
-
-                ctx.fillText(i.toString(), x, y);
-            }
         }
 
         window.onload = async () => {
