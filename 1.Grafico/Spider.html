@@ -24,7 +24,7 @@
         }
         .chart-wrapper {
             position: relative;
-            /* Nuevo tamaño responsivo y cuadrado para el contenedor del gráfico */
+            /* Tamaño responsivo y cuadrado para el contenedor del gráfico */
             width: min(80vmin, 600px); /* Ocupa 80% de la dimensión más pequeña del viewport, máx 600px */
             height: min(80vmin, 600px); /* Mantiene la proporción cuadrada */
             
@@ -34,7 +34,7 @@
             margin: auto; /* Centrar el wrapper en el body */
             overflow: hidden; /* Asegura que nada se salga del wrapper */
             border-radius: 0.75rem; /* Bordes redondeados para el contenedor */
-            background-color: #121212; /* Fondo del contenedor, ajustado a #121212 */
+            background-color: transparent; /* Fondo transparente para el contenedor */
         }
         canvas {
             position: absolute;
@@ -43,12 +43,12 @@
             width: 100%; /* El canvas ocupa el 100% del tamaño de su contenedor */
             height: 100%; /* El canvas ocupa el 100% del tamaño de su contenedor */
             display: block;
-            background-color: #121212; /* Fondo del canvas, ajustado a #121212 */
+            background-color: transparent; /* Fondo transparente para el canvas */
         }
         .refresh-button-container {
             position: absolute;
-            top: 10px; /* Ajustado para estar más cerca de la esquina superior */
-            right: 10px; /* Ajustado para estar más cerca de la esquina derecha */
+            top: 10px; /* Posición desde la esquina superior del contenedor */
+            right: 10px; /* Posición desde la esquina derecha del contenedor */
             opacity: 0;
             pointer-events: none;
             transition: opacity 0.3s ease;
