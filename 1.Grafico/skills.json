@@ -2,27 +2,27 @@
   "skills": [
     {
       "name": "Ventures",
-      "value": 3
+      "value": 98
     },
     {
       "name": "Power",
-      "value": 5
+      "value": 55
     },
     {
       "name": "Masterful",
-      "value": 9
+      "value": 100
     },
     {
       "name": "Intellect",
-      "value": 6
+      "value": 45
     },
     {
       "name": "Culinary",
-      "value": 8
+      "value": 877
     },
     {
       "name": "Linguistics",
-      "value": 1
+      "value": 67
     }
   ]
 }
