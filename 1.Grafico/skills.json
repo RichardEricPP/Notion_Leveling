@@ -1,0 +1,28 @@
+{
+  "skills": [
+    {
+      "name": "Ventures",
+      "value": 3
+    },
+    {
+      "name": "Power",
+      "value": 5
+    },
+    {
+      "name": "Masterful",
+      "value": 7
+    },
+    {
+      "name": "Intellect",
+      "value": 4
+    },
+    {
+      "name": "Culinary",
+      "value": 5
+    },
+    {
+      "name": "Linguistics",
+      "value": 6
+    }
+  ]
+}
