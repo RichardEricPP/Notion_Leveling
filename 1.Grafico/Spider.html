@@ -209,16 +209,26 @@
             ctx.fill();
             ctx.stroke();
 
-            ctx.fillStyle = '#FF00FF';
+            // Dibuja los puntos y el valor de la habilidad sobre ellos
             skills.forEach((skill, index) => {
                 const skillValueRatio = skill.value / numLevels; // Usa numLevels (dynamicMaxSkillValue)
                 const pointRadius = radius * skillValueRatio;
                 const angle = index * angleIncrement - Math.PI / 2;
                 const x = centerX + pointRadius * Math.cos(angle);
                 const y = centerY + pointRadius * Math.sin(angle);
+
+                // Dibuja el círculo del punto
+                ctx.fillStyle = '#FF00FF';
                 ctx.beginPath();
                 ctx.arc(x, y, 4, 0, Math.PI * 2);
                 ctx.fill();
+
+                // Dibuja el valor de la habilidad sobre el punto
+                ctx.fillStyle = '#FFFFFF'; // Color blanco para el texto
+                ctx.font = '9px Inter'; // Tamaño de fuente pequeño
+                ctx.textAlign = 'center'; // Centrar el texto horizontalmente
+                ctx.textBaseline = 'middle'; // Centrar el texto verticalmente
+                ctx.fillText(skill.value.toString(), x, y); // Dibuja el valor en las coordenadas del punto
             });
 
             ctx.fillStyle = '#FFFFFF';
