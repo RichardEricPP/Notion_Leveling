@@ -12,7 +12,7 @@
             margin: 0;
             padding: 0;
             overflow: hidden; /* Evita barras de desplazamiento */
-            background-color: transparent; /* Fondo del body transparente */
+            background-color: transparent; /* Mantiene el body transparente por si acaso */
         }
         body {
             font-family: 'Inter', sans-serif;
@@ -30,10 +30,9 @@
             display: flex; /* Flexbox para centrar el canvas dentro */
             justify-content: center;
             align-items: center;
-            /* margin: auto; eliminado ya que width/height 100% lo hacen innecesario */
             overflow: hidden; /* Asegura que nada se salga del wrapper */
             border-radius: 0.75rem; /* Bordes redondeados para el contenedor */
-            background-color: #191919; /* Fondo ajustado a #191919 */
+            background-color: #191919; /* Fondo del contenedor: #191919 */
         }
         canvas {
             position: absolute;
@@ -42,7 +41,7 @@
             width: 100%; /* El canvas ocupa el 100% del tamaño de su contenedor */
             height: 100%; /* El canvas ocupa el 100% del tamaño de su contenedor */
             display: block;
-            background-color: #191919; /* Fondo ajustado a #191919 */
+            background-color: #191919; /* Fondo del canvas: #191919 */
         }
         .refresh-button-container {
             position: absolute;
@@ -142,7 +141,7 @@
             }
         }
 
-        function drawSpiderChart(ctx, skills, cssWidth, cssHeight, maxSkillValue = 6) {
+        function drawSpiderChart(ctx, skills, cssWidth, cssHeight, dynamicMaxSkillValue) {
             const margin = 60;
             const effectiveWidth = cssWidth - 2 * margin;
             const effectiveHeight = cssHeight - 2 * margin;
@@ -158,7 +157,8 @@
             ctx.strokeStyle = '#555555';
             ctx.lineWidth = 1;
 
-            const numLevels = maxSkillValue;
+            // Usa el valor máximo dinámico para dibujar los niveles
+            const numLevels = dynamicMaxSkillValue; 
             for (let i = 1; i <= numLevels; i++) {
                 const currentRadius = radius * (i / numLevels);
                 ctx.beginPath();
@@ -193,7 +193,7 @@
             ctx.lineWidth = 2;
 
             skills.forEach((skill, index) => {
-                const skillValueRatio = skill.value / maxSkillValue;
+                const skillValueRatio = skill.value / numLevels; // Usa numLevels (dynamicMaxSkillValue)
                 const pointRadius = radius * skillValueRatio;
                 const angle = index * angleIncrement - Math.PI / 2;
                 const x = centerX + pointRadius * Math.cos(angle);
@@ -211,7 +211,7 @@
 
             ctx.fillStyle = '#FF00FF';
             skills.forEach((skill, index) => {
-                const skillValueRatio = skill.value / maxSkillValue;
+                const skillValueRatio = skill.value / numLevels; // Usa numLevels (dynamicMaxSkillValue)
                 const pointRadius = radius * skillValueRatio;
                 const angle = index * angleIncrement - Math.PI / 2;
                 const x = centerX + pointRadius * Math.cos(angle);
@@ -268,7 +268,6 @@
             const ctx = canvas.getContext('2d');
             const chartWrapper = document.querySelector('.chart-wrapper');
 
-            // Usar el tamaño del contenedor principal (chart-wrapper)
             const cssWidth = chartWrapper.offsetWidth;
             const cssHeight = chartWrapper.offsetHeight;
 
@@ -280,7 +279,12 @@
             const loadedData = await loadCharacterData();
 
             if (loadedData.skills && loadedData.skills.length > 0) {
-                drawSpiderChart(ctx, loadedData.skills, cssWidth, cssHeight);
+                // Calcula el valor máximo de las habilidades
+                const maxSkillValueInLoadedData = Math.max(...loadedData.skills.map(s => s.value));
+                // Asegura que la escala vaya al menos hasta 6, y siempre un nivel por encima del valor más alto
+                const dynamicMaxSkillValue = Math.max(6, maxSkillValueInLoadedData + 1);
+
+                drawSpiderChart(ctx, loadedData.skills, cssWidth, cssHeight, dynamicMaxSkillValue);
             } else {
                 console.error("Los datos de habilidades no son válidos o están vacíos.");
                 ctx.font = '16px Inter';
@@ -295,7 +299,6 @@
             const ctx = canvas.getContext('2d');
             const chartWrapper = document.querySelector('.chart-wrapper');
 
-            // Usar el tamaño del contenedor principal (chart-wrapper)
             const cssWidth = chartWrapper.offsetWidth;
             const cssHeight = chartWrapper.offsetHeight;
 
@@ -306,7 +309,11 @@
 
             loadCharacterData().then(loadedData => {
                 if (loadedData.skills && loadedData.skills.length > 0) {
-                    drawSpiderChart(ctx, loadedData.skills, cssWidth, cssHeight);
+                    // Calcula el valor máximo de las habilidades
+                    const maxSkillValueInLoadedData = Math.max(...loadedData.skills.map(s => s.value));
+                    const dynamicMaxSkillValue = Math.max(6, maxSkillValueInLoadedData + 1);
+
+                    drawSpiderChart(ctx, loadedData.skills, cssWidth, cssHeight, dynamicMaxSkillValue);
                 } else {
                     ctx.font = '16px Inter';
                     ctx.fillStyle = 'red';
@@ -325,7 +332,11 @@
                 const cssWidth = chartWrapper.offsetWidth;
                 const cssHeight = chartWrapper.offsetHeight;
                 
-                drawSpiderChart(ctx, loadedData.skills, cssWidth, cssHeight);
+                // Calcula el valor máximo de las habilidades
+                const maxSkillValueInLoadedData = Math.max(...loadedData.skills.map(s => s.value));
+                const dynamicMaxSkillValue = Math.max(6, maxSkillValueInLoadedData + 1);
+
+                drawSpiderChart(ctx, loadedData.skills, cssWidth, cssHeight, dynamicMaxSkillValue);
                 console.log("Datos del gráfico actualizados manualmente.");
             });
         });
