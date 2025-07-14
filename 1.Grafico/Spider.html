@@ -11,7 +11,7 @@
             height: 100%;
             margin: 0;
             padding: 0;
-            overflow: hidden;
+            overflow: hidden; /* Evita barras de desplazamiento */
         }
         body {
             font-family: 'Inter', sans-serif;
@@ -24,37 +24,39 @@
         }
         .chart-wrapper {
             position: relative;
-            width: 550px; /* Tamaño fijo para el ancho del gráfico */
-            height: 550px; /* Tamaño fijo para el alto del gráfico */
-            display: flex;
+            /* Nuevo tamaño responsivo y cuadrado para el contenedor del gráfico */
+            width: min(80vmin, 600px); /* Ocupa 80% de la dimensión más pequeña del viewport, máx 600px */
+            height: min(80vmin, 600px); /* Mantiene la proporción cuadrada */
+            
+            display: flex; /* Flexbox para centrar el canvas dentro */
             justify-content: center;
             align-items: center;
-            margin: auto; /* Centra el contenedor en la página */
-            overflow: hidden;
-            border-radius: 0.75rem;
-            background-color: #2F2F2F; /* Fondo del contenedor, similar al de Notion */
+            margin: auto; /* Centrar el wrapper en el body */
+            overflow: hidden; /* Asegura que nada se salga del wrapper */
+            border-radius: 0.75rem; /* Bordes redondeados para el contenedor */
+            background-color: #121212; /* Fondo del contenedor, ajustado a #121212 */
         }
         canvas {
             position: absolute;
             top: 0;
             left: 0;
-            width: 100%; /* El canvas ocupa el 100% del tamaño fijo de su contenedor */
-            height: 100%; /* El canvas ocupa el 100% del tamaño fijo de su contenedor */
+            width: 100%; /* El canvas ocupa el 100% del tamaño de su contenedor */
+            height: 100%; /* El canvas ocupa el 100% del tamaño de su contenedor */
             display: block;
-            /* Bordes eliminados */
+            background-color: #121212; /* Fondo del canvas, ajustado a #121212 */
         }
         .refresh-button-container {
             position: absolute;
-            top: 20px; /* Posición desde arriba del contenedor fijo */
-            right: 20px; /* Posición desde la derecha del contenedor fijo */
-            opacity: 0; /* Oculto por defecto */
-            pointer-events: none; /* No interactuable cuando está oculto */
-            transition: opacity 0.3s ease; /* Transición suave para la aparición */
-            z-index: 10; /* Asegura que esté por encima del canvas */
+            top: 10px; /* Ajustado para estar más cerca de la esquina superior */
+            right: 10px; /* Ajustado para estar más cerca de la esquina derecha */
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+            z-index: 10;
         }
         .chart-wrapper:hover .refresh-button-container {
-            opacity: 1; /* Visible al pasar el cursor sobre el contenedor del gráfico */
-            pointer-events: auto; /* Interactuable al pasar el cursor */
+            opacity: 1;
+            pointer-events: auto;
         }
         .refresh-button {
             display: flex;
