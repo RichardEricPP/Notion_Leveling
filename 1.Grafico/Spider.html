@@ -6,13 +6,12 @@
     <title>Gráfico de Habilidades</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        /* Asegura que HTML y BODY ocupen toda la altura y ancho del viewport */
         html, body {
             width: 100%;
             height: 100%;
             margin: 0;
             padding: 0;
-            overflow: hidden; /* Evita barras de desplazamiento */
+            overflow: hidden;
         }
         body {
             font-family: 'Inter', sans-serif;
@@ -20,42 +19,42 @@
             flex-direction: column;
             justify-content: center;
             align-items: center;
-            background-color: #111111;
+            background-color: #111111; /* Fondo general del cuerpo */
             color: #eeeeee;
         }
         .chart-wrapper {
             position: relative;
-            /* Establecemos un tamaño fijo para el contenedor del gráfico */
-            width: 550px; /* Ancho fijo */
-            height: 550px; /* Alto fijo */
+            width: 550px; /* Tamaño fijo para el ancho del gráfico */
+            height: 550px; /* Tamaño fijo para el alto del gráfico */
             display: flex;
             justify-content: center;
             align-items: center;
-            /* Centrar el wrapper si el body es más grande */
-            margin: auto;
+            margin: auto; /* Centra el contenedor en la página */
+            overflow: hidden;
+            border-radius: 0.75rem;
+            background-color: #2F2F2F; /* Fondo del contenedor, similar al de Notion */
         }
         canvas {
-            background-color: #242424;
-            border-radius: 0.75rem;
-            /* Borde eliminado */
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%; /* El canvas ocupa el 100% del tamaño fijo de su contenedor */
+            height: 100%; /* El canvas ocupa el 100% del tamaño fijo de su contenedor */
             display: block;
-            margin: 0 auto;
-            /* El canvas toma el tamaño de su contenedor (.chart-wrapper) */
-            width: 100%; 
-            height: 100%;
+            /* Bordes eliminados */
         }
         .refresh-button-container {
             position: absolute;
             top: 20px; /* Posición desde arriba del contenedor fijo */
             right: 20px; /* Posición desde la derecha del contenedor fijo */
-            opacity: 0;
-            pointer-events: none;
-            transition: opacity 0.3s ease;
-            z-index: 10;
+            opacity: 0; /* Oculto por defecto */
+            pointer-events: none; /* No interactuable cuando está oculto */
+            transition: opacity 0.3s ease; /* Transición suave para la aparición */
+            z-index: 10; /* Asegura que esté por encima del canvas */
         }
         .chart-wrapper:hover .refresh-button-container {
-            opacity: 1;
-            pointer-events: auto;
+            opacity: 1; /* Visible al pasar el cursor sobre el contenedor del gráfico */
+            pointer-events: auto; /* Interactuable al pasar el cursor */
         }
         .refresh-button {
             display: flex;
@@ -114,7 +113,6 @@
 
         async function loadCharacterData() {
             try {
-                // RUTA CORREGIDA: Ahora solo busca 'skills.json'
                 const response = await fetch('skills.json');
 
                 if (!response.ok) {
@@ -269,7 +267,7 @@
             const ctx = canvas.getContext('2d');
             const chartWrapper = document.querySelector('.chart-wrapper');
 
-            // Usar el tamaño fijo del chart-wrapper para dibujar
+            // Usar el tamaño del contenedor principal (chart-wrapper)
             const cssWidth = chartWrapper.offsetWidth;
             const cssHeight = chartWrapper.offsetHeight;
 
@@ -296,7 +294,7 @@
             const ctx = canvas.getContext('2d');
             const chartWrapper = document.querySelector('.chart-wrapper');
 
-            // Usar el tamaño fijo del chart-wrapper para dibujar
+            // Usar el tamaño del contenedor principal (chart-wrapper)
             const cssWidth = chartWrapper.offsetWidth;
             const cssHeight = chartWrapper.offsetHeight;
 
