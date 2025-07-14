@@ -12,6 +12,7 @@
             margin: 0;
             padding: 0;
             overflow: hidden; /* Evita barras de desplazamiento */
+            background-color: transparent; /* Fondo del body transparente */
         }
         body {
             font-family: 'Inter', sans-serif;
@@ -19,19 +20,17 @@
             flex-direction: column;
             justify-content: center;
             align-items: center;
-            background-color: #111111; /* Fondo general del cuerpo */
             color: #eeeeee;
         }
         .chart-wrapper {
             position: relative;
-            /* Tamaño responsivo y cuadrado para el contenedor del gráfico */
-            width: min(80vmin, 600px); /* Ocupa 80% de la dimensión más pequeña del viewport, máx 600px */
-            height: min(80vmin, 600px); /* Mantiene la proporción cuadrada */
+            width: 100%; /* Ocupa el 100% del ancho del body del iframe */
+            height: 100%; /* Ocupa el 100% del alto del body del iframe */
             
             display: flex; /* Flexbox para centrar el canvas dentro */
             justify-content: center;
             align-items: center;
-            margin: auto; /* Centrar el wrapper en el body */
+            /* margin: auto; eliminado ya que width/height 100% lo hacen innecesario */
             overflow: hidden; /* Asegura que nada se salga del wrapper */
             border-radius: 0.75rem; /* Bordes redondeados para el contenedor */
             background-color: #191919; /* Fondo ajustado a #191919 */
