@@ -6,32 +6,35 @@
     <title>Gráfico de Habilidades</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
+        html, body {
+            width: 100%;
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+        }
         body {
             font-family: 'Inter', sans-serif;
             display: flex;
             flex-direction: column;
             justify-content: center;
             align-items: center;
-            min-height: 100vh;
-            width: 100vw;
-            margin: 0;
-            overflow: hidden;
             background-color: #111111;
             color: #eeeeee;
         }
         .chart-wrapper {
-            position: relative;
+            position: absolute;
+            top: 0;
+            left: 0;
             width: 100%;
             height: 100%;
             display: flex;
             justify-content: center;
             align-items: center;
-            flex-grow: 1;
         }
         canvas {
             background-color: #242424;
             border-radius: 0.75rem;
-            /* Borde eliminado */
             display: block;
             margin: 0 auto;
             width: 100%;
@@ -39,8 +42,8 @@
         }
         .refresh-button-container {
             position: absolute;
-            top: 50px; /* Ajustado más arriba */
-            right: 90px; /* Ajustado más a la izquierda */
+            top: 60px;
+            right: 80px;
             opacity: 0;
             pointer-events: none;
             transition: opacity 0.3s ease;
@@ -135,13 +138,14 @@
             }
         }
 
-        function drawSpiderChart(ctx, skills, cssSize, maxSkillValue = 6) {
+        function drawSpiderChart(ctx, skills, cssWidth, cssHeight, maxSkillValue = 6) {
             const margin = 60;
-            const effectiveSize = cssSize - 2 * margin;
-            const centerX = effectiveSize / 2 + margin;
-            const centerY = effectiveSize / 2 + margin;
+            const effectiveWidth = cssWidth - 2 * margin;
+            const effectiveHeight = cssHeight - 2 * margin;
+            const centerX = effectiveWidth / 2 + margin;
+            const centerY = effectiveHeight / 2 + margin;
             const labelFactor = 1.3;
-            const radius = effectiveSize / 2 / labelFactor;
+            const radius = Math.min(effectiveWidth, effectiveHeight) / 2 / labelFactor;
             const numSkills = skills.length;
             const angleIncrement = (Math.PI * 2) / numSkills;
 
@@ -260,26 +264,24 @@
             const ctx = canvas.getContext('2d');
 
             const dpr = window.devicePixelRatio || 1;
-            const cssSize = Math.min(window.innerWidth, window.innerHeight); 
+            const cssWidth = canvas.offsetWidth;
+            const cssHeight = canvas.offsetHeight;
 
-            canvas.width = cssSize * dpr;
-            canvas.height = cssSize * dpr;
+            canvas.width = cssWidth * dpr;
+            canvas.height = cssHeight * dpr;
 
             ctx.scale(dpr, dpr);
-
-            canvas.style.width = cssSize + 'px';
-            canvas.style.height = cssSize + 'px';
 
             const loadedData = await loadCharacterData();
 
             if (loadedData.skills && loadedData.skills.length > 0) {
-                drawSpiderChart(ctx, loadedData.skills, cssSize);
+                drawSpiderChart(ctx, loadedData.skills, cssWidth, cssHeight);
             } else {
                 console.error("Los datos de habilidades no son válidos o están vacíos.");
                 ctx.font = '16px Inter';
                 ctx.fillStyle = 'red';
                 ctx.textAlign = 'center';
-                ctx.fillText('Error: Datos de habilidades no válidos o incompletos.', cssSize / 2, cssSize / 2);
+                ctx.fillText('Error: Datos de habilidades no válidos o incompletos.', cssWidth / 2, cssHeight / 2);
             }
         };
 
@@ -288,24 +290,20 @@
             const ctx = canvas.getContext('2d');
 
             const dpr = window.devicePixelRatio || 1;
-            const cssSize = Math.min(window.innerWidth, window.innerHeight); 
+            const cssWidth = canvas.offsetWidth;
+            const cssHeight = canvas.offsetHeight;
 
-            canvas.width = cssSize * dpr;
-            canvas.height = cssSize * dpr;
-
-            ctx.scale(dpr, dpr);
-
-            canvas.style.width = cssSize + 'px';
-            canvas.style.height = cssSize + 'px';
+            canvas.width = cssWidth * dpr;
+            canvas.height = cssHeight * dpr;
 
             loadCharacterData().then(loadedData => {
                 if (loadedData.skills && loadedData.skills.length > 0) {
-                    drawSpiderChart(ctx, loadedData.skills, cssSize);
+                    drawSpiderChart(ctx, loadedData.skills, cssWidth, cssHeight);
                 } else {
                     ctx.font = '16px Inter';
                     ctx.fillStyle = 'red';
                     ctx.textAlign = 'center';
-                    ctx.fillText('Error: Datos de habilidades no válidos o incompletos.', cssSize / 2, cssSize / 2);
+                    ctx.fillText('Error: Datos de habilidades no válidos o incompletos.', cssWidth / 2, cssHeight / 2);
                 }
             });
         });
@@ -315,9 +313,10 @@
                 const canvas = document.getElementById('spiderChart');
                 const ctx = canvas.getContext('2d');
                 const dpr = window.devicePixelRatio || 1;
-                const cssSize = Math.min(window.innerWidth, window.innerHeight); 
+                const cssWidth = canvas.offsetWidth;
+                const cssHeight = canvas.offsetHeight;
                 
-                drawSpiderChart(ctx, loadedData.skills, cssSize);
+                drawSpiderChart(ctx, loadedData.skills, cssWidth, cssHeight);
                 console.log("Datos del gráfico actualizados manualmente.");
             });
         });
