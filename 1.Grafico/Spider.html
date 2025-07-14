@@ -6,12 +6,13 @@
     <title>Gráfico de Habilidades</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
+        /* Asegura que HTML y BODY ocupen toda la altura y ancho del viewport */
         html, body {
             width: 100%;
             height: 100%;
             margin: 0;
             padding: 0;
-            overflow: hidden;
+            overflow: hidden; /* Evita barras de desplazamiento */
         }
         body {
             font-family: 'Inter', sans-serif;
@@ -23,27 +24,30 @@
             color: #eeeeee;
         }
         .chart-wrapper {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
+            position: relative;
+            /* Establecemos un tamaño fijo para el contenedor del gráfico */
+            width: 550px; /* Ancho fijo */
+            height: 550px; /* Alto fijo */
             display: flex;
             justify-content: center;
             align-items: center;
+            /* Centrar el wrapper si el body es más grande */
+            margin: auto;
         }
         canvas {
             background-color: #242424;
             border-radius: 0.75rem;
+            /* Borde eliminado */
             display: block;
             margin: 0 auto;
-            width: 100%;
+            /* El canvas toma el tamaño de su contenedor (.chart-wrapper) */
+            width: 100%; 
             height: 100%;
         }
         .refresh-button-container {
             position: absolute;
-            top: 60px;
-            right: 80px;
+            top: 20px; /* Posición desde arriba del contenedor fijo */
+            right: 20px; /* Posición desde la derecha del contenedor fijo */
             opacity: 0;
             pointer-events: none;
             transition: opacity 0.3s ease;
@@ -110,7 +114,8 @@
 
         async function loadCharacterData() {
             try {
-                const response = await fetch('Notion_Leveling/1.Grafico/skills.json');
+                // RUTA CORREGIDA: Ahora solo busca 'skills.json'
+                const response = await fetch('skills.json');
 
                 if (!response.ok) {
                     console.warn(`No se pudo cargar el archivo JSON de datos (${response.status}). Usando datos de ejemplo.`);
@@ -262,14 +267,15 @@
         window.onload = async () => {
             const canvas = document.getElementById('spiderChart');
             const ctx = canvas.getContext('2d');
+            const chartWrapper = document.querySelector('.chart-wrapper');
+
+            // Usar el tamaño fijo del chart-wrapper para dibujar
+            const cssWidth = chartWrapper.offsetWidth;
+            const cssHeight = chartWrapper.offsetHeight;
 
             const dpr = window.devicePixelRatio || 1;
-            const cssWidth = canvas.offsetWidth;
-            const cssHeight = canvas.offsetHeight;
-
             canvas.width = cssWidth * dpr;
             canvas.height = cssHeight * dpr;
-
             ctx.scale(dpr, dpr);
 
             const loadedData = await loadCharacterData();
@@ -288,13 +294,16 @@
         window.addEventListener('resize', () => {
             const canvas = document.getElementById('spiderChart');
             const ctx = canvas.getContext('2d');
+            const chartWrapper = document.querySelector('.chart-wrapper');
+
+            // Usar el tamaño fijo del chart-wrapper para dibujar
+            const cssWidth = chartWrapper.offsetWidth;
+            const cssHeight = chartWrapper.offsetHeight;
 
             const dpr = window.devicePixelRatio || 1;
-            const cssWidth = canvas.offsetWidth;
-            const cssHeight = canvas.offsetHeight;
-
             canvas.width = cssWidth * dpr;
             canvas.height = cssHeight * dpr;
+            ctx.scale(dpr, dpr);
 
             loadCharacterData().then(loadedData => {
                 if (loadedData.skills && loadedData.skills.length > 0) {
@@ -312,9 +321,10 @@
             loadCharacterData().then(loadedData => {
                 const canvas = document.getElementById('spiderChart');
                 const ctx = canvas.getContext('2d');
+                const chartWrapper = document.querySelector('.chart-wrapper');
                 const dpr = window.devicePixelRatio || 1;
-                const cssWidth = canvas.offsetWidth;
-                const cssHeight = canvas.offsetHeight;
+                const cssWidth = chartWrapper.offsetWidth;
+                const cssHeight = chartWrapper.offsetHeight;
                 
                 drawSpiderChart(ctx, loadedData.skills, cssWidth, cssHeight);
                 console.log("Datos del gráfico actualizados manualmente.");
