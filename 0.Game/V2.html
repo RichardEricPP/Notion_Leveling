@@ -7,52 +7,52 @@
         body {
             margin: 0;
             padding: 0;
-            display: flex; 
-            flex-direction: column; 
+            display: flex; /* Use flexbox for layout */
+            flex-direction: column; /* Allow stacking of difficulty screen and canvas */
             justify-content: center;
             align-items: center;
             height: 100vh;
             background-color: #222;
             font-family: 'Georgia', serif;
-            position: relative;  
+            position: relative; 
         }
         #difficultyScreen {
-            padding: 20px;  
+            padding: 20px; 
             background-color: #f4e4bc;
             border: 5px solid #4a2f1b;
             border-radius: 10px;
             text-align: center;
             box-shadow: 0 0 20px rgba(0,0,0,0.6);
-            display: flex;  
-            flex-direction: column;  
-            align-items: center;  
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
         }
         #difficultyScreen h2 {
             color: #4a2f1b;
-            margin-bottom: 15px;  
+            margin-bottom: 15px; 
         }
         #difficultyScreen button {
-            background-color: #8B4513;  
+            background-color: #8B4513; 
             color: white;
             border: 2px solid #4a2f1b;
-            padding: 8px 15px;  
+            padding: 8px 15px; 
             margin: 5px;
             border-radius: 5px;
             cursor: pointer;
-            font-size: 15px;  
+            font-size: 15px; 
             transition: background-color 0.3s;
         }
         #difficultyScreen button:hover {
-            background-color: #A0522D;  
+            background-color: #A0522D; 
         }
         #lastScoreDisplay {
-            margin-top: 10px;  
-            font-size: 13px;  
+            margin-top: 10px; 
+            font-size: 13px; 
             color: #4a2f1b;
         }
         #debugControls {
-            margin-top: 10px;  
-            padding: 8px;  
+            margin-top: 10px; 
+            padding: 8px; 
             background-color: #333;
             border-radius: 5px;
             color: white;
@@ -62,7 +62,7 @@
             margin-right: 3px;
         }
         #debugControls input {
-            width: 35px;  
+            width: 35px; 
             margin-right: 8px;
             padding: 3px;
         }
@@ -70,10 +70,11 @@
             padding: 5px 10px;
             font-size: 13px;
         }
+
         #gameCanvas {
-            border: 2px solid #4a2f1b;  
-            background: #2a1f15;  
-            display: none;  
+            border: 2px solid #4a2f1b; 
+            background: #2a1f15; 
+            display: none; 
         }
         #minimapCanvas {
             position: absolute;
@@ -81,7 +82,7 @@
             left: 20px;
             border: 2px solid #4a2f1b;
             background-color: rgba(0, 0, 0, 0.7);
-            z-index: 100;  
+            z-index: 100; 
             display: none;
         }
         #inventoryMenu, #skillMenu {
@@ -91,33 +92,35 @@
             left: 50%;
             transform: translate(-50%, -50%);
             background: #f4e4bc;
-            padding: 20px;  
+            padding: 20px; 
             border: 4px solid #8B4513;
             font-family: 'Georgia', serif;
             color: #000;
             z-index: 10;
-            min-width: 300px;  
-            max-height: 80vh;  
-            overflow-y: auto;  
-            box-shadow: 0 0 15px rgba(0,0,0,0.5);  
+            min-width: 300px; 
+            max-height: 80vh; 
+            overflow-y: auto; 
+            box-shadow: 0 0 15px rgba(0,0,0,0.5); 
         }
+        
         #equipmentMenu {
-            display: none; 
-            position: absolute;  
+            display: none; /* Hidden by default, shown by button on difficultyScreen */
+            position: absolute; 
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
             background: #f4e4bc;
-            padding: 20px;  
+            padding: 20px; 
             border: 4px solid #8B4513;
             font-family: 'Georgia', serif;
             color: #000;
             z-index: 10;
-            min-width: 350px; 
-            max-height: 80vh;  
-            overflow-y: auto;  
-            box-shadow: 0 0 15px rgba(0,0,0,0.5);  
+            min-width: 350px; /* Increased width for buttons */
+            max-height: 80vh; 
+            overflow-y: auto; 
+            box-shadow: 0 0 15px rgba(0,0,0,0.5); 
         }
+
         #inventoryMenu h2, #skillMenu h2, #equipmentMenu h2 {
             margin-top: 0;
             text-align: center;
@@ -131,19 +134,22 @@
             padding: 8px;
             margin-bottom: 5px;
             border-radius: 4px;
-            cursor: default;  
-            display: flex;  
-            justify-content: space-between;  
-            align-items: center;  
+            cursor: default; 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
         }
         .selected { background-color: #ffd700; color: #000; }
-        .unlocked { color: #000000; font-weight: normal; } 
+        .unlocked { color: #000000; font-weight: normal; } /* Default for unlocked, not equipped */
         .available { color: #000000; }
-        .locked { color: #808080; font-style: italic; }  
-        .skill-used { color: #909090 !important; text-decoration: line-through;}  
-        .inventory-equipped { color: #008000; font-weight: bold; } 
-        .inventory-unequipped { color: #808080; } 
+        .locked { color: #808080; font-style: italic; } 
+        .skill-used { color: #909090 !important; text-decoration: line-through;} 
+
+        .inventory-equipped { color: #008000; font-weight: bold; } /* Green for equipped */
+        .inventory-unequipped { color: #808080; } /* Gray for unequipped */
+
         .skill-equipped { color: #008000; font-weight: bold; }
+
         #inventoryMenu p, #skillMenu p, #equipmentMenu p {
             font-size: 0.9em;
             text-align: center;
@@ -152,25 +158,26 @@
         }
         #messageBox {
             position: absolute;
-            bottom: 20px; 
+            bottom: 20px; /* Position at the bottom */
             left: 50%;
             transform: translateX(-50%);
-            background-color: rgba(244, 228, 188, 0.8); 
+            background-color: rgba(244, 228, 188, 0.8); /* Added transparency */
             border: 4px solid #8B4513;
             border-radius: 10px;
-            padding: 15px 25px; 
+            padding: 15px 25px; /* Adjusted padding */
             font-family: 'Georgia', serif;
             color: #4a2f1b;
             z-index: 1000;
             text-align: center;
             box-shadow: 0 0 15px rgba(0,0,0,0.5);
-            display: none; 
-            max-width: 80%; 
+            display: none; /* Hidden by default */
+            max-width: 80%; /* Limit width */
         }
+        
         #equippedSlots {
             display: flex;
             flex-direction: column;
-            gap: 8px; 
+            gap: 8px; /* Space between slot rows */
         }
         #equippedSlots .equipment-slot-row {
             display: flex;
@@ -179,14 +186,14 @@
             padding: 8px;
             border-radius: 4px;
             border: 1px solid #c0a080;
-            justify-content: space-between; 
+            justify-content: space-between; /* Distribute items */
         }
         #equippedSlots .equipment-slot-row.selected {
-            background-color: #ffd700; 
+            background-color: #ffd700; /* Highlight selected row */
             color: #000;
         }
         #equippedSlots .nav-button {
-            background-color: #4a2f1b; 
+            background-color: #4a2f1b; /* Darker brown for buttons */
             color: white;
             border: none;
             padding: 5px 10px;
@@ -199,13 +206,14 @@
         #equippedSlots .nav-button:hover {
             background-color: #6a4a2b;
         }
+
         #equipmentMenuButtons {
             display: flex;
             justify-content: space-around;
             margin-top: 20px;
         }
         #equipmentMenuButtons button {
-            background-color: #4CAF50; 
+            background-color: #4CAF50; /* Green for Save */
             color: white;
             border: 2px solid #388E3C;
             padding: 10px 20px;
@@ -218,7 +226,7 @@
             background-color: #66BB6A;
         }
         #equipmentMenuButtons button:last-child {
-            background-color: #F44336; 
+            background-color: #F44336; /* Red for Back */
             border: 2px solid #D32F2F;
         }
         #equipmentMenuButtons button:last-child:hover {
@@ -233,17 +241,20 @@
         <button id="btnFacil">Fácil</button>
         <button id="btnMedio">Medio</button>
         <button id="btnDificil">Difícil</button>
-        <button id="btnEquipment">Equipo</button>
+        <button id="btnEquipment">Equipo</button> <!-- New button for equipment menu -->
         <div id="debugControls">
             <label for="levelInput">Nivel Base:</label>
             <input type="number" id="levelInput" min="1" value="1">
             <button id="btnGoToFloor">Ir</button>
         </div>
     </div>
+
     <canvas id="gameCanvas" width="500" height="500"></canvas>
     <canvas id="minimapCanvas"></canvas>
+    
     <div id="inventoryMenu">
         <h2>Inventario</h2>
+        <p>Oro: <span id="playerGoldInventory">0</span></p>
         <ul id="gearList"></ul>
     </div>
     <div id="skillMenu">
@@ -254,6 +265,7 @@
     <div id="equipmentMenu"> 
         <h2>Equipo</h2>
         <div id="equippedSlots">
+            <!-- Equipped items will be displayed here dynamically with buttons -->
         </div>
         <p id="equipmentMenuInstructions"></p>
         <div id="equipmentMenuButtons">
@@ -261,7 +273,9 @@
             <button id="btnReturnToDifficulty">Regresar</button>
         </div>
     </div>
-    <div id="messageBox"></div>
+
+    <div id="messageBox"></div> <!-- New message box element -->
+
     <audio id="audioDungeon1" src="https://richardericpp.github.io/Notion_Leveling/2.Music/1.%20-%20Solo%20LevelingSymphonicSuite%20Lv.1.mp3" loop preload="auto" volume="0.1"></audio>
     <audio id="audioDungeon2" src="https://richardericpp.github.io/Notion_Leveling/2.Music/2.%20-%20%5BSolo-Leveling%5DSymphonicSuite-Lv.2%20-%20OST_AnimeOriginal.mp3" loop preload="auto" volume="0.1"></audio>
     <audio id="audioDungeon3" src="https://richardericpp.github.io/Notion_Leveling/2.Music/3.%20-%20%5BSolo-Leveling%5DSymphonicSuite-Lv.3.mp3" loop preload="auto" volume="0.1"></audio>
@@ -272,19 +286,31 @@
     <audio id="audioDungeon8" src="https://richardericpp.github.io/Notion_Leveling/2.Music/8.%20-%20%5BSolo-Leveling%5DSymphonicSuite-Lv.8.mp3" loop preload="auto" volume="0.1"></audio>
     <audio id="audioDungeon9" src="https://richardericpp.github.io/Notion_Leveling/2.Music/9.%20-%20%5BSolo-Leveling%5DSymphonicSuite-Lv.9.mp3" loop preload="auto" volume="0.1"></audio>
     <audio id="audioDungeon10" src="https://richardericpp.github.io/Notion_Leveling/2.Music/10.%20-%20%5BSolo-Leveling%5DSymphonicSuite-Lv.10.mp3" loop preload="auto" volume="0.1"></audio>
+
+    <!-- Final Boss Music -->
     <audio id="audioBoss" src="https://richardericpp.github.io/Notion_Leveling/2.Music/99.%20Bozz.mp3" loop preload="auto" volume="0.2"></audio>
+
+    <!-- Equipment Open Sound (System) -->
     <audio id="audioEquipmentOpen" src="https://richardericpp.github.io/Notion_Leveling/2.Music/98.%20System.mp3" preload="auto" volume="0.5"></audio>
+
     <script>
+        // Ensure these are the very first executable lines in the script
         let isInventoryOpen = false;
         let isSkillMenuOpen = false;
         let isEquipmentOpen = false;
         
+        console.log('isInventoryOpen declared:', isInventoryOpen);
+        console.log('isSkillMenuOpen declared:', isInventoryOpen);
+        console.log('isEquipmentOpen declared:', isEquipmentOpen);
+
         let currentFloor = 1;
         const maxFloors = 4; 
+
         const mapWidth = 30, mapHeight = 30; 
         const tileSize = 50; 
         let map = Array(mapHeight).fill().map(() => Array(mapWidth).fill(0));
         let stairLocation = { x: -1, y: -1, active: false, type: 4 }; 
+
         let selectedDifficulty = 'medio'; 
         let gameStarted = false;
         let hpMultiplier = 1.0;
@@ -294,12 +320,10 @@
         let finalOutcomeMessage = ""; 
         let finalOutcomeMessageLine2 = "";
 
+
+        // Gear list definition with item levels and stats
         const gearList = [
-            // Potions
-            { name: 'Poción de Vida Pequeña', type: 'potion', heal: 25, baseValue: 10 },
-            { name: 'Poción de Vida Mediana', type: 'potion', heal: 50, baseValue: 25 },
-            { name: 'Poción de Vida Grande', type: 'potion', heal: 100, baseValue: 60 },
-            // Gear
+            
             { name: 'Casco de Hierro', type: 'helmet', def: 3, itemLevel: 1, baseValue: 20, set: 'Hierro' },
             { name: 'Casco de Caballero', type: 'helmet', def: 5, spd: 2, itemLevel: 2, baseValue: 40, set: 'Caballero' },
             { name: 'Casco de Demonio', type: 'helmet', def: 7, atk: 3, itemLevel: 3, baseValue: 60, set: 'Demonio' },
@@ -307,6 +331,7 @@
             { name: 'Casco de Asesinato', type: 'helmet', spd: 4, critical: 0.03, itemLevel: 3, baseValue: 70, set: 'Asesinato' }, 
             { name: 'Casco Noble', type: 'helmet', def: 4, itemLevel: 2, baseValue: 30, set: 'Noble' },
             { name: 'Casco de Mago', type: 'helmet', def: 3, itemLevel: 1, baseValue: 25, set: 'Mago' },
+
             { name: 'Armadura de Hierro', type: 'armor', def: 6, itemLevel: 1, baseValue: 40, set: 'Hierro' },
             { name: 'Armadura de Caballero', type: 'armor', def: 8, spd: 2, itemLevel: 2, baseValue: 70, set: 'Caballero' },
             { name: 'Armadura de Demonio', type: 'armor', def: 10, atk: 4, itemLevel: 3, baseValue: 100, set: 'Demonio' },
@@ -314,6 +339,7 @@
             { name: 'Armadura de Asesinato', type: 'armor', spd: 6, critical: 0.04, itemLevel: 3, baseValue: 110, set: 'Asesinato' }, 
             { name: 'Armadura Noble', type: 'armor', def: 7, itemLevel: 2, baseValue: 60, set: 'Noble' },
             { name: 'Armadura de Mago', type: 'armor', def: 5, itemLevel: 1, baseValue: 50, set: 'Mago' },
+
             { name: 'Guantes de Hierro', type: 'gloves', atk: 3, itemLevel: 1, baseValue: 15, set: 'Hierro' },
             { name: 'Guantes de Caballero', type: 'gloves', atk: 4, def: 1, itemLevel: 2, baseValue: 30, set: 'Caballero' },
             { name: 'Guantes de Demonio', type: 'gloves', atk: 6, spd: 2, itemLevel: 3, baseValue: 50, set: 'Demonio' },
@@ -321,6 +347,7 @@
             { name: 'Guantes de Asesinato', type: 'gloves', critical: 0.05, spd: 3, itemLevel: 3, baseValue: 60, set: 'Asesinato' }, 
             { name: 'Guantes de Noble', type: 'gloves', atk: 3, itemLevel: 2, baseValue: 25, set: 'Noble' },
             { name: 'Guantes de Mago', type: 'gloves', spd: 2, itemLevel: 1, baseValue: 20, set: 'Mago' },
+
             { name: 'Botas de Hierro', type: 'boots', spd: 3, itemLevel: 1, baseValue: 20, set: 'Hierro' },
             { name: 'Botas de Caballero', type: 'boots', spd: 5, def: 1, itemLevel: 2, baseValue: 40, set: 'Caballero' },
             { name: 'Botas de Demonio', type: 'boots', spd: 7, atk: 2, itemLevel: 3, baseValue: 60, set: 'Demonio' },
@@ -328,6 +355,7 @@
             { name: 'Botas de Asesinato', type: 'boots', spd: 9, itemLevel: 3, baseValue: 70, set: 'Asesinato' },
             { name: 'Botas de Noble', type: 'boots', spd: 4, itemLevel: 2, baseValue: 30, set: 'Noble' },
             { name: 'Botas de Mago', type: 'boots', spd: 6, itemLevel: 1, baseValue: 25, set: 'Mago' },
+
             { name: 'Escudo Colosal', type: 'weapon', def: 10, itemLevel: 2, baseValue: 80, set: 'Hierro', attackSpeed: 400 }, 
             { name: 'Maza de Guerra', type: 'weapon', atk: 9, itemLevel: 2, baseValue: 75, set: 'Caballero', attackSpeed: 400 },
             { name: 'Espada de Luz', type: 'weapon', atk: 7, spd: 3, itemLevel: 3, baseValue: 90, set: 'Demonio', attackSpeed: 250 },
@@ -338,6 +366,7 @@
             { name: 'Guadaña Helada', type: 'weapon', atk: 8, itemLevel: 2, baseValue: 80, set: 'Noble', attackSpeed: 400 },
         ];
 
+        // Player definition
         let player = {
             tileX: 1,
             tileY: 1,
@@ -374,6 +403,7 @@
             attackLungeDistance: tileSize / 4,
             skillUsageThisFloor: {},
             enemiesDefeatedThisRun: 0,
+            gold: 0, 
             isSlowed: false,
             slowEndTime: 0,
             potionsBoughtTotal: 0,
@@ -404,21 +434,24 @@
         const sprites = {}; 
         const loadedImages = {}; 
 
+        // --- Funciones de Creación de Sprites ---
         function createPlayerSprite() {
             const canvas = document.createElement('canvas');
             canvas.width = 64; canvas.height = 64;
             const ctx = canvas.getContext('2d');
 
+            // Define set-specific colors
             const setColors = {
                 'Hierro': { main: '#607d8b', detail: '#b0bec5' },
                 'Caballero': { main: '#b71c1c', detail: '#ef9a9a' },
                 'Demonio': { main: '#1a237e', detail: '#ffd700' },
-                'León': { main: '#4A2F1B', detail: '#FFD700' }, 
+                'León': { main: '#4A2F1B', detail: '#FFD700' }, // Changed to dark brown with golden touches for Lion set
                 'Asesinato': { main: '#006064', detail: '#9c27b0' },
                 'Noble': { main: '#212121', detail: '#ffd700' },
                 'Mago': { main: '#eceff1', detail: '#ffd700' }
             };
 
+            // Default colors for individual body parts if no specific item is equipped
             const defaultPartColors = {
                 body: '#2c3e50',
                 helmet: '#1a252f', 
@@ -430,6 +463,7 @@
             };
 
             let currentFullSetDetected = null;
+            // Changed to 4 pieces for set bonus: helmet, armor, gloves, boots
             const fullSetPieces = ['helmet', 'armor', 'gloves', 'boots']; 
             const equippedSetNames = [];
 
@@ -443,6 +477,7 @@
                 currentFullSetDetected = equippedSetNames[0];
             }
 
+            // Initialize colors with defaults
             let torsoColor = defaultPartColors.body;
             let headColor = defaultPartColors.helmet;
             let armColor = defaultPartColors.arm;
@@ -451,6 +486,7 @@
             let drawHood = true;
 
             if (currentFullSetDetected) {
+                // If a full set is detected, all parts take that set's colors
                 const set = setColors[currentFullSetDetected];
                 torsoColor = set.main;
                 headColor = set.main; 
@@ -461,6 +497,7 @@
             } else {
                 if (player.equipped.armor && player.equipped.armor.set) {
                     torsoColor = setColors[player.equipped.armor.set].main;
+                    
                     detailColor = setColors[player.equipped.armor.set].detail; 
                 }
                 if (player.equipped.helmet && player.equipped.helmet.set) {
@@ -479,43 +516,43 @@
             ctx.fillRect(16, 16, 32, 32); 
 
             if (drawHood) {
-                ctx.fillStyle = headColor;
+                ctx.fillStyle = headColor; // Hood color
                 ctx.beginPath();
                 ctx.moveTo(20, 20); ctx.lineTo(18, 10); ctx.lineTo(46, 10); 
                 ctx.lineTo(44, 20); ctx.lineTo(38, 22); ctx.lineTo(32, 24); 
                 ctx.lineTo(26, 22); ctx.closePath(); ctx.fill();
-                ctx.fillStyle = defaultPartColors.skin;
+                ctx.fillStyle = defaultPartColors.skin; // Face color
                 ctx.fillRect(26, 13, 12, 7); 
-                ctx.fillStyle = defaultPartColors.eyes;
+                ctx.fillStyle = defaultPartColors.eyes; // Eye color
                 ctx.fillRect(28, 15, 2, 2); 
                 ctx.fillRect(34, 15, 2, 2); 
             } else { 
-                ctx.fillStyle = headColor;
+                ctx.fillStyle = headColor; // Helmet color
                 ctx.fillRect(20, 8, 24, 12); 
-                ctx.fillStyle = detailColor;
+                ctx.fillStyle = detailColor; // Helmet detail
                 ctx.fillRect(22, 10, 20, 2); 
-                ctx.fillStyle = defaultPartColors.skin;
+                ctx.fillStyle = defaultPartColors.skin; // Face color
                 ctx.fillRect(24, 12, 16, 8); 
-                ctx.fillStyle = defaultPartColors.eyes;
+                ctx.fillStyle = defaultPartColors.eyes; // Eye color
                 ctx.fillRect(28, 14, 2, 2); ctx.fillRect(34, 14, 2, 2);
             }
             
-            ctx.fillStyle = armColor;
+            ctx.fillStyle = armColor; // Left arm color
             ctx.fillRect(8, 24, 10, 16); 
-            ctx.strokeStyle = detailColor;
+            ctx.strokeStyle = detailColor; // Arm detail
             ctx.lineWidth = 2; 
             ctx.strokeRect(8, 24, 10, 16);
 
-            ctx.fillStyle = legColor;
+            ctx.fillStyle = legColor; // Leg color
             ctx.fillRect(20, 48, 10, 12); ctx.fillRect(34, 48, 10, 12); 
-            ctx.fillStyle = detailColor;
+            ctx.fillStyle = detailColor; // Leg detail
             ctx.fillRect(20, 52, 10, 2); ctx.fillRect(34, 52, 10, 2);
             if (player.equipped.weapon) {
                 switch (player.equipped.weapon.name) {
                     case 'Daga de Poder': 
-                        ctx.fillStyle = '#333';
+                        ctx.fillStyle = '#333'; // Handle
                         ctx.fillRect(48, 20, 4, 12);
-                        ctx.fillStyle = '#ADD8E6';
+                        ctx.fillStyle = '#ADD8E6'; // Blade
                         ctx.beginPath();
                         ctx.moveTo(50, 12);
                         ctx.lineTo(46, 20);
@@ -524,31 +561,32 @@
                         ctx.fill();
                         break;
                     case 'Maza de Guerra': 
-                        ctx.fillStyle = '#8B4513'; ctx.fillRect(48, 16, 4, 16);
-                        ctx.fillStyle = '#50C878';
+                        ctx.fillStyle = '#8B4513'; ctx.fillRect(48, 16, 4, 16); // Handle
+                        ctx.fillStyle = '#50C878'; // Emerald head
                         ctx.beginPath(); ctx.arc(50, 14, 8, 0, Math.PI * 2); ctx.fill(); 
-                        ctx.fillStyle = '#FFD700';
+                        ctx.fillStyle = '#FFD700'; // Gold detail
                         ctx.beginPath(); ctx.arc(50, 14, 4, 0, Math.PI * 2); ctx.fill();
-                        ctx.fillStyle = '#408040';
-                        ctx.beginPath(); ctx.moveTo(46, 8); ctx.lineTo(50, 2); ctx.lineTo(54, 8); ctx.closePath(); ctx.fill();
-                        ctx.beginPath(); ctx.moveTo(46, 20); ctx.lineTo(50, 26); ctx.lineTo(54, 20); ctx.closePath(); ctx.fill();
-                        ctx.beginPath(); ctx.moveTo(42, 14); ctx.lineTo(48, 10); ctx.lineTo(48, 18); ctx.closePath(); ctx.fill();
-                        ctx.beginPath(); ctx.moveTo(58, 14); ctx.lineTo(52, 10); ctx.lineTo(52, 18); ctx.closePath(); ctx.fill();
+                        // Spikes
+                        ctx.fillStyle = '#408040'; // Darker emerald for spikes
+                        ctx.beginPath(); ctx.moveTo(46, 8); ctx.lineTo(50, 2); ctx.lineTo(54, 8); ctx.closePath(); ctx.fill(); // Top spike
+                        ctx.beginPath(); ctx.moveTo(46, 20); ctx.lineTo(50, 26); ctx.lineTo(54, 20); ctx.closePath(); ctx.fill(); // Bottom spike
+                        ctx.beginPath(); ctx.moveTo(42, 14); ctx.lineTo(48, 10); ctx.lineTo(48, 18); ctx.closePath(); ctx.fill(); // Left spike
+                        ctx.beginPath(); ctx.moveTo(58, 14); ctx.lineTo(52, 10); ctx.lineTo(52, 18); ctx.closePath(); ctx.fill(); // Right spike
                         break;
                     case 'Espada de Luz': 
-                        ctx.fillStyle = '#ADD8E6'; ctx.fillRect(48, 16, 14, 6);
-                        ctx.fillStyle = '#FFFFFF'; ctx.fillRect(46, 20, 18, 2);
-                        ctx.fillStyle = '#4682B4'; ctx.fillRect(44, 22, 6, 8);
+                        ctx.fillStyle = '#ADD8E6'; ctx.fillRect(48, 16, 14, 6); // Blue blade
+                        ctx.fillStyle = '#FFFFFF'; ctx.fillRect(46, 20, 18, 2); // White guard
+                        ctx.fillStyle = '#4682B4'; ctx.fillRect(44, 22, 6, 8); // Handle
                         break;
                     case 'Libro Celestial': 
-                        ctx.fillStyle = '#D3D3D3'; ctx.fillRect(48, 16, 12, 16);
-                        ctx.fillStyle = '#FFD700'; ctx.fillRect(46, 18, 2, 12);
-                        ctx.fillStyle = '#FFD700'; ctx.fillRect(58, 18, 2, 12);
+                        ctx.fillStyle = '#D3D3D3'; ctx.fillRect(48, 16, 12, 16); // Lead color book
+                        ctx.fillStyle = '#FFD700'; ctx.fillRect(46, 18, 2, 12); // Gold spine
+                        ctx.fillStyle = '#FFD700'; ctx.fillRect(58, 18, 2, 12); // Gold spine
                         ctx.fillStyle = '#FFFFFF'; ctx.font = '10px Arial'; ctx.fillText('L', 52, 26);
                         break;
                     case 'Rayo de Oscuridad':
-                        ctx.fillStyle = '#8A2BE2'; ctx.fillRect(48, 18, 16, 6);
-                        ctx.fillStyle = '#4B0082'; ctx.fillRect(44, 16, 6, 10);
+                        ctx.fillStyle = '#8A2BE2'; ctx.fillRect(48, 18, 16, 6); // Purple ray
+                        ctx.fillStyle = '#4B0082'; ctx.fillRect(44, 16, 6, 10); // Darker purple base
                         const darkGlow = ctx.createRadialGradient(56, 21, 2, 56, 21, 15);
                         darkGlow.addColorStop(0, 'rgba(138, 43, 226, 0.8)'); 
                         darkGlow.addColorStop(0.5, 'rgba(75, 0, 130, 0.5)');
@@ -556,19 +594,19 @@
                         ctx.fillStyle = darkGlow; ctx.fillRect(38, 10, 36, 22); 
                         break;
                     case 'Arco del Bosque':
-                        ctx.strokeStyle = '#8B4513'; ctx.lineWidth = 2;
+                        ctx.strokeStyle = '#8B4513'; ctx.lineWidth = 2; // Brown wood
                         ctx.beginPath(); ctx.arc(50, 25, 10, Math.PI * 0.7, Math.PI * 1.3, true); ctx.stroke();
                         ctx.beginPath(); ctx.moveTo(50, 15); ctx.lineTo(50, 35); ctx.stroke();
-                        ctx.fillStyle = '#228B22'; ctx.beginPath(); ctx.arc(50, 15, 3, 0, Math.PI * 2); ctx.fill();
+                        ctx.fillStyle = '#228B22'; ctx.beginPath(); ctx.arc(50, 15, 3, 0, Math.PI * 2); ctx.fill(); // Green leaves
                         ctx.beginPath(); ctx.arc(50, 35, 3, 0, Math.PI * 2); ctx.fill();
                         break;
                     case 'Guadaña Helada':
-                        ctx.fillStyle = '#A9A9A9'; ctx.fillRect(48, 16, 4, 16);
-                        ctx.fillStyle = '#87CEEB'; ctx.beginPath(); ctx.moveTo(52, 16); ctx.lineTo(60, 12); ctx.lineTo(60, 24); ctx.lineTo(52, 28); ctx.fill();
+                        ctx.fillStyle = '#A9A9A9'; ctx.fillRect(48, 16, 4, 16); // Handle
+                        ctx.fillStyle = '#87CEEB'; ctx.beginPath(); ctx.moveTo(52, 16); ctx.lineTo(60, 12); ctx.lineTo(60, 24); ctx.lineTo(52, 28); ctx.fill(); // Winter Blue Blade
                         break;
                     case 'Escudo Colosal':
-                        ctx.fillStyle = '#87CEEB'; ctx.fillRect(35, 10, 25, 25);
-                        ctx.fillStyle = '#FFD700'; ctx.beginPath(); ctx.arc(47.5, 22.5, 7, 0, Math.PI * 2); ctx.fill();
+                        ctx.fillStyle = '#87CEEB'; ctx.fillRect(35, 10, 25, 25); // Sky Blue Shield body (made larger)
+                        ctx.fillStyle = '#FFD700'; ctx.beginPath(); ctx.arc(47.5, 22.5, 7, 0, Math.PI * 2); ctx.fill(); // Gold Central boss (scaled with shield)
                         ctx.strokeStyle = '#36454F'; ctx.lineWidth = 2; ctx.strokeRect(35, 10, 25, 25);
                         break;
                     default: ctx.fillStyle = '#d0d0d0'; ctx.fillRect(48, 20, 12, 4); ctx.fillStyle = '#ffd700'; ctx.fillRect(44, 18, 6, 8);
@@ -576,16 +614,17 @@
             } else { ctx.fillStyle = '#d0d0d0'; ctx.fillRect(48, 20, 12, 4); ctx.fillStyle = '#ffd700'; ctx.fillRect(44, 18, 6, 8); }
             
             ctx.strokeStyle = '#000'; ctx.lineWidth = 1; 
-            ctx.strokeRect(16, 16, 32, 32);
-            ctx.strokeRect(20, 8, 24, 12);
-            ctx.strokeRect(20, 48, 10, 12);
-            ctx.strokeRect(34, 48, 10, 12);
+            ctx.strokeRect(16, 16, 32, 32); // Torso outline
+            ctx.strokeRect(20, 8, 24, 12); // Helmet outline (or top of hood)
+            ctx.strokeRect(20, 48, 10, 12); // Left leg outline
+            ctx.strokeRect(34, 48, 10, 12); // Right leg outline
             return canvas.toDataURL();
         }
         function createDuendeSprite() {
             const canvas = document.createElement('canvas');
             canvas.width = 64; canvas.height = 64;
             const ctx = canvas.getContext('2d');
+
             ctx.fillStyle = '#2E7D32'; 
             ctx.beginPath();
             ctx.moveTo(32, 8); 
@@ -596,10 +635,12 @@
             ctx.strokeStyle = '#1B5E20'; 
             ctx.lineWidth = 1.5;
             ctx.stroke();
+
             ctx.fillStyle = '#66BB6A'; 
             ctx.beginPath();
             ctx.ellipse(32, 30, 13, 10, 0, 0, Math.PI * 2);
             ctx.fill();
+
             ctx.fillStyle = '#66BB6A';
             ctx.beginPath(); 
             ctx.moveTo(19, 25); ctx.lineTo(13, 20); ctx.lineTo(19, 30); ctx.closePath(); ctx.fill();
@@ -607,16 +648,19 @@
             ctx.beginPath(); 
             ctx.moveTo(45, 25); ctx.lineTo(51, 20); ctx.lineTo(45, 30); ctx.closePath(); ctx.fill();
             ctx.stroke();
+
             ctx.fillStyle = '#FDD835'; 
             ctx.beginPath(); ctx.ellipse(27, 29, 4, 5, -0.1 * Math.PI, 0, Math.PI * 2); ctx.fill(); 
             ctx.beginPath(); ctx.ellipse(37, 29, 4, 5, 0.1 * Math.PI, 0, Math.PI * 2); ctx.fill(); 
             ctx.fillStyle = '#000'; 
             ctx.beginPath(); ctx.arc(27, 30, 1.5, 0, Math.PI * 2); ctx.fill();
             ctx.beginPath(); ctx.arc(37, 30, 1.5, 0, Math.PI * 2); ctx.fill();
+
             ctx.fillStyle = '#388E3C'; 
             ctx.fillRect(22, 38, 20, 18);
             ctx.strokeStyle = '#2E7D32';
             ctx.strokeRect(22, 38, 20, 18);
+
             ctx.fillStyle = '#757575'; 
             ctx.beginPath();
             ctx.moveTo(40, 40); ctx.lineTo(45, 35); ctx.lineTo(47, 37); ctx.lineTo(42, 42);
@@ -624,18 +668,22 @@
             ctx.fill();
             ctx.fillStyle = '#4E342E'; 
             ctx.fillRect(41, 41, 3, 5);
+
             return canvas.toDataURL();
         }
         function createWolfSprite() {
             const canvas = document.createElement('canvas');
             canvas.width = 64; canvas.height = 64;
             const ctx = canvas.getContext('2d');
+
             const bodyMain = '#B71C1C'; 
             const furRed = '#D32F2F';   
             const shadowRed = '#7F0000'; 
             const eyeColor = '#FF4500'; 
             const clawColor = '#212121'; 
             const highlightRed = '#E57373'; 
+
+            // Tail (bushy, slightly arched, dark red with highlights)
             ctx.fillStyle = bodyMain;
             ctx.beginPath();
             ctx.moveTo(10, 40); 
@@ -650,6 +698,7 @@
             ctx.quadraticCurveTo(14, 32, 11, 38);
             ctx.closePath();
             ctx.fill();
+
             ctx.fillStyle = shadowRed;
             ctx.beginPath(); ctx.ellipse(18, 48, 6, 12, -0.25 * Math.PI, 0, Math.PI * 2); ctx.fill(); 
             ctx.beginPath(); ctx.ellipse(46, 48, 6, 12, 0.25 * Math.PI, 0, Math.PI * 2); ctx.fill();  
@@ -657,6 +706,7 @@
             ctx.fillStyle = bodyMain;
             ctx.beginPath(); ctx.ellipse(25, 50, 7, 13, -0.1 * Math.PI, 0, Math.PI * 2); ctx.fill(); 
             ctx.beginPath(); ctx.ellipse(39, 50, 7, 13, 0.1 * Math.PI, 0, Math.PI * 2); ctx.fill();  
+
             ctx.fillStyle = bodyMain;
             ctx.beginPath();
             ctx.ellipse(32, 40, 20, 14, 0, 0, Math.PI * 2); 
@@ -671,6 +721,7 @@
                 ctx.closePath();
                 ctx.fill();
             }
+
             ctx.fillStyle = bodyMain;
             ctx.beginPath();
             ctx.ellipse(50, 29, 13, 9, -0.1 * Math.PI, 0, Math.PI * 2); 
@@ -683,6 +734,7 @@
             ctx.beginPath();
             ctx.ellipse(59, 23, 3.5, 2.5, -0.1 * Math.PI, 0, Math.PI * 2);
             ctx.fill();
+
             ctx.fillStyle = shadowRed;
             ctx.beginPath(); 
             ctx.moveTo(43, 20); ctx.lineTo(39, 8); ctx.lineTo(47, 17); ctx.closePath(); ctx.fill();
@@ -695,6 +747,8 @@
             ctx.beginPath(); ctx.ellipse(46, 28, 3.5, 2.5, 0,0, Math.PI*2); ctx.fill(); 
             ctx.beginPath(); ctx.ellipse(55, 28, 3.5, 2.5, 0,0, Math.PI*2); ctx.fill(); 
             ctx.shadowBlur = 0; 
+
+            // Claws
             ctx.fillStyle = clawColor;
             ctx.beginPath(); ctx.moveTo(20,59); ctx.lineTo(18,63); ctx.lineTo(22,61); ctx.closePath(); ctx.fill(); 
             ctx.beginPath(); ctx.moveTo(34,59); ctx.lineTo(32,63); ctx.lineTo(36,61); ctx.closePath(); ctx.fill(); 
@@ -712,6 +766,7 @@
             const legColor = '#2A1B00';
             const eyeColor = '#FF0000'; 
             const highlightColor = '#5C3601';
+
             ctx.fillStyle = bodyColor;
             ctx.beginPath();
             ctx.ellipse(32, 32, 20, 15, 0, 0, Math.PI * 2); 
@@ -720,16 +775,20 @@
             ctx.beginPath();
             ctx.ellipse(32, 30, 18, 12, 0, 0, Math.PI * 2); 
             ctx.fill();
+
             ctx.fillStyle = bodyColor;
             ctx.beginPath();
             ctx.ellipse(32, 18, 10, 7, 0, 0, Math.PI * 2);
             ctx.fill();
+
             ctx.fillStyle = eyeColor;
             ctx.beginPath(); ctx.arc(28, 17, 3, 0, Math.PI*2); ctx.fill();
             ctx.beginPath(); ctx.arc(36, 17, 3, 0, Math.PI*2); ctx.fill();
             ctx.beginPath(); ctx.arc(25, 21, 2.5, 0, Math.PI*2); ctx.fill();
             ctx.beginPath(); ctx.arc(39, 21, 2.5, 0, Math.PI*2); ctx.fill();
             ctx.beginPath(); ctx.arc(32, 22, 2.5, 0, Math.PI*2); ctx.fill();
+
+
             ctx.strokeStyle = legColor;
             ctx.lineWidth = 6;
             const legSegments = (startX, startY, midX, midY, endX, endY) => {
@@ -738,6 +797,7 @@
                 ctx.quadraticCurveTo(midX, midY, endX, endY);
                 ctx.stroke();
             };
+
             legSegments(25, 30, 10, 20, 5, 10);
             legSegments(22, 35, 5, 35, 0, 38);
             legSegments(22, 40, 5, 45, 0, 50);
@@ -749,20 +809,23 @@
             
             return canvas.toDataURL();
         }
-        function createSpiderlingSprite() {
+            function createSpiderlingSprite() {
             const canvas = document.createElement('canvas');
             canvas.width = 64; canvas.height = 64;
             const ctx = canvas.getContext('2d');
             const bodyColor = '#4A2A05'; 
             const legColor = '#3B2304';
             const eyeColor = '#FF4500';
+
             ctx.fillStyle = bodyColor;
             ctx.beginPath();
             ctx.ellipse(32, 32, 8, 6, 0, 0, Math.PI * 2); 
             ctx.fill();
+
             ctx.fillStyle = eyeColor;
             ctx.beginPath(); ctx.arc(29, 30, 2, 0, Math.PI*2); ctx.fill();
             ctx.beginPath(); ctx.arc(35, 30, 2, 0, Math.PI*2); ctx.fill();
+
             ctx.strokeStyle = legColor;
             ctx.lineWidth = 3;
             const leg = (sx, sy, mx, my, ex, ey) => { ctx.beginPath(); ctx.moveTo(sx,sy); ctx.quadraticCurveTo(mx,my,ex,ey); ctx.stroke();};
@@ -798,6 +861,7 @@
             const canvas = document.createElement('canvas');
             canvas.width = 64; canvas.height = 64;
             const ctx = canvas.getContext('2d');
+
             ctx.drawImage(playerImage, 0, 0);
             
             ctx.globalCompositeOperation = 'source-atop'; 
@@ -811,18 +875,21 @@
             ctx.lineWidth = 1;
             ctx.strokeRect(0, 0, canvas.width, canvas.height); 
             ctx.shadowBlur = 0;
+
             return canvas.toDataURL();
         }
 
         function loadSprites() {
+            // Create and load player sprite first
             sprites.player = createPlayerSprite();
             loadedImages.player = new Image();
             loadedImages.player.src = sprites.player;
             loadedImages.player.onload = () => {
+                // Once player sprite is loaded, then create and load minion sprite
                 sprites.minion = createMinionSprite(loadedImages.player); 
                 loadedImages.minion = new Image();
                 loadedImages.minion.src = sprites.minion;
-                loadedImages.minion.onload = () => {};
+                loadedImages.minion.onload = () => { /* console.log('minion sprite loaded'); */ };
                 loadedImages.minion.onerror = () => { console.error('Error loading minion sprite'); };
 
                 for (const key in sprites) {
@@ -830,13 +897,14 @@
                     if (!loadedImages[key] || sprites[key] !== loadedImages[key].src) {
                         loadedImages[key] = new Image();
                         loadedImages[key].src = sprites[key];
-                        loadedImages[key].onload = () => {};
+                        loadedImages[key].onload = () => { /* console.log(`${key} sprite loaded`); */ };
                         loadedImages[key].onerror = () => { console.error(`Error loading ${key} sprite`); };
                     }
                 }
             };
             loadedImages.player.onerror = () => { console.error('Error loading player sprite'); };
 
+            // Initialize other sprites' data URLs, but their loading into loadedImages happens in the onload of player
             if (!sprites.duende) sprites.duende = createDuendeSprite();
             if (!sprites.lobo) sprites.lobo = createWolfSprite();
             if (!sprites.skeleton) sprites.skeleton = createSkeletonSprite();
@@ -850,17 +918,20 @@
             if (!sprites.stairs) sprites.stairs = createStairsSprite(); 
         }
 
+
         let spellEffects = { powerStrike: 0, healingSpell: 0, fireball: 0 }; 
         let projectiles = [];
         let skillCooldowns = {};
-        let attackInterval = 400;
-        const fixedProjectileSpeed = 0.15;
+        let attackInterval = 400; // Base attack interval
+        const fixedProjectileSpeed = 0.15; // Adjusted: 0.15 tiles per frame for slower projectiles
 
         class Projectile {
             constructor(x, y, dx, dy, type, owner = 'player', damage = 0, isCritical = false, maxRangeTiles = 1) { 
                 this.x = x; this.y = y;
                 this.initialX = x; 
                 this.initialY = y;
+
+                // Normalize dx and dy to ensure consistent speed
                 const magnitude = Math.sqrt(dx * dx + dy * dy);
                 if (magnitude > 0) {
                     this.dx = (dx / magnitude) * fixedProjectileSpeed; 
@@ -869,6 +940,7 @@
                     this.dx = 0;
                     this.dy = 0;
                 }
+
                 this.type = type; 
                 this.owner = owner; 
                 this.damage = damage;
@@ -880,8 +952,10 @@
                 this.x += this.dx; 
                 this.y += this.dy; 
                 
+                // Calculate distance traveled from initial point
                 this.distanceTraveled = Math.sqrt(Math.pow(this.x - this.initialX, 2) + Math.pow(this.y - this.initialY, 2));
 
+                // Remove projectile if it exceeds max range
                 if (this.distanceTraveled > this.maxRangeTiles) {
                     return false;
                 }
@@ -889,6 +963,7 @@
             }
         }
 
+        // New skill definitions (These are the master definitions for skills)
         const skills = [
             { name: 'Sigilo', effect: 'Te vuelves uno con las sombras, imperceptible para los monstruos durante 7 segundos.', cooldown: 15000 },
             { name: 'Golpe Crítico', effect: 'El siguiente golpe que asestes será un 50% más devastador.', cooldown: 5000 },
@@ -907,9 +982,11 @@
         function activateSkill(skillName) {
             const skill = skills.find(s => s.name === skillName);
             if (!skill) return;
+
             const isSkillEquipped = player.equipped.habilidad1 === skillName ||
-                                      player.equipped.habilidad2 === skillName ||
-                                      player.equipped.habilidad3 === skillName;
+                                    player.equipped.habilidad2 === skillName ||
+                                    player.equipped.habilidad3 === skillName;
+
             if (player.skillUsageThisFloor[skillName]) {
                 showMessage("Ya has usado esta habilidad en este piso.");
                 return;
@@ -919,11 +996,12 @@
                 showMessage(`Habilidad en enfriamiento. Tiempo restante: ${((skillCooldowns[skill.name] - currentTime) / 1000).toFixed(1)}s`);
                 return;
             }
+
             switch (skillName) {
                 case 'Sigilo':
                     player.stealthActive = true; 
                     player.stealthEndTime = currentTime + 7000; 
-                    player.stealthStatMultiplier = 0.5;
+                    player.stealthStatMultiplier = 0.5; // 50% reduction
                     updateStats(); 
                     showMessage("¡Te has vuelto sigiloso!");
                     break;
@@ -1149,7 +1227,7 @@
                 
                 const miniBossRoomIndex = rooms.length > 1 ? Math.max(1, Math.floor(rooms.length / 2)) : 0;
                 const miniBossY = rooms[miniBossRoomIndex].centerY;
-                const miniBossX = rooms[miniBossRoomIndex].centerX;
+                const miniBossX = rooms[miniBossRoomIndex].centerX; // Corrected: Use centerX
                 map[miniBossY][miniBossX] = 1; 
 
                 const bossRoomIndex = rooms.length -1;
@@ -1220,9 +1298,9 @@
             loadSprites(); 
 
             if (monsters.some(m => m.type === 'final-arachnid-boss')) {
-                playMusic('boss');
+                playMusic('boss'); // Play the specific boss music for the final floor
             } else {
-                playMusic('dungeon');
+                playMusic('dungeon'); // Play a random dungeon track for all other floors
             }
         }
         
@@ -1259,6 +1337,7 @@
                 for (const potion of potionTypes) {
                     totalWeight += potion.weight;
                 }
+
                 let randomNum = Math.random() * totalWeight;
                 for (const potion of potionTypes) {
                     if (randomNum < potion.weight) {
@@ -1273,13 +1352,13 @@
             
             let numChestsToSpawn;
             if (selectedDifficulty === 'facil') {
-                numChestsToSpawn = Math.floor(Math.random() * 2) + 2;
+                numChestsToSpawn = Math.floor(Math.random() * 2) + 2; // 2-3 chests
             } else if (selectedDifficulty === 'medio') {
-                numChestsToSpawn = Math.floor(Math.random() * 3) + 1;
+                numChestsToSpawn = Math.floor(Math.random() * 3) + 1; // 1-3 chests
             } else if (selectedDifficulty === 'dificil') {
-                numChestsToSpawn = Math.floor(Math.random() * 3);
+                numChestsToSpawn = Math.floor(Math.random() * 3); // 0-2 chests
             } else {
-                numChestsToSpawn = Math.floor(Math.random() * 3) + 1;
+                numChestsToSpawn = Math.floor(Math.random() * 3) + 1; // Default to medium
             }
 
             for (let i = 0; i < numChestsToSpawn; i++) { 
@@ -1297,10 +1376,8 @@
 
                 const randomLoot = getWeightedRandomPotion(); 
                 
-                if (randomLoot) { // Ensure loot was found before pushing
-                    chests.push({ tileX: loc.x, tileY: loc.y, gear: randomLoot });
-                    map[loc.y][loc.x] = 2; 
-                }
+                chests.push({ tileX: loc.x, tileY: loc.y, gear: randomLoot });
+                map[loc.y][loc.x] = 2; 
             }
         }
         
@@ -1341,6 +1418,7 @@
         const btnSaveEquipment = document.getElementById('btnSaveEquipment');
         const btnReturnToDifficulty = document.getElementById('btnReturnToDifficulty');
 
+        // New audio elements for dungeon tracks
         const dungeonTracks = [
             document.getElementById('audioDungeon1'),
             document.getElementById('audioDungeon2'),
@@ -1353,8 +1431,9 @@
             document.getElementById('audioDungeon9'),
             document.getElementById('audioDungeon10')
         ];
-        let currentDungeonTrackIndex = 0;
+        let currentDungeonTrackIndex = 0; // To cycle through dungeon tracks
 
+        // New audio elements for boss and equipment
         const audioBoss = document.getElementById('audioBoss');
         const audioEquipmentOpen = document.getElementById('audioEquipmentOpen');
 
@@ -1363,20 +1442,22 @@
         function playMusic(track) {
             let nextTrackElement = null;
 
+            // Pause current track if it's playing
             if (currentAudioTrack) {
                 currentAudioTrack.pause();
-                currentAudioTrack.currentTime = 0;
+                currentAudioTrack.currentTime = 0; // Reset to beginning
             }
 
             switch (track) {
                 case 'dungeon':
+                    // Play a random dungeon track
                     currentDungeonTrackIndex = Math.floor(Math.random() * dungeonTracks.length);
                     nextTrackElement = dungeonTracks[currentDungeonTrackIndex];
                     break;
                 case 'boss':
                     nextTrackElement = audioBoss;
                     break;
-                case 'equipmentOpen':
+                case 'equipmentOpen': // New case for equipment open sound
                     nextTrackElement = audioEquipmentOpen;
                     break;
                 default:
@@ -1385,13 +1466,16 @@
 
             currentAudioTrack = nextTrackElement;
             if (currentAudioTrack) {
-                if (track === 'equipmentOpen') {
+                // For one-shot sounds, reset and play
+                if (track === 'floorUp' || track === 'criticalHit' || track === 'chestOpen' || track === 'equipmentOpen' || track === 'gameOver' || track === 'victory') {
                     currentAudioTrack.currentTime = 0; 
                 }
                 currentAudioTrack.play().catch(e => console.error("Error playing audio:", e));
             }
         }
 
+
+        // Custom message box for alerts
         function showMessage(message) {
             messageBox.textContent = message;
             messageBox.style.display = 'block';
@@ -1399,6 +1483,7 @@
                 messageBox.style.display = 'none';
             }, 2000); 
         }
+
 
         document.getElementById('btnFacil').addEventListener('click', () => setDifficultyAndStart('facil'));
         document.getElementById('btnMedio').addEventListener('click', () => setDifficultyAndStart('medio'));
@@ -1422,6 +1507,7 @@
             }
         });
 
+        // Event listener for the new "Equipo" button - accessible before game start
         btnEquipment.addEventListener('click', () => {
             toggleEquipmentMenu();
         });
@@ -1435,11 +1521,16 @@
             toggleEquipmentMenu(); 
         });
 
+        // Add a click listener to the difficulty screen to initiate music playback
         difficultyScreen.addEventListener('click', () => {
+            // Only play menu music if it's not already playing and the game hasn't started
             if (!gameStarted && currentAudioTrack !== audioMenu) {
+                // playMusic('menu'); // This can be uncommented if menu music is desired
             }
         });
 
+
+        // Function to save player data to localStorage
         function savePlayerDataToLocalStorage() {
             const dataToSave = {
                 hp: player.hp,
@@ -1453,6 +1544,7 @@
                 inventory: player.inventory.map(item => ({ name: item.name, type: item.type })), 
                 equipped: {}, 
                 permanentlyLearnedSkills: player.permanentlyLearnedSkills,
+                gold: player.gold,
                 enemiesDefeatedThisRun: player.enemiesDefeatedThisRun,
                 baseSpd: player.baseSpd,
                 baseAtk: player.baseAtk,
@@ -1475,12 +1567,14 @@
             localStorage.setItem('dungeonCrawlerPlayerData', JSON.stringify(dataToSave));
         }
 
+        // Function to load player data from localStorage
         function loadPlayerDataFromLocalStorage() {
             const storedData = localStorage.getItem('dungeonCrawlerPlayerData');
             if (storedData) {
                 const loadedPlayer = JSON.parse(storedData);
                 Object.assign(player, loadedPlayer);
                 
+                // Re-map equipped items to actual gearList objects, ensuring all properties are present
                 for (const slot in loadedPlayer.equipped) {
                     if (slot.startsWith('habilidad')) {
                         player.equipped[slot] = loadedPlayer.equipped[slot]; 
@@ -1492,20 +1586,25 @@
                     }
                 }
 
+                // Re-map inventory items to actual gearList objects
                 player.inventory = loadedPlayer.inventory
                     .map(itemData => gearList.find(g => g.name === itemData.name))
                     .filter(item => item !== undefined); 
                 
             } else {
+                // Initial starting gear if no saved data exists: Add ALL equipment items to inventory
                 player.inventory = gearList.filter(item => item.type !== 'potion'); 
                 
+                // Set initial equipped items to the first item of each type if available
                 player.equipped.weapon = gearList.find(g => g.name === 'Daga de Poder') || null;
                 player.equipped.helmet = gearList.find(g => g.name === 'Casco de Hierro') || null;
                 player.equipped.armor = gearList.find(g => g.name === 'Armadura de Hierro') || null;
                 player.equipped.gloves = gearList.find(g => g.name === 'Guantes de Hierro') || null;
                 player.equipped.boots = gearList.find(g => g.name === 'Botas de Hierro') || null;
                 
+                // Initial permanently learned skills (all skills are "learned" for equipment selection)
                 player.permanentlyLearnedSkills = skills.map(s => s.name);
+                // Set an initial equipped habilidad
                 player.equipped.habilidad1 = 'Sigilo'; 
                 player.equipped.habilidad2 = null;
                 player.equipped.habilidad3 = null;
@@ -1526,6 +1625,7 @@
             
             currentFloor = startFloor; 
 
+            // Re-initialize player stats, but load equipped gear and learned skills
             let tempPlayer = { 
                 tileX: 1, tileY: 1, hp: 100, maxHp: 100, 
                 atk: 5 + Math.floor((baseLevel - 1) * 1.5), 
@@ -1544,6 +1644,7 @@
                 isAttacking: false, attackAnimFrame: 0, attackAnimDuration: 7, attackLungeDistance: tileSize / 4,
                 skillUsageThisFloor: {},
                 enemiesDefeatedThisRun: 0,
+                gold: 0,
                 isSlowed: false, slowEndTime: 0,
                 potionsBoughtTotal: 0,
                 isStealthed: false, stealthEndTime: 0,
@@ -1566,6 +1667,7 @@
                 miniShieldCooldownEnd: 0,
                 darkRayEnemiesDefeated: 0
             };
+            // Preserve equipped items and learned skills from the pre-game setup
             for (const slot in player.equipped) {
                 if (slot.startsWith('habilidad')) {
                     tempPlayer.equipped[slot] = player.equipped[slot];
@@ -1608,7 +1710,9 @@
             requestAnimationFrame(gameLoop);
         }
 
+
         document.addEventListener('keydown', (e) => {
+            // Allow navigation in menus even if game hasn't started
             if (isInventoryOpen || isSkillMenuOpen || isEquipmentOpen) {
                 if (e.code === 'KeyI' || e.code === 'KeyY' || e.code === 'KeyO' || e.code === 'Escape' ||
                     e.code === 'ArrowUp' || e.code === 'ArrowDown' || e.code === 'ArrowLeft' || e.code === 'ArrowRight' ||
@@ -1621,16 +1725,20 @@
                 }
             }
 
+            // Game over state handling
             if (gameOver) {
                 if (e.code === 'KeyR') keys.KeyR = true; 
                 e.preventDefault(); 
                 return;
             }
 
+            // In-game menu toggles
             if (e.code === 'KeyI') { toggleInventory(); e.preventDefault(); return; }
             if (e.code === 'KeyY') { toggleSkillMenu(); e.preventDefault(); return; }
 
+            // In-game actions (movement, attack, skill activation)
             if (!isInventoryOpen && !isSkillMenuOpen && !isEquipmentOpen) {
+                // Allow activation of equipped skills using Digits 1, 2, 3
                 if (e.code === 'Digit1' && player.equipped.habilidad1) {
                     activateSkill(player.equipped.habilidad1);
                     e.preventDefault();
@@ -1664,10 +1772,12 @@
             }
         });
 
+        // --- Funciones de Dibujo ---
         function drawFloor(x, y) { if(loadedImages.floor && loadedImages.floor.complete) ctx.drawImage(loadedImages.floor, 0,0,64,64, x, y, tileSize, tileSize); else { ctx.fillStyle = '#aaa'; ctx.fillRect(x,y,tileSize,tileSize);}}
         function drawWall(x, y) { if(loadedImages.wall && loadedImages.wall.complete) ctx.drawImage(loadedImages.wall, 0,0,64,64, x, y, tileSize, tileSize); else { ctx.fillStyle = '#555'; ctx.fillRect(x,y,tileSize,tileSize);}}
         function drawChest(x, y) { if(loadedImages.chest && loadedImages.chest.complete) ctx.drawImage(loadedImages.chest, 0,0,64,64, x, y, tileSize, tileSize); else { ctx.fillStyle = '#8B4513'; ctx.fillRect(x,y,tileSize,tileSize);}}
         function drawStairs(x,y) { if(loadedImages.stairs && loadedImages.stairs.complete) ctx.drawImage(loadedImages.stairs, 0,0,64,64, x, y, tileSize, tileSize); else { ctx.fillStyle = '#704214'; ctx.fillRect(x,y,tileSize,tileSize);}}
+
 
         function drawPlayer(x, y) {
             let drawX = x;
@@ -1687,6 +1797,7 @@
                 else if (player.facingDirection === 'up') drawY -= lunge;
                 else if (player.facingDirection === 'down') drawY += lunge;
             }
+
 
             if (loadedImages.player && loadedImages.player.complete) {
                 ctx.drawImage(loadedImages.player, 0,0,64,64, drawX, drawY, tileSize, tileSize);
@@ -1725,6 +1836,7 @@
                 ctx.fillRect(drawX, drawY, tileSize, tileSize);
             }
 
+            // Draw mini-shield if active
             if (player.hasMiniShield && player.miniShieldHP > 0) {
                 ctx.save();
                 ctx.strokeStyle = 'rgba(0, 255, 255, 0.8)'; 
@@ -1735,6 +1847,7 @@
                 ctx.fillStyle = 'rgba(0, 255, 255, 0.2)'; 
                 ctx.fill();
 
+                // Draw mini-shield HP bar
                 const shieldHealthPercent = player.miniShieldHP / player.miniShieldMaxHP;
                 ctx.fillStyle = 'rgba(0,0,0,0.7)';
                 ctx.fillRect(drawX + 5, drawY - 15, tileSize - 10, 5);
@@ -1743,6 +1856,7 @@
 
                 ctx.restore();
             }
+
 
             const healthPercent = player.hp / player.maxHp;
             ctx.fillStyle = 'rgba(0,0,0,0.7)'; ctx.fillRect(drawX+5, drawY-10, tileSize-10, 5);
@@ -1762,6 +1876,7 @@
             else if (m.type === 'minion') { 
                 monsterImage = loadedImages.minion; 
             }
+
 
             if (monsterImage && monsterImage.complete) {
                 let drawWidth = tileSize * (m.width || 1);
@@ -1856,22 +1971,26 @@
                     ctx.arc(0, 0, 15, 0, Math.PI * 2);
                     ctx.fill();
                 } else if (proj.type === 'celestial_ray') { 
-                    const rayLength = tileSize * 1.5;
-                    const rayWidth = tileSize * 0.15;
-                    const glowRadius = tileSize * 0.8;
+                    // Draw a more distinct ray
+                    const rayLength = tileSize * 1.5; // Make the ray longer
+                    const rayWidth = tileSize * 0.15; // Make it thinner
+                    const glowRadius = tileSize * 0.8; // Larger glow
 
-                    ctx.fillStyle = 'rgba(255, 255, 0, 0.9)';
+                    // Main ray body
+                    ctx.fillStyle = 'rgba(255, 255, 0, 0.9)'; // Bright yellow
                     ctx.fillRect(-rayWidth / 2, -rayLength / 2, rayWidth, rayLength);
 
+                    // Add a strong radial glow
                     const glow = ctx.createRadialGradient(0, 0, rayWidth / 4, 0, 0, glowRadius);
-                    glow.addColorStop(0, 'rgba(255, 255, 100, 0.8)');
-                    glow.addColorStop(0.5, 'rgba(255, 255, 0, 0.4)');
-                    glow.addColorStop(1, 'rgba(255, 255, 0, 0)');
+                    glow.addColorStop(0, 'rgba(255, 255, 100, 0.8)'); // Brighter core
+                    glow.addColorStop(0.5, 'rgba(255, 255, 0, 0.4)'); // Yellow glow
+                    glow.addColorStop(1, 'rgba(255, 255, 0, 0)'); // Fades out
                     ctx.fillStyle = glow;
                     ctx.beginPath();
                     ctx.arc(0, 0, glowRadius, 0, Math.PI * 2);
                     ctx.fill();
 
+                    // Add some sparkling particles
                     for (let i = 0; i < 3; i++) {
                         const sparkX = (Math.random() - 0.5) * rayWidth * 2;
                         const sparkY = (Math.random() - 0.5) * rayLength * 2;
@@ -2074,9 +2193,10 @@
             });
         }
 
+
         function drawHUD() {
-            ctx.fillStyle = 'rgba(244,228,188,0.7)'; ctx.fillRect(canvas.width-170, 10, 160, 210);
-            ctx.strokeStyle = '#8B4513'; ctx.lineWidth = 2; ctx.strokeRect(canvas.width-170, 10, 160, 210);
+            ctx.fillStyle = 'rgba(244,228,188,0.7)'; ctx.fillRect(canvas.width-170, 10, 160, 210); /* Adjusted height */
+            ctx.strokeStyle = '#8B4513'; ctx.lineWidth = 2; ctx.strokeRect(canvas.width-170, 10, 160, 210); /* Adjusted height */
             
             ctx.fillStyle = '#000'; ctx.font = '14px Georgia'; ctx.textAlign = 'left';
             const startX = canvas.width - 162; let yPos = 30;
@@ -2090,6 +2210,7 @@
             ctx.fillText('Habilidades:', startX, yPos); yPos+=18;
             ctx.font = '12px Georgia'; const currentTime = Date.now();
             
+            // Display the currently equipped skills
             const skillSlots = ['habilidad1', 'habilidad2', 'habilidad3'];
             skillSlots.forEach((slot, index) => {
                 const equippedSkillName = player.equipped[slot];
@@ -2127,6 +2248,8 @@
             } else {
                 ctx.fillText('Conjunto Activo: Ninguno', startX, yPos);
             }
+
+            if (player.hasKey) { /* ... dibujar llave ... */ }
         }
 
         function tryMove(dx, dy) {
@@ -2134,6 +2257,7 @@
             if (newX < 0 || newX >= mapWidth || newY < 0 || newY >= mapHeight) {
                 return; 
             }
+            // Player cannot move into a tile occupied by any monster (enemy or ally)
             if (monsters.some(m => { 
                 if (m.width && m.height) {
                     return newX >= m.tileX && newX < m.tileX + m.width && newY >= m.tileY && newY < m.tileY + m.height;
@@ -2148,9 +2272,10 @@
                 if (dx === 1) player.facingDirection = 'right'; else if (dx === -1) player.facingDirection = 'left';
                 else if (dy === -1) player.facingDirection = 'up'; else if (dy === 1) player.facingDirection = 'down';
                 
+                // Check for chest interaction on movement
                 const chest = chests.find(c => c.tileX === player.tileX && c.tileY === player.tileY);
                 if (chest) {
-                    openChest(chest);
+                    openChest(chest); // Open chest automatically
                 }
 
                 if (stairLocation.active && newX === stairLocation.x && newY === stairLocation.y) {
@@ -2169,6 +2294,7 @@
         function performAttack() {
             if (player.isAttacking) return; 
 
+            // Hard difficulty miss chance
             if (selectedDifficulty === 'dificil' && Math.random() < 0.05) { 
                 showMessage("¡Fallaste el ataque!");
                 player.isAttacking = true; 
@@ -2184,6 +2310,7 @@
             let projectileType = null;
             let projectileRange = 1; 
 
+            // --- Auto-targeting logic: Find the closest enemy and set facing direction ---
             let nearestEnemy = null;
             let minDist = Infinity;
             monsters.filter(m => !m.isMinion).forEach(m => {
@@ -2205,21 +2332,24 @@
                 }
             }
 
+
+            // Determine target tiles based on weapon type
             if (equippedWeapon) {
                 switch (equippedWeapon.name) {
                     case 'Arco del Bosque':
                         projectileType = 'arrow';
-                        projectileRange = 3;
+                        projectileRange = 3; // Increased range to 3
                         break;
                     case 'Rayo de Oscuridad':
                         projectileType = 'dark_ray';
-                        projectileRange = 3;
+                        projectileRange = 3; // Increased range to 3
                         break;
                     case 'Libro Celestial':
                         projectileType = 'celestial_ray'; 
-                        projectileRange = 3;
+                        projectileRange = 3; // Increased range to 3
                         break;
                     case 'Maza de Guerra':
+                        // Hits up to 2 monsters in front
                         if (player.facingDirection === 'right') {
                             targetTiles.push({ x: player.tileX + 1, y: player.tileY });
                             targetTiles.push({ x: player.tileX + 1, y: player.tileY - 1 });
@@ -2265,11 +2395,13 @@
                 }
             }
             
+
             const offsetX = Math.max(0, Math.min(player.tileX*tileSize - canvas.width/2 + tileSize/2, mapWidth*tileSize - canvas.width));
             const offsetY = Math.max(0, Math.min(player.tileY*tileSize - canvas.height/2 + tileSize/2, mapHeight*tileSize - canvas.height));
             const playerScreenX = player.tileX * tileSize - offsetX;
             const playerScreenY = player.tileY * tileSize - offsetY;
 
+            // Handle projectile creation
             if (projectileType) { 
                 let dx = 0, dy = 0;
                 if (nearestEnemy) {
@@ -2299,6 +2431,8 @@
                 projectiles.push(new Projectile(player.tileX, player.tileY, dx, dy, projectileType, 'player', player.atk, isCriticalProjectile, projectileRange));
             }
 
+
+            // Apply effects to hit monsters (for melee and immediate hits)
             monstersHit.forEach(monsterToAttack => {
                 let isCritical = Math.random() < (0.2 + player.criticalChanceBonus); 
                 if (player.luckBoostEndTime > Date.now()) { 
@@ -2333,6 +2467,7 @@
                 if (isCritical) {
                     screenShake = 8; 
                     criticalHitEffects.push({ x: monsterScreenX, y: monsterScreenY, size: tileSize * (monsterToAttack.width || 1) * 1.5, life: 15, monster: monsterToAttack });
+
                 }
                 
                 if (player.soulExtractionActive) {
@@ -2347,6 +2482,7 @@
                     }
                 }
 
+                // Weapon-specific effects on hit
                 if (equippedWeapon) {
                     const currentTime = Date.now();
                     if (equippedWeapon.name === 'Guadaña Helada') {
@@ -2377,19 +2513,21 @@
 
                     player.enemiesDefeatedThisRun++; 
                     
+                    // HP recovery only on critical hit (5% of monster's max HP)
                     if (isCritical) {
                         const healthRecovered = Math.floor(monsterToAttack.maxHp * 0.05); 
                         if (healthRecovered > 0) { 
                             player.hp = Math.min(player.maxHp, player.hp + healthRecovered); 
                             damageTexts.push({ 
                                 x: playerScreenX + tileSize/2, y: playerScreenY - 5, 
-                                text: `+${healthRecovered} HP`,
+                                text: `+${healthRecovered} HP`, // Corrected: Use healthRecovered
                                 color: '#00ff00', 
                                 size: 14, life: 30, velY: -1
                             });
                         }
                     }
 
+                    // Rayo de Oscuridad: HP recovery on enemy defeated
                     if (equippedWeapon && equippedWeapon.name === 'Rayo de Oscuridad') {
                         player.darkRayEnemiesDefeated++;
                         if (player.darkRayEnemiesDefeated >= 10) {
@@ -2402,7 +2540,19 @@
                         }
                     }
 
+
                     if (monsterToAttack.dropsKey) player.hasKey = true;
+                    
+                    let monsterGoldDrop = Math.floor(Math.random() * (currentFloor)); 
+                    if (monsterToAttack.type === 'boss') monsterGoldDrop = 25 + currentFloor * 10;
+                    else if (monsterToAttack.type === 'mini-boss') monsterGoldDrop = 10 + currentFloor * 5;
+                    else if (monsterToAttack.type === 'final-arachnid-boss') monsterGoldDrop = 100; 
+                    
+                    // Apply Noble set bonus for gold find
+                    if (activeSetBonusName === 'Noble' && setBonuses.Noble.goldFind_percent) {
+                        monsterGoldDrop = Math.floor(monsterGoldDrop * (1 + setBonuses.Noble.goldFind_percent));
+                    }
+                    player.gold += monsterGoldDrop;
                     
                     const defeatedMonsterType = monsterToAttack.type;
                     monsters = monsters.filter(m => m !== monsterToAttack);
@@ -2423,8 +2573,9 @@
             });
         }
 
-        function openChest(chest) {
-            if (chest && chest.gear) { // Check if chest and chest.gear exist
+
+        function openChest(chest) { // Modified to take chest directly
+            if (chest) {
                 const offsetX = Math.max(0, Math.min(player.tileX * tileSize - canvas.width / 2 + tileSize / 2, mapWidth * tileSize - canvas.width));
                 const offsetY = Math.max(0, Math.min(player.tileY * tileSize - canvas.height / 2 + tileSize / 2, mapHeight * tileSize - canvas.height));
                 const playerScreenX = player.tileX * tileSize - offsetX;
@@ -2448,11 +2599,14 @@
                     showMessage(`Encontraste: ${chest.gear.name}`);
                     if (isInventoryOpen) updateInventoryDisplay();
                 }
+                // This line updates the map to remove the chest visually after it's opened.
                 map[chest.tileY][chest.tileX] = 1; 
+                // --- FIX END: Chest Disappearance ---
                 chests = chests.filter(c => c !== chest);
             }
         }
 
+        // Define set bonuses
         const setBonuses = {
             'Hierro': { def_percent: 0.10, message: "¡Bonificación de Conjunto de Hierro: +10% Defensa!" },
             'Caballero': { maxHp_percent: 0.10, message: "¡Bonificación de Conjunto de Caballero: +10% HP Máximo!" },
@@ -2463,6 +2617,7 @@
             'Mago': { xpGain_percent: 0.20, maxHp_percent: 0.10, message: "¡Bonificación de Conjunto de Mago: +20% XP, +10% HP Máximo!" }
         };
 
+        // Track active set bonus to prevent re-applying messages
         let activeSetBonusName = null;
 
         function applySetBonuses() {
@@ -2470,6 +2625,7 @@
             const equippedSetCounts = {};
             const requiredSlotsForFullSet = ['helmet', 'armor', 'gloves', 'boots']; 
 
+            // Count items from each set
             requiredSlotsForFullSet.forEach(slot => {
                 if (player.equipped[slot] && player.equipped[slot].set) {
                     const setName = player.equipped[slot].set;
@@ -2484,16 +2640,19 @@
                 }
             }
 
+            // If a new full set is active, show message
             if (currentFullSetDetected && currentFullSetDetected !== activeSetBonusName) {
                 const bonus = setBonuses[currentFullSetDetected];
                 if (bonus) {
                     showMessage(bonus.message);
                 }
             }
+            // If no full set is active, but one was previously, clear the active bonus
             else if (!currentFullSetDetected && activeSetBonusName) {
             }
             activeSetBonusName = currentFullSetDetected; 
 
+            // Prepare bonuses to return to updateStats
             const bonusesToApply = {
                 atk_flat: 0, def_flat: 0, maxHp_flat: 0, critical_flat: 0,
                 atk_percent: 0, def_percent: 0, maxHp_percent: 0, spd_percent: 0, goldFind_percent: 0, xpGain_percent: 0
@@ -2519,18 +2678,23 @@
         }
 
         function updateStats() {
+            // Reset stats to base values first
             player.atk = player.baseAtk;
             player.def = player.baseDef;
             player.spd = player.baseSpd; 
             player.maxHp = 100 + (player.level - 1) * 20;
             player.criticalChanceBonus = 0; 
 
+            // Reset attack interval to default
             attackInterval = 400; 
 
+            // Reset mini-shield properties
             player.hasMiniShield = false;
             player.miniShieldHP = 0;
             player.miniShieldMaxHP = 0;
 
+
+            // Apply equipped item bonuses (flat additions)
             for (const slot in player.equipped) {
                 const item = player.equipped[slot];
                 if (item && !slot.startsWith('habilidad')) {
@@ -2542,22 +2706,27 @@
                 }
             }
 
+            // Get and apply set bonuses (flat and percentage)
             const currentSetBonuses = applySetBonuses();
 
+            // Apply flat set bonuses
             player.atk += (currentSetBonuses.atk_flat || 0);
             player.def += (currentSetBonuses.def_flat || 0);
             player.maxHp += (currentSetBonuses.maxHp_flat || 0);
             player.criticalChanceBonus += (currentSetBonuses.critical_flat || 0);
 
+            // Apply percentage set bonuses (to current total)
             if (currentSetBonuses.atk_percent) player.atk *= (1 + currentSetBonuses.atk_percent);
             if (currentSetBonuses.def_percent) player.def *= (1 + currentSetBonuses.def_percent);
             if (currentSetBonuses.maxHp_percent) player.maxHp *= (1 + currentSetBonuses.maxHp_percent);
             if (currentSetBonuses.spd_percent) player.spd *= (1 + currentSetBonuses.spd_percent);
 
+            // Apply weapon-specific passive effects
             if (player.equipped.weapon && player.equipped.weapon.attackSpeed) {
                 attackInterval = player.equipped.weapon.attackSpeed;
             }
 
+            // Apply temporary buffs (Speed, Fury, Stealth, etc.) - these should be applied last
             const currentTime = Date.now();
             if (player.isSpeedBoosted && currentTime < player.speedBoostEndTime) {
                 player.spd *= 1.5; 
@@ -2570,10 +2739,13 @@
                 player.def = Math.floor(player.def * player.stealthStatMultiplier);
                 player.spd = player.spd * player.stealthStatMultiplier;
             }
+            // Apply slow effect if active
             if (player.isSlowed && currentTime < player.slowEndTime) {
-                player.spd *= 0.5;
+                player.spd *= 0.5; // Reduce speed by 50%
             }
 
+
+            // Ensure HP doesn't exceed new maxHp
             player.hp = Math.min(player.hp, player.maxHp);
             loadSprites(); 
         }
@@ -2590,6 +2762,7 @@
             if (isInventoryOpen) updateInventoryDisplay();
         }
         function updateInventoryDisplay() {
+            document.getElementById('playerGoldInventory').textContent = player.gold;
             const gearUl = document.getElementById('gearList'); gearUl.innerHTML = '';
             player.inventory.forEach((gear, i) => { 
                 const li = document.createElement('li');
@@ -2607,6 +2780,7 @@
 
                 li.textContent = `${gear.name}${statsText}`; 
                 
+                // Check if the item is equipped
                 let isEquipped = false;
                 for (const slot in player.equipped) {
                     if (player.equipped[slot] && player.equipped[slot].name === gear.name) {
@@ -2739,6 +2913,7 @@
             updateSkillDisplay();
         }
 
+        // Updated equipmentSlotsOrder to include new skill slots
         const equipmentSlotsOrder = ['helmet', 'armor', 'gloves', 'boots', 'weapon', 'habilidad1', 'habilidad2', 'habilidad3']; 
         const equipmentSlotNames = {
             'helmet': 'Casco',
@@ -2758,7 +2933,7 @@
                 isSkillMenuOpen = false;
                 difficultyScreen.style.display = 'none';
                 equipmentMenu.style.display = 'block';
-                playMusic('equipmentOpen');
+                playMusic('equipmentOpen'); // Play sound when opening equipment menu
             } else {
                 difficultyScreen.style.display = 'flex';
                 equipmentMenu.style.display = 'none';
@@ -2912,6 +3087,7 @@
             updateEquipmentDisplay();
         }
 
+        // Helper functions for equipment menu navigation via keyboard
         function left(slotType) {
             if (slotType.startsWith('habilidad')) {
                 const otherEquippedSkills = [];
@@ -3045,7 +3221,7 @@
 
             if(player.isSlowed && currentTime > player.slowEndTime){
                 player.isSlowed = false;
-                updateStats();
+                updateStats(); // Recalculate speed to remove slow effect
             }
             if(player.isSpeedBoosted && currentTime > player.speedBoostEndTime){
                 player.isSpeedBoosted = false;
@@ -3074,6 +3250,7 @@
             
             projectiles = projectiles.filter(proj => {
                 let hitSomething = false;
+                // Check for collision with walls first
                 const currentTileX = Math.floor(proj.x);
                 const currentTileY = Math.floor(proj.y);
                 if (map[currentTileY] && map[currentTileY][currentTileX] === 0) {
@@ -3082,6 +3259,7 @@
                 
                 for (let i = 0; i < monsters.length; i++) {
                     const m = monsters[i];
+                    // Check if projectile hits player
                     if (proj.owner === 'monster' && Math.abs(player.tileX - proj.x) < 0.5 && Math.abs(player.tileY - proj.y) < 0.5) {
                         if (player.isInvincible || (currentTime - player.lastHitTime < player.invulnerabilityTime)) { 
                             if (!player.invulnerabilityMessageShown) {
@@ -3144,13 +3322,14 @@
                         }
                         if (proj.type === 'web') {
                             player.isSlowed = true;
-                            player.slowEndTime = currentTime + 3000;
-                            updateStats();
+                            player.slowEndTime = currentTime + 3000; // Slow for 3 seconds
+                            updateStats(); // Apply speed reduction immediately
                             showMessage("¡Has sido ralentizado por una telaraña!");
                         }
-                        return false;
+                        return false; // Projectile hits player, so it's removed
                     }
 
+                    // Check if player projectile hits monster
                     if (proj.owner === 'player' && !m.isMinion && Math.abs(m.tileX - proj.x) < 0.5 && Math.abs(m.tileY - proj.y) < 0.5) {
                         const isCritical = proj.isCritical || (Math.random() < 0.2); 
                         const damageMultiplier = isCritical ? 1.5 : 1;
@@ -3194,12 +3373,13 @@
                                     player.hp = Math.min(player.maxHp, player.hp + healthRecovered); 
                                     damageTexts.push({ 
                                         x: player.tileX * tileSize - offsetX + tileSize/2, y: player.tileY * tileSize - offsetY - 5, 
-                                        text: `+${healthRecovered} HP`,
+                                        text: `+${healthRecovered} HP`, // Corrected: Use healthRecovered
                                         color: '#00ff00', size: 14, life: 30, velY: -1
                                     });
                                 }
                             }
 
+                            // Rayo de Oscuridad: HP recovery on enemy defeated
                             if (proj.type === 'dark_ray' && proj.owner === 'player') { 
                                 player.darkRayEnemiesDefeated++;
                                 if (player.darkRayEnemiesDefeated >= 10) {
@@ -3212,8 +3392,15 @@
                                 }
                             }
 
+
                             if (m.dropsKey) player.hasKey = true;
                             
+                            let monsterGoldDrop = Math.floor(Math.random() * (currentFloor + 1)); 
+                            if (activeSetBonusName === 'Noble' && setBonuses.Noble.goldFind_percent) {
+                                monsterGoldDrop = Math.floor(monsterGoldDrop * (1 + setBonuses.Noble.goldFind_percent));
+                            }
+                            player.gold += monsterGoldDrop;
+
                             const defeatedMonsterType = m.type;
                             monsters = monsters.filter(monster => monster !== m);
                             checkLevelUp();
@@ -3269,7 +3456,7 @@
                     m.bleedingNextTickTime = 0;
                     m.bleedingEndTime = 0;
                 } else if (m.isBleeding && currentTime >= m.bleedingNextTickTime) {
-                    m.hp -= m.bleedingDamagePerTick;
+                    m.hp -= m.bleedingDamagePerTick; // Apply bleeding damage
                     m.hitFrame = 3; 
                     m.bleedingNextTickTime = currentTime + m.bleedingTickInterval;
                     
@@ -3293,6 +3480,13 @@
                         player.enemiesDefeatedThisRun++;
                         if (m.dropsKey) player.hasKey = true;
                         
+                        let monsterGoldDrop = Math.floor(Math.random() * (currentFloor + 1)); 
+                        if (activeSetBonusName === 'Noble' && setBonuses.Noble.goldFind_percent) {
+                            monsterGoldDrop = Math.floor(monsterGoldDrop * (1 + setBonuses.Noble.goldFind_percent));
+                        }
+                        player.gold += monsterGoldDrop;
+
+                        
                         const defeatedMonsterType = m.type;
                         monsters = monsters.filter(monster => monster !== m);
                         checkLevelUp();
@@ -3315,6 +3509,7 @@
                 }
             });
 
+
             if (!isInventoryOpen && !isSkillMenuOpen && !isEquipmentOpen) {
                 const moveInterval = 1000 / player.spd; 
                 if (timestamp - lastMoveTime > moveInterval) {
@@ -3336,6 +3531,7 @@
                 let totalDamageToPlayerThisFrame = 0;
                 const monstersThatHitPlayer = [];
 
+                // Mini-shield activation/deactivation for Escudo Colosal
                 if (player.equipped.weapon && player.equipped.weapon.name === 'Escudo Colosal') {
                     if (currentTime >= player.miniShieldCooldownEnd) { 
                         let nearbyEnemies = 0;
@@ -3379,16 +3575,18 @@
                     }
                     if (!m.lastMoveTime) m.lastMoveTime = 0; 
 
+                    // --- Final Boss (Arachnid) Abilities ---
                     if (m.type === 'final-arachnid-boss') {
                         const distanceToPlayer = Math.max(Math.abs(player.tileX - m.tileX), Math.abs(player.tileY - m.tileY));
                         
+                        // Summon Spiderlings
                         if (currentTimeForAI - (m.abilityCooldowns.summon || 0) > 15000 && distanceToPlayer <= 5) { 
                             const numSpiderlings = 4; 
                             for (let i = 0; i < numSpiderlings; i++) {
                                 let spawnX = m.tileX + Math.floor(Math.random() * 3) - 1;
                                 let spawnY = m.tileY + Math.floor(Math.random() * 3) - 1;
                                 if (spawnX >= 0 && spawnX < mapWidth && spawnY >= 0 && spawnY < mapHeight &&
-                                    (map[spawnY][spawnX] === 1 || map[spawnY][spawnX] === 2) &&
+                                    (map[spawnY][spawnX] === 1 || map[spawnY][spawnX] === 2) && // Allow spawn on chests
                                     !monsters.some(otherM => otherM.tileX === spawnX && otherM.tileY === spawnY) &&
                                     !(spawnX === player.tileX && spawnY === player.tileY)) {
                                     monsters.push({ type: 'spiderling', hp: 15, maxHp: 15, atk: 5, spd: 3.0, tileX: spawnX, tileY: spawnY, xp: 10, lastMoveTime: 0, hitFrame: 0, lastAttackTime: 0, isMinion: false });
@@ -3407,6 +3605,7 @@
                         }
                     }
 
+                    // --- AI Target Determination ---
                     let targetEntityForAttack = null;
                     let targetX_move, targetY_move; 
 
@@ -3457,6 +3656,7 @@
                         }
                     }
 
+                    // --- Attack Logic ---
                     let isAdjacentToTarget = false;
                     if (targetEntityForAttack) {
                         if (!(m.width > 1 || m.height > 1) && !(targetEntityForAttack.width > 1 || targetEntityForAttack.height > 1)) {
@@ -3521,6 +3721,13 @@
 
                                     player.enemiesDefeatedThisRun++;
                                     if (targetEntityForAttack.dropsKey) player.hasKey = true;
+                                    
+                                    let monsterGoldDrop = Math.floor(Math.random() * (currentFloor + 1)); 
+                                    if (activeSetBonusName === 'Noble' && setBonuses.Noble.goldFind_percent) {
+                                        monsterGoldDrop = Math.floor(monsterGoldDrop * (1 + setBonuses.Noble.goldFind_percent));
+                                    }
+                                    player.gold += monsterGoldDrop;
+
                                     
                                     const defeatedMonsterType = targetEntityForAttack.type;
                                     monsters = monsters.filter(monster => monster !== targetEntityForAttack);
@@ -3641,8 +3848,9 @@
                                     const isTargetPlayer = (move.x === player.tileX && move.y === player.tileY);
                                     const isTargetOtherMonster = monsters.some(otherM => otherM !== m && otherM.tileX === move.x && otherM.tileY === move.y);
                                     
+                                    // Allow monsters to move onto chests (map type 2)
                                     if (move.x >= 0 && move.x < mapWidth && move.y >= 0 && move.y < mapHeight &&
-                                        (map[move.y][move.x] === 1 || map[move.y][move.x] === 2) &&
+                                        (map[move.y][move.x] === 1 || map[move.y][move.x] === 2) && // Allow movement onto floor (1) or chest (2)
                                         !isTargetPlayer && !isTargetOtherMonster) {
                                         
                                         m.tileX = move.x;
@@ -3652,7 +3860,7 @@
                                     }
                                 }
                             if(movedThisTurnForMonster) m.lastMoveTime = currentTimeForAI;
-                            } else {
+                            } else { // If no target, monster doesn't move
                                 m.lastMoveTime = currentTimeForAI;
                             }
                         }
