@@ -1,239 +1,228 @@
+body {
+    margin: 0;
+    padding: 0;
+    display: flex; /* Use flexbox for layout */
+    flex-direction: column; /* Allow stacking of difficulty screen and canvas */
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    background-color: #222;
+    font-family: 'Georgia', serif;
+    position: relative; 
+}
+#difficultyScreen {
+    padding: 20px; 
+    background-color: #f4e4bc;
+    border: 5px solid #4a2f1b;
+    border-radius: 10px;
+    text-align: center;
+    box-shadow: 0 0 20px rgba(0,0,0,0.6);
+    display: flex; 
+    flex-direction: column; 
+    align-items: center; 
+}
+#difficultyScreen h2 {
+    color: #4a2f1b;
+    margin-bottom: 15px; 
+}
+#difficultyScreen button {
+    background-color: #8B4513; 
+    color: white;
+    border: 2px solid #4a2f1b;
+    padding: 8px 15px; 
+    margin: 5px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 15px; 
+    transition: background-color 0.3s;
+}
+#difficultyScreen button:hover {
+    background-color: #A0522D; 
+}
+#lastScoreDisplay {
+    margin-top: 10px; 
+    font-size: 13px; 
+    color: #4a2f1b;
+}
+#debugControls {
+    margin-top: 10px; 
+    padding: 8px; 
+    background-color: #333;
+    border-radius: 5px;
+    color: white;
+    font-size: 13px;
+}
+#debugControls label {
+    margin-right: 3px;
+}
+#debugControls input {
+    width: 35px; 
+    margin-right: 8px;
+    padding: 3px;
+}
+#debugControls button {
+    padding: 5px 10px;
+    font-size: 13px;
+}
 
-        body {
-            margin: 0;
-            padding: 0;
-            display: flex; /* Use flexbox for layout */
-            flex-direction: column; /* Allow stacking of difficulty screen and canvas */
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            background-color: #222;
-            font-family: 'Georgia', serif;
-            position: relative; /* Needed for absolute positioning of minimap and messages */
-        }
-        #difficultyScreen {
-            padding: 20px; /* Reduced padding */
-            background-color: #f4e4bc;
-            border: 5px solid #4a2f1b;
-            border-radius: 10px;
-            text-align: center;
-            box-shadow: 0 0 20px rgba(0,0,0,0.6);
-            display: flex; /* Use flexbox for layout */
-            flex-direction: column; /* Stack children vertically */
-            align-items: center; /* Center items horizontally */
-        }
-        #difficultyScreen h2 {
-            color: #4a2f1b;
-            margin-bottom: 15px; /* Reduced margin */
-        }
-        #difficultyScreen button {
-            background-color: #8B4513; /* SaddleBrown */
-            color: white;
-            border: 2px solid #4a2f1b;
-            padding: 8px 15px; /* Reduced padding */
-            margin: 5px;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 15px; /* Slightly smaller font */
-            transition: background-color 0.3s;
-        }
-        #difficultyScreen button:hover {
-            background-color: #A0522D; /* Sienna */
-        }
-        #lastScoreDisplay {
-            margin-top: 10px; /* Reduced margin */
-            font-size: 13px; /* Slightly smaller font */
-            color: #4a2f1b;
-        }
-         #debugControls {
-            margin-top: 10px; /* Reduced margin */
-            padding: 8px;  /* Reduced padding */
-            background-color: #333;
-            border-radius: 5px;
-            color: white;
-            font-size: 13px; /* Smaller font */
-        }
-        #debugControls label {
-            margin-right: 3px;
-        }
-        #debugControls input {
-            width: 35px; /* Smaller input */
-            margin-right: 8px; /* Increased margin for spacing */
-            padding: 3px;
-        }
-        #debugControls button {
-            padding: 5px 10px;
-            font-size: 13px;
-        }
+#gameCanvas {
+    border: 2px solid #4a2f1b; 
+    background: #2a1f15; 
+    display: none; 
+}
+#minimapCanvas {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    border: 2px solid #4a2f1b;
+    background-color: rgba(0, 0, 0, 0.7);
+    z-index: 100; 
+    display: none;
+}
+#inventoryMenu, #skillMenu {
+    display: none;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: #f4e4bc;
+    padding: 20px; 
+    border: 4px solid #8B4513;
+    font-family: 'Georgia', serif;
+    color: #000;
+    z-index: 10;
+    min-width: 300px; 
+    max-height: 80vh; 
+    overflow-y: auto; 
+    box-shadow: 0 0 15px rgba(0,0,0,0.5); 
+}
 
-        #gameCanvas {
-            border: 2px solid #4a2f1b; 
-            background: #2a1f15; 
-            display: none; /* Hidden initially */
-        }
-        #minimapCanvas {
-            position: absolute;
-            top: 20px;
-            left: 20px;
-            border: 2px solid #4a2f1b;
-            background-color: rgba(0, 0, 0, 0.7);
-            z-index: 100; /* Ensure it's on top */
-            display: none; /* Hidden initially, shown with gameCanvas */
-        }
-        #inventoryMenu, #skillMenu {
-            display: none;
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background: #f4e4bc;
-            padding: 20px; 
-            border: 4px solid #8B4513;
-            font-family: 'Georgia', serif;
-            color: #000;
-            z-index: 10;
-            min-width: 300px; 
-            max-height: 80vh; 
-            overflow-y: auto; 
-            box-shadow: 0 0 15px rgba(0,0,0,0.5); 
-        }
-        
-        #equipmentMenu {
-            display: none; /* Hidden by default, shown by button on difficultyScreen */
-            position: absolute; 
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background: #f4e4bc;
-            padding: 20px; 
-            border: 4px solid #8B4513;
-            font-family: 'Georgia', serif;
-            color: #000;
-            z-index: 10;
-            min-width: 350px; /* Increased width for buttons */
-            max-height: 80vh; 
-            overflow-y: auto; 
-            box-shadow: 0 0 15px rgba(0,0,0,0.5); 
-        }
+#equipmentMenu {
+    display: none; /* Hidden by default, shown by button on difficultyScreen */
+    position: absolute; 
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: #f4e4bc;
+    padding: 20px; 
+    border: 4px solid #8B4513;
+    font-family: 'Georgia', serif;
+    color: #000;
+    z-index: 10;
+    min-width: 350px; /* Increased width for buttons */
+    max-height: 80vh; 
+    overflow-y: auto; 
+    box-shadow: 0 0 15px rgba(0,0,0,0.5); 
+}
 
-        #inventoryMenu h2, #skillMenu h2, #equipmentMenu h2 {
-            margin-top: 0;
-            text-align: center;
-            color: #4a2f1b;
-        }
-        #inventoryMenu ul, #skillMenu ul {
-            list-style-type: none;
-            padding: 0;
-        }
-        #inventoryMenu li, #skillMenu li {
-            padding: 8px;
-            margin-bottom: 5px;
-            border-radius: 4px;
-            cursor: default; 
-            display: flex; 
-            justify-content: space-between; 
-            align-items: center; 
-        }
-        .selected { background-color: #ffd700; color: #000; }
-        .unlocked { color: #000000; font-weight: normal; } /* Default for unlocked, not equipped */
-        .available { color: #000000; }
-        .locked { color: #808080; font-style: italic; } 
-        .skill-used { color: #909090 !important; text-decoration: line-through;} 
+#inventoryMenu h2, #skillMenu h2, #equipmentMenu h2 {
+    margin-top: 0;
+    text-align: center;
+    color: #4a2f1b;
+}
+#inventoryMenu ul, #skillMenu ul {
+    list-style-type: none;
+    padding: 0;
+}
+#inventoryMenu li, #skillMenu li {
+    padding: 8px;
+    margin-bottom: 5px;
+    border-radius: 4px;
+    cursor: default; 
+    display: flex; 
+    justify-content: space-between; 
+    align-items: center; 
+}
+.selected { background-color: #ffd700; color: #000; }
+.unlocked { color: #000000; font-weight: normal; } /* Default for unlocked, not equipped */
+.available { color: #000000; }
+.locked { color: #808080; font-style: italic; } 
+.skill-used { color: #909090 !important; text-decoration: line-through;} 
 
-        /* Inventory item colors */
-        .inventory-equipped { color: #008000; font-weight: bold; } /* Green for equipped */
-        .inventory-unequipped { color: #808080; } /* Gray for unequipped */
+.inventory-equipped { color: #008000; font-weight: bold; } /* Green for equipped */
+.inventory-unequipped { color: #808080; } /* Gray for unequipped */
 
-        /* New: Skill equipped color */
-        .skill-equipped { color: #008000; font-weight: bold; }
+.skill-equipped { color: #008000; font-weight: bold; }
 
-        #inventoryMenu p, #skillMenu p, #equipmentMenu p {
-            font-size: 0.9em;
-            text-align: center;
-            margin-top: 15px;
-            color: #4a2f1b;
-        }
-        .item-price {
-            color: #8B4513;
-            font-weight: bold;
-            margin-left: 10px; 
-        }
+#inventoryMenu p, #skillMenu p, #equipmentMenu p {
+    font-size: 0.9em;
+    text-align: center;
+    margin-top: 15px;
+    color: #4a2f1b;
+}
+#messageBox {
+    position: absolute;
+    bottom: 20px; /* Position at the bottom */
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: rgba(244, 228, 188, 0.8); /* Added transparency */
+    border: 4px solid #8B4513;
+    border-radius: 10px;
+    padding: 15px 25px; /* Adjusted padding */
+    font-family: 'Georgia', serif;
+    color: #4a2f1b;
+    z-index: 1000;
+    text-align: center;
+    box-shadow: 0 0 15px rgba(0,0,0,0.5);
+    display: none; /* Hidden by default */
+    max-width: 80%; /* Limit width */
+}
 
-        /* Styles for the new message box */
-        #messageBox {
-            position: absolute;
-            bottom: 20px; /* Position at the bottom */
-            left: 50%;
-            transform: translateX(-50%);
-            background-color: rgba(244, 228, 188, 0.8); /* Added transparency */
-            border: 4px solid #8B4513;
-            border-radius: 10px;
-            padding: 15px 25px; /* Adjusted padding */
-            font-family: 'Georgia', serif;
-            color: #4a2f1b;
-            z-index: 1000;
-            text-align: center;
-            box-shadow: 0 0 15px rgba(0,0,0,0.5);
-            display: none; /* Hidden by default */
-            max-width: 80%; /* Limit width */
-        }
-        
-        /* Equipment menu specific styles */
-        #equippedSlots {
-            display: flex;
-            flex-direction: column;
-            gap: 8px; /* Space between slot rows */
-        }
-        #equippedSlots .equipment-slot-row {
-            display: flex;
-            align-items: center;
-            background-color: #e0d0b0;
-            padding: 8px;
-            border-radius: 4px;
-            border: 1px solid #c0a080;
-            justify-content: space-between; /* Distribute items */
-        }
-        #equippedSlots .equipment-slot-row.selected {
-            background-color: #ffd700; /* Highlight selected row */
-            color: #000;
-        }
-        #equippedSlots .nav-button {
-            background-color: #4a2f1b; /* Darker brown for buttons */
-            color: white;
-            border: none;
-            padding: 5px 10px;
-            border-radius: 3px;
-            cursor: pointer;
-            font-size: 16px;
-            transition: background-color 0.2s;
-            margin: 0 2px;
-        }
-        #equippedSlots .nav-button:hover {
-            background-color: #6a4a2b;
-        }
+#equippedSlots {
+    display: flex;
+    flex-direction: column;
+    gap: 8px; /* Space between slot rows */
+}
+#equippedSlots .equipment-slot-row {
+    display: flex;
+    align-items: center;
+    background-color: #e0d0b0;
+    padding: 8px;
+    border-radius: 4px;
+    border: 1px solid #c0a080;
+    justify-content: space-between; /* Distribute items */
+}
+#equippedSlots .equipment-slot-row.selected {
+    background-color: #ffd700; /* Highlight selected row */
+    color: #000;
+}
+#equippedSlots .nav-button {
+    background-color: #4a2f1b; /* Darker brown for buttons */
+    color: white;
+    border: none;
+    padding: 5px 10px;
+    border-radius: 3px;
+    cursor: pointer;
+    font-size: 16px;
+    transition: background-color 0.2s;
+    margin: 0 2px;
+}
+#equippedSlots .nav-button:hover {
+    background-color: #6a4a2b;
+}
 
-        #equipmentMenuButtons {
-            display: flex;
-            justify-content: space-around;
-            margin-top: 20px;
-        }
-        #equipmentMenuButtons button {
-            background-color: #4CAF50; /* Green for Save */
-            color: white;
-            border: 2px solid #388E3C;
-            padding: 10px 20px;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 16px;
-            transition: background-color 0.3s;
-        }
-        #equipmentMenuButtons button:hover {
-            background-color: #66BB6A;
-        }
-        #equipmentMenuButtons button:last-child {
-            background-color: #F44336; /* Red for Back */
-            border: 2px solid #D32F2F;
-        }
-        #equipmentMenuButtons button:last-child:hover {
-            background-color: #EF5350;
-        }
+#equipmentMenuButtons {
+    display: flex;
+    justify-content: space-around;
+    margin-top: 20px;
+}
+#equipmentMenuButtons button {
+    background-color: #4CAF50; /* Green for Save */
+    color: white;
+    border: 2px solid #388E3C;
+    padding: 10px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 16px;
+    transition: background-color 0.3s;
+}
+#equipmentMenuButtons button:hover {
+    background-color: #66BB6A;
+}
+#equipmentMenuButtons button:last-child {
+    background-color: #F44336; /* Red for Back */
+    border: 2px solid #D32F2F;
+}
+#equipmentMenuButtons button:last-child:hover {
+    background-color: #EF5350;
+}

@@ -1,5 +1,4 @@
-
-        // Ensure these are the very first executable lines in the script
+// Ensure these are the very first executable lines in the script
         let isInventoryOpen = false;
         let isSkillMenuOpen = false;
         let isEquipmentOpen = false;
@@ -8,18 +7,14 @@
         console.log('isSkillMenuOpen declared:', isInventoryOpen);
         console.log('isEquipmentOpen declared:', isEquipmentOpen);
 
-
-        // Floor system
         let currentFloor = 1;
         const maxFloors = 4; 
 
-        // Map setup
         const mapWidth = 30, mapHeight = 30; 
         const tileSize = 50; 
         let map = Array(mapHeight).fill().map(() => Array(mapWidth).fill(0));
         let stairLocation = { x: -1, y: -1, active: false, type: 4 }; 
 
-        // Difficulty settings
         let selectedDifficulty = 'medio'; 
         let gameStarted = false;
         let hpMultiplier = 1.0;
@@ -32,12 +27,7 @@
 
         // Gear list definition with item levels and stats
         const gearList = [
-            // Potions
-            { name: 'Poción de Vida Pequeña', type: 'potion', heal: 25, itemLevel: 1, baseValue: 15, sellPrice: 5 },
-            { name: 'Poción de Vida Mediana', type: 'potion', heal: 50, itemLevel: 2, baseValue: 30, sellPrice: 10 },
-            { name: 'Poción de Vida Grande', type: 'potion', heal: 100, itemLevel: 3, baseValue: 60, sellPrice: 20 }, 
-
-            // Helmets
+            
             { name: 'Casco de Hierro', type: 'helmet', def: 3, itemLevel: 1, baseValue: 20, set: 'Hierro' },
             { name: 'Casco de Caballero', type: 'helmet', def: 5, spd: 2, itemLevel: 2, baseValue: 40, set: 'Caballero' },
             { name: 'Casco de Demonio', type: 'helmet', def: 7, atk: 3, itemLevel: 3, baseValue: 60, set: 'Demonio' },
@@ -46,7 +36,6 @@
             { name: 'Casco Noble', type: 'helmet', def: 4, itemLevel: 2, baseValue: 30, set: 'Noble' },
             { name: 'Casco de Mago', type: 'helmet', def: 3, itemLevel: 1, baseValue: 25, set: 'Mago' },
 
-            // Armors
             { name: 'Armadura de Hierro', type: 'armor', def: 6, itemLevel: 1, baseValue: 40, set: 'Hierro' },
             { name: 'Armadura de Caballero', type: 'armor', def: 8, spd: 2, itemLevel: 2, baseValue: 70, set: 'Caballero' },
             { name: 'Armadura de Demonio', type: 'armor', def: 10, atk: 4, itemLevel: 3, baseValue: 100, set: 'Demonio' },
@@ -55,7 +44,6 @@
             { name: 'Armadura Noble', type: 'armor', def: 7, itemLevel: 2, baseValue: 60, set: 'Noble' },
             { name: 'Armadura de Mago', type: 'armor', def: 5, itemLevel: 1, baseValue: 50, set: 'Mago' },
 
-            // Gloves
             { name: 'Guantes de Hierro', type: 'gloves', atk: 3, itemLevel: 1, baseValue: 15, set: 'Hierro' },
             { name: 'Guantes de Caballero', type: 'gloves', atk: 4, def: 1, itemLevel: 2, baseValue: 30, set: 'Caballero' },
             { name: 'Guantes de Demonio', type: 'gloves', atk: 6, spd: 2, itemLevel: 3, baseValue: 50, set: 'Demonio' },
@@ -64,7 +52,6 @@
             { name: 'Guantes de Noble', type: 'gloves', atk: 3, itemLevel: 2, baseValue: 25, set: 'Noble' },
             { name: 'Guantes de Mago', type: 'gloves', spd: 2, itemLevel: 1, baseValue: 20, set: 'Mago' },
 
-            // Boots
             { name: 'Botas de Hierro', type: 'boots', spd: 3, itemLevel: 1, baseValue: 20, set: 'Hierro' },
             { name: 'Botas de Caballero', type: 'boots', spd: 5, def: 1, itemLevel: 2, baseValue: 40, set: 'Caballero' },
             { name: 'Botas de Demonio', type: 'boots', spd: 7, atk: 2, itemLevel: 3, baseValue: 60, set: 'Demonio' },
@@ -73,7 +60,6 @@
             { name: 'Botas de Noble', type: 'boots', spd: 4, itemLevel: 2, baseValue: 30, set: 'Noble' },
             { name: 'Botas de Mago', type: 'boots', spd: 6, itemLevel: 1, baseValue: 25, set: 'Mago' },
 
-            // Weapons
             { name: 'Escudo Colosal', type: 'weapon', def: 10, itemLevel: 2, baseValue: 80, set: 'Hierro', attackSpeed: 400 }, 
             { name: 'Maza de Guerra', type: 'weapon', atk: 9, itemLevel: 2, baseValue: 75, set: 'Caballero', attackSpeed: 400 },
             { name: 'Espada de Luz', type: 'weapon', atk: 7, spd: 3, itemLevel: 3, baseValue: 90, set: 'Demonio', attackSpeed: 250 },
@@ -213,15 +199,14 @@
                 detailColor = set.detail;
                 drawHood = false;
             } else {
-                // Otherwise, apply individual piece colors
                 if (player.equipped.armor && player.equipped.armor.set) {
                     torsoColor = setColors[player.equipped.armor.set].main;
-                    // Detail color can be from armor set if armor is equipped
+                    
                     detailColor = setColors[player.equipped.armor.set].detail; 
                 }
                 if (player.equipped.helmet && player.equipped.helmet.set) {
                     headColor = setColors[player.equipped.helmet.set].main;
-                    drawHood = false; // No hood if helmet is equipped
+                    drawHood = false; 
                 }
                 if (player.equipped.gloves && player.equipped.gloves.set) {
                     armColor = setColors[player.equipped.gloves.set].main;
@@ -231,11 +216,9 @@
                 }
             }
             
-            // Draw Torso (Armor)
             ctx.fillStyle = torsoColor; 
             ctx.fillRect(16, 16, 32, 32); 
 
-            // Draw Head (Helmet or Hood)
             if (drawHood) {
                 ctx.fillStyle = headColor; // Hood color
                 ctx.beginPath();
@@ -258,20 +241,16 @@
                 ctx.fillRect(28, 14, 2, 2); ctx.fillRect(34, 14, 2, 2);
             }
             
-            // Draw Arms (Gloves)
             ctx.fillStyle = armColor; // Left arm color
             ctx.fillRect(8, 24, 10, 16); 
             ctx.strokeStyle = detailColor; // Arm detail
             ctx.lineWidth = 2; 
             ctx.strokeRect(8, 24, 10, 16);
 
-            // Draw Legs (Boots)
             ctx.fillStyle = legColor; // Leg color
             ctx.fillRect(20, 48, 10, 12); ctx.fillRect(34, 48, 10, 12); 
             ctx.fillStyle = detailColor; // Leg detail
             ctx.fillRect(20, 52, 10, 2); ctx.fillRect(34, 52, 10, 2);
-
-            // Weapon drawing logic (remains the same)
             if (player.equipped.weapon) {
                 switch (player.equipped.weapon.name) {
                     case 'Daga de Poder': 
@@ -338,7 +317,6 @@
                 }
             } else { ctx.fillStyle = '#d0d0d0'; ctx.fillRect(48, 20, 12, 4); ctx.fillStyle = '#ffd700'; ctx.fillRect(44, 18, 6, 8); }
             
-            // Final outlines (using default black for outlines)
             ctx.strokeStyle = '#000'; ctx.lineWidth = 1; 
             ctx.strokeRect(16, 16, 32, 32); // Torso outline
             ctx.strokeRect(20, 8, 24, 12); // Helmet outline (or top of hood)
@@ -425,24 +403,19 @@
             ctx.closePath();
             ctx.fill();
 
-
-            // Legs (back)
             ctx.fillStyle = shadowRed;
             ctx.beginPath(); ctx.ellipse(18, 48, 6, 12, -0.25 * Math.PI, 0, Math.PI * 2); ctx.fill(); 
             ctx.beginPath(); ctx.ellipse(46, 48, 6, 12, 0.25 * Math.PI, 0, Math.PI * 2); ctx.fill();  
             
-            // Legs (front)
             ctx.fillStyle = bodyMain;
             ctx.beginPath(); ctx.ellipse(25, 50, 7, 13, -0.1 * Math.PI, 0, Math.PI * 2); ctx.fill(); 
             ctx.beginPath(); ctx.ellipse(39, 50, 7, 13, 0.1 * Math.PI, 0, Math.PI * 2); ctx.fill();  
 
-            // Body
             ctx.fillStyle = bodyMain;
             ctx.beginPath();
             ctx.ellipse(32, 40, 20, 14, 0, 0, Math.PI * 2); 
             ctx.fill();
             
-            // Fur on back (spikes/mane)
             ctx.fillStyle = furRed;
             for (let i = 0; i < 5; i++) {
                 ctx.beginPath();
@@ -453,7 +426,6 @@
                 ctx.fill();
             }
 
-            // Head
             ctx.fillStyle = bodyMain;
             ctx.beginPath();
             ctx.ellipse(50, 29, 13, 9, -0.1 * Math.PI, 0, Math.PI * 2); 
@@ -467,14 +439,12 @@
             ctx.ellipse(59, 23, 3.5, 2.5, -0.1 * Math.PI, 0, Math.PI * 2);
             ctx.fill();
 
-            // Ears (pointy)
             ctx.fillStyle = shadowRed;
             ctx.beginPath(); 
             ctx.moveTo(43, 20); ctx.lineTo(39, 8); ctx.lineTo(47, 17); ctx.closePath(); ctx.fill();
             ctx.beginPath(); 
             ctx.moveTo(57, 20); ctx.lineTo(53, 8); ctx.lineTo(61, 17); ctx.closePath(); ctx.fill();
             
-            // Eyes
             ctx.fillStyle = eyeColor;
             ctx.shadowColor = eyeColor;
             ctx.shadowBlur = 5;
@@ -509,7 +479,6 @@
             ctx.beginPath();
             ctx.ellipse(32, 30, 18, 12, 0, 0, Math.PI * 2); 
             ctx.fill();
-
 
             ctx.fillStyle = bodyColor;
             ctx.beginPath();
@@ -592,23 +561,18 @@
         function createWallSprite() { if (sprites.wall) return sprites.wall; const c=document.createElement('canvas');c.width=64;c.height=64;const x=c.getContext('2d');x.fillStyle='#555';x.fillRect(0,0,64,64);x.strokeStyle='#333';x.lineWidth=2;for(let y=16;y<64;y+=16){x.beginPath();x.moveTo(0,y);x.lineTo(64,y);x.stroke();}for(let r=0;r<4;r++){const o=r%2===0?0:16;for(let X=o;X<64;X+=32){x.beginPath();x.moveTo(X,r*16);x.lineTo(X,r*16+16);x.stroke();}}x.fillStyle='#444';const d=[{x:10,y:8,r:1.5},{x:25,y:12,r:2},{x:40,y:7,r:1.2},{x:55,y:10,r:1.8},{x:15,y:22,r:1.3},{x:30,y:26,r:2.2},{x:48,y:24,r:1.7},{x:8,y:38,r:1.9},{x:22,y:42,r:1.4},{x:38,y:40,r:2.1},{x:52,y:44,r:1.6},{x:12,y:56,r:1.8},{x:28,y:58,r:1.5},{x:44,y:54,r:2},{x:58,y:60,r:1.7},{x:18,y:5,r:1.3},{x:34,y:32,r:1.9},{x:50,y:18,r:1.4},{x:5,y:48,r:2.2},{x:60,y:36,r:1.6}];for(const k of d){x.beginPath();x.arc(k.x,k.y,k.r,0,Math.PI*2);x.fill();}return c.toDataURL(); }
         function createChestSprite() { const c = document.createElement('canvas');c.width=64;c.height=64;const x=c.getContext('2d');x.fillStyle = '#8B4513';x.fillRect(12,20,40,30);x.fillStyle = '#A0522D';x.fillRect(12,20,40,10);x.fillStyle = '#555';x.fillRect(12,30,40,4);x.fillRect(12,40,40,4);x.fillStyle = '#FFD700';x.fillRect(28,28,8,8);x.fillStyle = '#000';x.beginPath();x.arc(32,32,2,0,Math.PI*2);x.fill();x.fillStyle = 'rgba(255,255,255,0.2)';x.fillRect(14,22,36,2);return c.toDataURL(); }
         
-        // New sprite for Minion (Shadow) - now a black version of the player sprite
-        // This function now takes the pre-loaded player image as an argument
         function createMinionSprite(playerImage) {
             const canvas = document.createElement('canvas');
             canvas.width = 64; canvas.height = 64;
             const ctx = canvas.getContext('2d');
 
-            // Draw the already loaded player image onto the minion canvas
             ctx.drawImage(playerImage, 0, 0);
             
-            // Apply a filter to make it completely black.
             ctx.globalCompositeOperation = 'source-atop'; 
             ctx.fillStyle = 'rgba(0, 0, 0, 1)'; 
             ctx.fillRect(0, 0, canvas.width, canvas.height); 
             ctx.globalCompositeOperation = 'source-over'; 
             
-            // Add a subtle dark glow
             ctx.shadowColor = 'rgba(0, 0, 0, 0.7)';
             ctx.shadowBlur = 10;
             ctx.strokeStyle = 'rgba(50, 50, 50, 0.8)';
@@ -618,7 +582,6 @@
 
             return canvas.toDataURL();
         }
-        // --- Fin de Funciones de Creación de Sprites ---
 
         function loadSprites() {
             // Create and load player sprite first
@@ -633,7 +596,6 @@
                 loadedImages.minion.onload = () => { /* console.log('minion sprite loaded'); */ };
                 loadedImages.minion.onerror = () => { console.error('Error loading minion sprite'); };
 
-                // Load other sprites after player and minion are handled
                 for (const key in sprites) {
                     if (key === 'player' || key === 'minion') continue; 
                     if (!loadedImages[key] || sprites[key] !== loadedImages[key].src) {
@@ -707,33 +669,27 @@
 
         // New skill definitions (These are the master definitions for skills)
         const skills = [
-            { name: 'Sigilo', cost: 2, prereq: null, effect: 'Te vuelves uno con las sombras, imperceptible para los monstruos durante 7 segundos.', cooldown: 15000 },
-            { name: 'Golpe Crítico', cost: 1, prereq: null, effect: 'El siguiente golpe que asestes será un 50% más devastador.', cooldown: 5000 },
-            { name: 'Teletransportación', cost: 2, prereq: 'Golpe Crítico', effect: 'Desplázate instantáneamente a un punto aleatorio del mapa.', cooldown: 10000 },
-            { name: 'Invocar', cost: 3, prereq: 'Teletransportación', effect: 'Manifiesta un súbdito leal con el 25% de tus estadísticas.', cooldown: 20000 },
-            { name: 'Regeneración', cost: 1, prereq: 'Golpe Crítico', effect: 'Restaura el 50% de tu salud máxima al instante.', cooldown: 10000 },
-            { name: 'Velocidad', cost: 1, prereq: null, effect: 'Incrementa tu velocidad de movimiento en un 10% durante 5 segundos.', cooldown: 8000 },
-            { name: 'Invencible', cost: 3, prereq: 'Regeneración', effect: 'Te vuelves inmune a todo daño durante 3 segundos.', cooldown: 25000 },
-            { name: 'Rayo de Hielo', cost: 2, prereq: 'Velocidad', effect: 'Congela a un enemigo en su lugar durante 5 segundos.', cooldown: 12000 },
-            { name: 'Suerte', cost: 1, prereq: null, effect: 'Aumenta tu probabilidad de asestar un golpe crítico en un 5% durante 10 segundos.', cooldown: 15000 },
-            { name: 'Debilidad', cost: 2, prereq: 'Suerte', effect: 'Reduce la resistencia de los enemigos cercanos en un 5% durante 8 segundos.', cooldown: 10000 },
-            { name: 'Furia', cost: 2, prereq: 'Invencible', effect: 'Duplica tu ataque cuando tu salud desciende al 25% o menos (pasiva).', cooldown: 0 }, 
-            { name: 'Extracción de Almas', cost: 2, prereq: 'Rayo de Hielo', effect: 'Recupera salud por cada 5 golpes exitosos que asestes (pasiva).', cooldown: 0 } 
+            { name: 'Sigilo', effect: 'Te vuelves uno con las sombras, imperceptible para los monstruos durante 7 segundos.', cooldown: 15000 },
+            { name: 'Golpe Crítico', effect: 'El siguiente golpe que asestes será un 50% más devastador.', cooldown: 5000 },
+            { name: 'Teletransportación', effect: 'Desplázate instantáneamente a un punto aleatorio del mapa.', cooldown: 10000 },
+            { name: 'Invocar', effect: 'Manifiesta un súbdito leal con el 25% de tus estadísticas.', cooldown: 20000 },
+            { name: 'Regeneración', effect: 'Restaura el 50% de tu salud máxima al instante.', cooldown: 10000 },
+            { name: 'Velocidad', effect: 'Incrementa tu velocidad de movimiento en un 10% durante 5 segundos.', cooldown: 8000 },
+            { name: 'Invencible', effect: 'Te vuelves inmune a todo daño durante 3 segundos.', cooldown: 25000 },
+            { name: 'Rayo de Hielo', effect: 'Congela a un enemigo en su lugar durante 5 segundos.', cooldown: 12000 },
+            { name: 'Suerte', effect: 'Aumenta tu probabilidad de asestar un golpe crítico en un 5% durante 10 segundos.', cooldown: 15000 },
+            { name: 'Debilidad', effect: 'Reduce la resistencia de los enemigos cercanos en un 5% durante 8 segundos.', cooldown: 10000 },
+            { name: 'Furia', effect: 'Duplica tu ataque cuando tu salud desciende al 25% o menos (pasiva).', cooldown: 0 }, 
+            { name: 'Extracción de Almas', effect: 'Recupera salud por cada 5 golpes exitosos que asestes (pasiva).', cooldown: 0 } 
         ];
 
         function activateSkill(skillName) {
             const skill = skills.find(s => s.name === skillName);
             if (!skill) return;
 
-            // Check if the skill is equipped in any of the habilidad slots
             const isSkillEquipped = player.equipped.habilidad1 === skillName ||
                                     player.equipped.habilidad2 === skillName ||
                                     player.equipped.habilidad3 === skillName;
-            
-            if (!isSkillEquipped) {
-                showMessage("Esta habilidad no está equipada en ninguna de tus ranuras activas.");
-                return;
-            }
 
             if (player.skillUsageThisFloor[skillName]) {
                 showMessage("Ya has usado esta habilidad en este piso.");
@@ -797,7 +753,6 @@
                         }
                         if (foundSpot) break;
                     }
-
                     if (foundSpot) {
                         monsters.push({ type: 'minion', hp: minionHp, maxHp: minionHp, atk: minionAtk, spd: minionSpd, tileX: spawnX, tileY: spawnY, xp: 0, lastMoveTime: 0, hitFrame: 0, isMinion: true, lastAttackTime: 0, spawnTime: currentTime, duration: 30000 }); 
                         showMessage("¡Un súbdito leal ha sido invocado!");
@@ -872,7 +827,6 @@
                 player.skillUsageThisFloor[skill.name] = true; 
             }
         }
-
         let monsters = [];
         let chests = [];
 
@@ -908,7 +862,6 @@
                 let fbAtk = Math.floor(finalBossBaseAtk * (1 + (currentFloor - 1) * 0.4) * atkMultiplier);
                 monsters.push({ type: 'final-arachnid-boss', hp: fbHp, maxHp: fbHp, atk: fbAtk, spd: 0.7, tileX: bossSpawnX, tileY: bossSpawnY, xp: 5000, lastMoveTime: 0, hitFrame: 0, width: 2, height: 2, abilityCooldowns: {webShot:0, summon:0}, lastAttackTime: 0 }); 
                 for(let r=0; r<2; r++) { for(let c=0; c<2; c++) { map[bossSpawnY+r][bossSpawnX+c] = 1;}}
-
 
             } else { 
                 const rooms = [];
@@ -967,11 +920,10 @@
                     carvePathBetweenRooms(rooms[i], rooms[i+1]);
                 }
                 if (rooms.length > 1) { 
-                for(let i = 1; i < rooms.length; i++){ 
-                        carvePathBetweenRooms(rooms[0], rooms[i]);
+                    for(let i = 1; i < rooms.length; i++){ 
+                            carvePathBetweenRooms(rooms[0], rooms[i]);
+                    }
                 }
-                }
-
 
                 const playerStartY = rooms[0].centerY;
                 const playerStartX = rooms[0].centerX;
@@ -996,7 +948,6 @@
                 stairLocation.x = stairRoom.centerX;
                 stairLocation.y = stairRoom.centerY;
                 map[stairLocation.y][stairLocation.x] = 1; 
-
 
                 player.tileX = playerStartX; player.tileY = playerStartY;
                 player.hasKey = false; player.doorOpened = false;
@@ -1049,6 +1000,12 @@
                 chests = []; spawnChests(monsterSpawnLocations); 
             } 
             loadSprites(); 
+
+            if (monsters.some(m => m.type === 'final-arachnid-boss')) {
+                playMusic('boss'); // Play the specific boss music for the final floor
+            } else {
+                playMusic('dungeon'); // Play a random dungeon track for all other floors
+            }
         }
         
         function carvePathBetweenRooms(room1, room2) { 
@@ -1071,7 +1028,6 @@
                 }
             }
         }
-
 
         function spawnChests(spawnLocations) { 
             const potionTypes = [
@@ -1166,14 +1122,6 @@
         const btnSaveEquipment = document.getElementById('btnSaveEquipment');
         const btnReturnToDifficulty = document.getElementById('btnReturnToDifficulty');
 
-        // Audio elements
-        const audioMenu = document.getElementById('audioMenu');
-        const audioGameOver = document.getElementById('audioGameOver');
-        const audioVictory = document.getElementById('audioVictory');
-        const audioFloorUp = document.getElementById('audioFloorUp');
-        const audioCriticalHit = document.getElementById('audioCriticalHit');
-        const audioChestOpen = document.getElementById('audioChestOpen'); 
-
         // New audio elements for dungeon tracks
         const dungeonTracks = [
             document.getElementById('audioDungeon1'),
@@ -1190,7 +1138,7 @@
         let currentDungeonTrackIndex = 0; // To cycle through dungeon tracks
 
         // New audio elements for boss and equipment
-        const audioBoss = document.getElementById('audioBoss'); // Now points to DunGeoN.mp3
+        const audioBoss = document.getElementById('audioBoss');
         const audioEquipmentOpen = document.getElementById('audioEquipmentOpen');
 
         let currentAudioTrack = null;
@@ -1205,9 +1153,6 @@
             }
 
             switch (track) {
-                case 'menu':
-                    nextTrackElement = audioMenu;
-                    break;
                 case 'dungeon':
                     // Play a random dungeon track
                     currentDungeonTrackIndex = Math.floor(Math.random() * dungeonTracks.length);
@@ -1215,21 +1160,6 @@
                     break;
                 case 'boss':
                     nextTrackElement = audioBoss;
-                    break;
-                case 'gameOver':
-                    nextTrackElement = audioGameOver;
-                    break;
-                case 'victory':
-                    nextTrackElement = audioVictory;
-                    break;
-                case 'floorUp': 
-                    nextTrackElement = audioFloorUp;
-                    break;
-                case 'criticalHit': 
-                    nextTrackElement = audioCriticalHit;
-                    break;
-                case 'chestOpen': 
-                    nextTrackElement = audioChestOpen;
                     break;
                 case 'equipmentOpen': // New case for equipment open sound
                     nextTrackElement = audioEquipmentOpen;
@@ -1299,7 +1229,7 @@
         difficultyScreen.addEventListener('click', () => {
             // Only play menu music if it's not already playing and the game hasn't started
             if (!gameStarted && currentAudioTrack !== audioMenu) {
-                playMusic('menu');
+                // playMusic('menu'); // This can be uncommented if menu music is desired
             }
         });
 
@@ -1384,7 +1314,6 @@
                 player.equipped.habilidad3 = null;
             }
         }
-
 
         function setDifficultyAndStart(difficulty, startFloor = 1, baseLevel = 1) { 
             selectedDifficulty = difficulty;
@@ -1482,12 +1411,10 @@
             minimapCanvas.width = mapWidth * minimapTileSize;
             minimapCanvas.height = mapHeight * minimapTileSize;
             
-            playMusic('dungeon'); // Start dungeon music
             requestAnimationFrame(gameLoop);
         }
 
 
-        // Event listeners
         document.addEventListener('keydown', (e) => {
             // Allow navigation in menus even if game hasn't started
             if (isInventoryOpen || isSkillMenuOpen || isEquipmentOpen) {
@@ -1504,17 +1431,14 @@
 
             // Game over state handling
             if (gameOver) {
-                 if (e.code === 'KeyR') keys.KeyR = true; 
-                 e.preventDefault(); 
-                 return;
+                if (e.code === 'KeyR') keys.KeyR = true; 
+                e.preventDefault(); 
+                return;
             }
 
             // In-game menu toggles
             if (e.code === 'KeyI') { toggleInventory(); e.preventDefault(); return; }
             if (e.code === 'KeyY') { toggleSkillMenu(); e.preventDefault(); return; }
-            // Equipment menu is only accessible from difficulty screen
-            if (e.code === 'KeyO') { showMessage("El menú de equipo solo se puede acceder desde la pantalla de inicio."); e.preventDefault(); return; }
-
 
             // In-game actions (movement, attack, skill activation)
             if (!isInventoryOpen && !isSkillMenuOpen && !isEquipmentOpen) {
@@ -1580,7 +1504,7 @@
 
 
             if (loadedImages.player && loadedImages.player.complete) {
-                 ctx.drawImage(loadedImages.player, 0,0,64,64, drawX, drawY, tileSize, tileSize);
+                ctx.drawImage(loadedImages.player, 0,0,64,64, drawX, drawY, tileSize, tileSize);
             } else { 
                 ctx.fillStyle = 'blue'; ctx.fillRect(drawX, drawY, tileSize, tileSize);
             }
@@ -1595,7 +1519,7 @@
             }
             const currentTime = Date.now();
             if (currentTime - player.lastHitTime < player.invulnerabilityTime) { 
-                 ctx.save();
+                ctx.save();
                 ctx.globalAlpha = 0.3 + Math.sin(currentTime / 100) * 0.2; 
                 ctx.fillStyle = 'rgba(100, 100, 255, 0.7)'; 
                 ctx.beginPath();
@@ -1603,7 +1527,7 @@
                 ctx.fill();
                 ctx.restore();
             }
-             if (player.isSlowed && currentTime < player.slowEndTime) {
+            if (player.isSlowed && currentTime < player.slowEndTime) {
                 ctx.fillStyle = 'rgba(0, 100, 255, 0.3)'; 
                 ctx.fillRect(drawX, drawY, tileSize, tileSize);
             }
@@ -1650,7 +1574,7 @@
             else if (m.type === 'lobo') monsterImage = loadedImages.lobo;
             else if (m.type === 'skeleton') monsterImage = loadedImages.skeleton;
             else if (m.type === 'mini-boss') monsterImage = loadedImages.miniBoss;
-            else if (m.type === 'boss') monsterImage = loaded.images.boss;
+            else if (m.type === 'boss') monsterImage = loadedImages.boss;
             else if (m.type === 'final-arachnid-boss') monsterImage = loadedImages.finalBoss; 
             else if (m.type === 'spiderling') monsterImage = loadedImages.spiderling;
             else if (m.type === 'minion') { 
@@ -1691,3 +1615,861 @@
         }
         
         function drawProjectiles(offsetX, offsetY) {
+            projectiles.forEach(proj => {
+                const screenX = proj.x * tileSize - offsetX;
+                const screenY = proj.y * tileSize - offsetY;
+                
+                ctx.save();
+                ctx.translate(screenX + tileSize / 2, screenY + tileSize / 2); 
+
+                let rotationAngle = 0;
+                if (proj.type === 'arrow' || proj.type === 'web' || proj.type === 'dark_ray' || proj.type === 'celestial_ray') { 
+                    rotationAngle = Math.atan2(proj.dy, proj.dx);
+                }
+                ctx.rotate(rotationAngle);
+
+                if (proj.type === 'fireball') {
+                    ctx.fillStyle = 'rgba(255, 50, 0, 0.8)'; ctx.beginPath();
+                    ctx.arc(0, 0, tileSize/3, 0, Math.PI*2); ctx.fill();
+                    ctx.fillStyle = 'rgba(255, 165, 0, 0.6)';
+                    for(let i=0; i<3; i++) { 
+                        const angle = Math.random() * Math.PI * 2; const dist = Math.random() * tileSize/3; 
+                        ctx.beginPath();
+                        ctx.arc(Math.cos(angle)*dist, Math.sin(angle)*dist, tileSize/8, 0, Math.PI*2); 
+                        ctx.fill();
+                    }
+                } else if (proj.type === 'web') {
+                    const animationProgress = proj.distanceTraveled / proj.maxRangeTiles;
+                    const currentRadius = animationProgress * tileSize * 0.7; 
+                    const alpha = 1 - animationProgress; 
+
+                    ctx.fillStyle = `rgba(200, 200, 200, ${alpha * 0.7})`; 
+                    ctx.beginPath();
+                    ctx.arc(0, 0, currentRadius, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.strokeStyle = `rgba(220, 220, 220, ${alpha})`;
+                    ctx.lineWidth = 1 + animationProgress * 2; 
+                    for(let i=0; i< 5; i++){
+                        ctx.beginPath();
+                        ctx.moveTo(0, 0);
+                        ctx.lineTo(Math.cos(i * Math.PI * 2 / 5) * currentRadius, Math.sin(i * Math.PI * 2 / 5) * currentRadius);
+                        ctx.stroke();
+                    }
+                } else if (proj.type === 'arrow') {
+                    ctx.fillStyle = '#8B4513'; 
+                    ctx.fillRect(-2, -10, 4, 20); 
+                    ctx.beginPath(); 
+                    ctx.moveTo(0, -10);
+                    ctx.lineTo(-5, -5);
+                    ctx.lineTo(5, -5);
+                    ctx.closePath();
+                    ctx.fill();
+                } else if (proj.type === 'dark_ray') {
+                    ctx.fillStyle = 'rgba(138, 43, 226, 0.8)'; 
+                    ctx.fillRect(-5, -5, 10, 10); 
+                    const glow = ctx.createRadialGradient(0, 0, 2, 0, 0, 15);
+                    glow.addColorStop(0, 'rgba(138, 43, 226, 0.8)');
+                    glow.addColorStop(1, 'rgba(138, 43, 226, 0)');
+                    ctx.fillStyle = glow;
+                    ctx.beginPath();
+                    ctx.arc(0, 0, 15, 0, Math.PI * 2);
+                    ctx.fill();
+                } else if (proj.type === 'celestial_ray') { 
+                    // Draw a more distinct ray
+                    const rayLength = tileSize * 1.5; // Make the ray longer
+                    const rayWidth = tileSize * 0.15; // Make it thinner
+                    const glowRadius = tileSize * 0.8; // Larger glow
+
+                    // Main ray body
+                    ctx.fillStyle = 'rgba(255, 255, 0, 0.9)'; // Bright yellow
+                    ctx.fillRect(-rayWidth / 2, -rayLength / 2, rayWidth, rayLength);
+
+                    // Add a strong radial glow
+                    const glow = ctx.createRadialGradient(0, 0, rayWidth / 4, 0, 0, glowRadius);
+                    glow.addColorStop(0, 'rgba(255, 255, 100, 0.8)'); // Brighter core
+                    glow.addColorStop(0.5, 'rgba(255, 255, 0, 0.4)'); // Yellow glow
+                    glow.addColorStop(1, 'rgba(255, 255, 0, 0)'); // Fades out
+                    ctx.fillStyle = glow;
+                    ctx.beginPath();
+                    ctx.arc(0, 0, glowRadius, 0, Math.PI * 2);
+                    ctx.fill();
+
+                    // Add some sparkling particles
+                    for (let i = 0; i < 3; i++) {
+                        const sparkX = (Math.random() - 0.5) * rayWidth * 2;
+                        const sparkY = (Math.random() - 0.5) * rayLength * 2;
+                        const sparkSize = Math.random() * 3 + 1;
+                        ctx.fillStyle = `rgba(255, 255, 255, ${0.5 + Math.random() * 0.5})`;
+                        ctx.beginPath();
+                        ctx.arc(sparkX, sparkY, sparkSize, 0, Math.PI * 2);
+                        ctx.fill();
+                    }
+                } else {
+                    ctx.fillStyle = 'yellow';
+                    ctx.beginPath();
+                    ctx.arc(0, 0, tileSize/4, 0, Math.PI*2);
+                    ctx.fill();
+                }
+                ctx.restore();
+            });
+        }
+
+        let damageTexts = [];
+        let criticalHitEffects = [];
+
+        function drawDamageTexts(offsetX, offsetY) {
+            ctx.save();
+            damageTexts.forEach(dt => {
+                const screenX = dt.x * tileSize - offsetX + tileSize / 2;
+                const screenY = dt.y * tileSize - offsetY;
+                
+                ctx.globalAlpha = dt.alpha;
+                ctx.font = dt.isCritical ? 'bold 22px Georgia' : 'bold 18px Georgia';
+                ctx.fillStyle = dt.isCritical ? '#FFD700' : (dt.isHeal ? '#00FF00' : '#FF4500');
+                ctx.strokeStyle = '#000';
+                ctx.lineWidth = 2;
+                
+                ctx.strokeText(dt.text, screenX, screenY);
+                ctx.fillText(dt.text, screenX, screenY);
+            });
+            ctx.restore();
+        }
+
+        function drawCriticalHitEffects(offsetX, offsetY) {
+            ctx.save();
+            criticalHitEffects.forEach(effect => {
+                const screenX = effect.x * tileSize - offsetX + tileSize / 2;
+                const screenY = effect.y * tileSize - offsetY + tileSize / 2;
+                
+                ctx.globalAlpha = effect.alpha;
+                ctx.strokeStyle = '#FFD700';
+                ctx.lineWidth = 3 * effect.alpha; 
+
+                for (let i = 0; i < 4; i++) {
+                    const angle = (Math.PI / 2) * i + effect.rotation;
+                    const length = tileSize * 0.8 * (1 - effect.alpha);
+                    ctx.beginPath();
+                    ctx.moveTo(screenX, screenY);
+                    ctx.lineTo(screenX + Math.cos(angle) * length, screenY + Math.sin(angle) * length);
+                    ctx.stroke();
+                }
+            });
+            ctx.restore();
+        }
+
+        function drawMinimap() {
+            const minimapTileSize = 5;
+            minimapCtx.clearRect(0, 0, minimapCanvas.width, minimapCanvas.height);
+
+            for (let y = 0; y < mapHeight; y++) {
+                for (let x = 0; x < mapWidth; x++) {
+                    if (map[y][x] === 1) { 
+                        minimapCtx.fillStyle = '#777';
+                        minimapCtx.fillRect(x * minimapTileSize, y * minimapTileSize, minimapTileSize, minimapTileSize);
+                    } else if (map[y][x] === 2) { 
+                        minimapCtx.fillStyle = 'gold';
+                        minimapCtx.fillRect(x * minimapTileSize, y * minimapTileSize, minimapTileSize, minimapTileSize);
+                    }
+                }
+            }
+
+            minimapCtx.fillStyle = 'blue';
+            minimapCtx.fillRect(player.tileX * minimapTileSize, player.tileY * minimapTileSize, minimapTileSize, minimapTileSize);
+
+            monsters.forEach(m => {
+                minimapCtx.fillStyle = m.isMinion ? 'cyan' : 'red';
+                minimapCtx.fillRect(m.tileX * minimapTileSize, m.tileY * minimapTileSize, minimapTileSize, minimapTileSize);
+            });
+
+            if (stairLocation.active) {
+                minimapCtx.fillStyle = 'purple';
+                minimapCtx.fillRect(stairLocation.x * minimapTileSize, stairLocation.y * minimapTileSize, minimapTileSize, minimapTileSize);
+            }
+        }
+
+        function drawUI() {
+            ctx.fillStyle = 'rgba(0,0,0,0.5)';
+            ctx.fillRect(10, 10, 200, 120);
+            ctx.fillStyle = 'white';
+            ctx.font = '16px Georgia';
+            ctx.fillText(`Nivel: ${player.level}`, 20, 30);
+            ctx.fillText(`HP: ${player.hp} / ${player.maxHp}`, 20, 50);
+            ctx.fillText(`ATK: ${player.atk}`, 20, 70);
+            ctx.fillText(`DEF: ${player.def}`, 20, 90);
+            ctx.fillText(`SPD: ${player.spd}`, 20, 110);
+            ctx.fillText(`Piso: ${currentFloor}`, 20, 130);
+
+            // Draw XP bar
+            const xpBarWidth = 200;
+            const xpNeeded = 100 * player.level;
+            const xpPercent = player.xp / xpNeeded;
+            ctx.fillStyle = '#555';
+            ctx.fillRect(10, canvas.height - 30, xpBarWidth, 20);
+            ctx.fillStyle = '#FFD700';
+            ctx.fillRect(10, canvas.height - 30, xpBarWidth * xpPercent, 20);
+            ctx.fillStyle = 'white';
+            ctx.font = '14px Georgia';
+            ctx.fillText(`XP: ${player.xp} / ${xpNeeded}`, 15, canvas.height - 15);
+        }
+
+        function drawGameOver() {
+            ctx.fillStyle = 'rgba(0,0,0,0.7)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = 'white';
+            ctx.font = '40px Georgia';
+            ctx.textAlign = 'center';
+            ctx.fillText(finalOutcomeMessage, canvas.width / 2, canvas.height / 2 - 40);
+            ctx.font = '20px Georgia';
+            ctx.fillText(finalOutcomeMessageLine2, canvas.width / 2, canvas.height / 2);
+            ctx.fillText(`Puntuación Final: ${lastGameScore}`, canvas.width / 2, canvas.height / 2 + 40);
+            ctx.fillText(`Enemigos Derrotados: ${lastEnemiesDefeated}`, canvas.width / 2, canvas.height/2 + 70);
+            ctx.fillText("Presiona 'R' para reiniciar", canvas.width / 2, canvas.height / 2 + 100);
+            ctx.textAlign = 'left';
+        }
+
+        // --- Lógica de Actualización ---
+        function update() {
+            if (gameOver) {
+                if (keys.KeyR) {
+                    resetGame();
+                }
+                return;
+            }
+
+            const currentTime = Date.now();
+            const moveSpeed = 1000 / player.spd;
+
+            if (currentTime - lastMoveTime > moveSpeed) {
+                let moved = false;
+                let dx = 0, dy = 0;
+
+                if (keys.ArrowLeft || keys.KeyA) { dx = -1; player.facingDirection = 'left'; moved = true; }
+                if (keys.ArrowRight || keys.KeyD) { dx = 1; player.facingDirection = 'right'; moved = true; }
+                if (keys.ArrowUp || keys.KeyW) { dy = -1; player.facingDirection = 'up'; moved = true; }
+                if (keys.ArrowDown || keys.KeyS) { dy = 1; player.facingDirection = 'down'; moved = true; }
+
+                if (moved) {
+                    const newX = player.tileX + dx;
+                    const newY = player.tileY + dy;
+                    if (newX >= 0 && newX < mapWidth && newY >= 0 && newY < mapHeight && map[newY][newX] !== 0) {
+                        player.tileX = newX;
+                        player.tileY = newY;
+                        lastMoveTime = currentTime;
+                        walkFrame = (walkFrame + 1) % 4;
+
+                        if (map[newY][newX] === 2) { // Chest
+                            const chestIndex = chests.findIndex(c => c.tileX === newX && c.tileY === newY);
+                            if (chestIndex !== -1) {
+                                const chest = chests[chestIndex];
+                                player.inventory.push(chest.gear);
+                                showMessage(`¡Has encontrado ${chest.gear.name}!`);
+                                chests.splice(chestIndex, 1);
+                                map[newY][newX] = 1; // Remove chest from map
+                            }
+                        }
+
+                        if (stairLocation.active && newX === stairLocation.x && newY === stairLocation.y) {
+                            if (currentFloor < maxFloors) {
+                                currentFloor++;
+                                generateFloor();
+                            } else {
+                                // This case should ideally not be reached if the final floor has no stairs
+                            }
+                        }
+                    }
+                }
+            }
+
+            if (keys.Space && currentTime - lastAttackTime > attackInterval) {
+                player.isAttacking = true;
+                player.attackAnimFrame = 0;
+                lastAttackTime = currentTime;
+
+                let targetX = player.tileX;
+                let targetY = player.tileY;
+                if (player.facingDirection === 'right') targetX++;
+                if (player.facingDirection === 'left') targetX--;
+                if (player.facingDirection === 'up') targetY--;
+                if (player.facingDirection === 'down') targetY++;
+
+                const weapon = player.equipped.weapon;
+                if (weapon) {
+                    if (weapon.name === 'Arco del Bosque') {
+                        projectiles.push(new Projectile(player.tileX, player.tileY, targetX - player.tileX, targetY - player.tileY, 'arrow', 'player', player.atk, false, 5));
+                    } else if (weapon.name === 'Rayo de Oscuridad') {
+                        projectiles.push(new Projectile(player.tileX, player.tileY, targetX - player.tileX, targetY - player.tileY, 'dark_ray', 'player', player.atk, false, 4));
+                    } else if (weapon.name === 'Libro Celestial') {
+                        projectiles.push(new Projectile(player.tileX, player.tileY, targetX - player.tileX, targetY - player.tileY, 'celestial_ray', 'player', player.atk, false, 4));
+                    }
+                }
+
+                monsters.forEach(m => {
+                    if (m.tileX === targetX && m.tileY === targetY) {
+                        let damage = Math.max(1, player.atk - (m.isWeakened ? m.def * 0.95 : m.def));
+                        let isCritical = player.nextHitCritical || Math.random() < (0.05 + player.criticalChanceBonus);
+                        if (isCritical) {
+                            damage = Math.floor(damage * 1.5);
+                            criticalHitEffects.push({ x: m.tileX, y: m.tileY, alpha: 1, rotation: Math.random() * Math.PI * 2 });
+                            player.nextHitCritical = false;
+                        }
+                        m.hp -= damage;
+                        damageTexts.push({ x: m.tileX, y: m.tileY, text: `-${damage}`, alpha: 1, isCritical });
+                        m.hitFrame = 5;
+                    }
+                });
+            }
+
+            monsters.forEach(m => {
+                if (m.isFrozen && currentTime > m.frozenEndTime) {
+                    m.isFrozen = false;
+                }
+                if (m.isWeakened && currentTime > m.weaknessEndTime) {
+                    m.isWeakened = false;
+                }
+                if (m.isBleeding && currentTime > m.bleedingEndTime) {
+                    m.isBleeding = false;
+                }
+                if (m.isAttackSlowed && currentTime > m.attackSlowEndTime) {
+                    m.isAttackSlowed = false;
+                }
+
+                if (m.isMinion) {
+                    if (currentTime > m.spawnTime + m.duration) {
+                        m.hp = 0; // Minion expires
+                        return;
+                    }
+                    let nearestEnemy = null;
+                    let minDistance = Infinity;
+                    monsters.filter(e => !e.isMinion).forEach(enemy => {
+                        const distance = Math.sqrt(Math.pow(m.tileX - enemy.tileX, 2) + Math.pow(m.tileY - enemy.tileY, 2));
+                        if (distance < minDistance) {
+                            minDistance = distance;
+                            nearestEnemy = enemy;
+                        }
+                    });
+
+                    if (nearestEnemy) {
+                        if (minDistance < 1.5 && currentTime - m.lastAttackTime > 1500) {
+                            let damage = Math.max(1, m.atk - nearestEnemy.def);
+                            nearestEnemy.hp -= damage;
+                            damageTexts.push({ x: nearestEnemy.tileX, y: nearestEnemy.tileY, text: `-${damage}`, alpha: 1, isCritical: false });
+                            nearestEnemy.hitFrame = 5;
+                            m.lastAttackTime = currentTime;
+                        } else if (currentTime - m.lastMoveTime > 1000 / m.spd) {
+                            let dx = Math.sign(nearestEnemy.tileX - m.tileX);
+                            let dy = Math.sign(nearestEnemy.tileY - m.tileY);
+                            const newX = m.tileX + dx;
+                            const newY = m.tileY + dy;
+                            if (map[newY] && map[newY][newX] === 1 && !monsters.some(other => other.tileX === newX && other.tileY === newY)) {
+                                m.tileX = newX;
+                                m.tileY = newY;
+                                m.lastMoveTime = currentTime;
+                            }
+                        }
+                    }
+                } else if (!m.isFrozen) {
+                    const monsterMoveSpeed = 1000 / m.spd;
+                    if (currentTime - m.lastMoveTime > monsterMoveSpeed) {
+                        const distanceToPlayer = Math.sqrt(Math.pow(player.tileX - m.tileX, 2) + Math.pow(player.tileY - m.tileY, 2));
+                        if (distanceToPlayer < 10 && (!player.stealthActive || currentTime > player.stealthEndTime)) {
+                            let dx = Math.sign(player.tileX - m.tileX);
+                            let dy = Math.sign(player.tileY - m.tileY);
+                            const newX = m.tileX + dx;
+                            const newY = m.tileY + dy;
+                            if (map[newY] && map[newY][newX] === 1 && !monsters.some(other => other.tileX === newX && other.tileY === newY)) {
+                                m.tileX = newX;
+                                m.tileY = newY;
+                                m.lastMoveTime = currentTime;
+                            }
+                        }
+                    }
+
+                    if (Math.abs(player.tileX - m.tileX) <= 1 && Math.abs(player.tileY - m.tileY) <= 1 && currentTime - m.lastAttackTime > monsterAttackInterval) {
+                        if (!player.isInvincible) {
+                            let damage = Math.max(1, m.atk - player.def);
+                            player.hp -= damage;
+                            damageTexts.push({ x: player.tileX, y: player.tileY, text: `-${damage}`, alpha: 1, isCritical: false });
+                            player.hitFrame = 10;
+                            player.lastHitTime = currentTime;
+                        }
+                        m.lastAttackTime = currentTime;
+                    }
+                }
+            });
+
+            monsters = monsters.filter(m => {
+                if (m.hp <= 0) {
+                    if (!m.isMinion) {
+                        player.xp += m.xp;
+                        player.enemiesDefeatedThisRun++;
+                        if (m.dropsKey) {
+                            player.hasKey = true;
+                            stairLocation.active = true;
+                            showMessage("¡Has encontrado la llave!");
+                        }
+                        if (m.type === 'final-arachnid-boss') {
+                            endGame(true);
+                        }
+                    }
+                    return false;
+                }
+                return true;
+            });
+
+            if (player.xp >= 100 * player.level) {
+                player.level++;
+                player.xp = 0;
+                player.maxHp += 20;
+                player.hp = player.maxHp;
+                player.baseAtk += 1.5;
+                player.baseDef += 1;
+                player.skillPoints++;
+                updateStats();
+                showMessage(`¡Has subido al nivel ${player.level}!`);
+            }
+
+            if (player.hp <= 0) {
+                endGame(false);
+            }
+
+            if (player.isAttacking) {
+                player.attackAnimFrame++;
+                if (player.attackAnimFrame >= player.attackAnimDuration) {
+                    player.isAttacking = false;
+                }
+            }
+
+            damageTexts.forEach(dt => dt.alpha -= 0.02);
+            damageTexts = damageTexts.filter(dt => dt.alpha > 0);
+
+            criticalHitEffects.forEach(effect => effect.alpha -= 0.05);
+            criticalHitEffects = criticalHitEffects.filter(effect => effect.alpha > 0);
+
+            projectiles.forEach((p, index) => {
+                if (!p.update()) {
+                    projectiles.splice(index, 1);
+                }
+            });
+
+            updateProjectiles();
+            updateStatusEffects();
+        }
+
+        function updateProjectiles() {
+            projectiles.forEach((proj, projIndex) => {
+                const tileX = Math.floor(proj.x);
+                const tileY = Math.floor(proj.y);
+
+                if (tileX < 0 || tileX >= mapWidth || tileY < 0 || tileY >= mapHeight || map[tileY][tileX] === 0) {
+                    projectiles.splice(projIndex, 1);
+                    return;
+                }
+
+                if (proj.owner === 'player') {
+                    monsters.forEach((monster, monsterIndex) => {
+                        if (Math.floor(monster.tileX) === tileX && Math.floor(monster.tileY) === tileY) {
+                            let damage = Math.max(1, proj.damage - monster.def);
+                            monster.hp -= damage;
+                            damageTexts.push({ x: monster.tileX, y: monster.tileY, text: `-${damage}`, alpha: 1, isCritical: proj.isCritical });
+                            monster.hitFrame = 5;
+                            projectiles.splice(projIndex, 1);
+                        }
+                    });
+                } else { // Monster projectile
+                    if (Math.floor(player.tileX) === tileX && Math.floor(player.tileY) === tileY) {
+                        if (!player.isInvincible) {
+                            let damage = Math.max(1, proj.damage - player.def);
+                            player.hp -= damage;
+                            damageTexts.push({ x: player.tileX, y: player.tileY, text: `-${damage}`, alpha: 1, isCritical: false });
+                            player.hitFrame = 10;
+                            player.lastHitTime = Date.now();
+                            if (proj.type === 'web') {
+                                player.isSlowed = true;
+                                player.slowEndTime = Date.now() + 5000;
+                            }
+                        }
+                        projectiles.splice(projIndex, 1);
+                    }
+                }
+            });
+        }
+
+        function updateStatusEffects() {
+            const currentTime = Date.now();
+            if (player.isSpeedBoosted && currentTime > player.speedBoostEndTime) {
+                player.isSpeedBoosted = false;
+                updateStats();
+            }
+            if (player.isInvincible && currentTime > player.invincibleEndTime) {
+                player.isInvincible = false;
+            }
+            if (player.stealthActive && currentTime > player.stealthEndTime) {
+                player.stealthActive = false;
+                updateStats();
+            }
+            if (player.luckBoostEndTime > 0 && currentTime > player.luckBoostEndTime) {
+                player.luckBoostEndTime = 0;
+                updateStats();
+            }
+            if (player.isSlowed && currentTime > player.slowEndTime) {
+                player.isSlowed = false;
+            }
+        }
+
+        function updateStats() {
+            let totalAtk = player.baseAtk;
+            let totalDef = player.baseDef;
+            let totalSpd = player.baseSpd;
+            let criticalChance = 0.05 + player.criticalChanceBonus;
+
+            const equippedSets = {};
+            for (const slot in player.equipped) {
+                const item = player.equipped[slot];
+                if (item && item.set) {
+                    equippedSets[item.set] = (equippedSets[item.set] || 0) + 1;
+                }
+                if (item && typeof item === 'object') {
+                    totalAtk += item.atk || 0;
+                    totalDef += item.def || 0;
+                    totalSpd += item.spd || 0;
+                    criticalChance += item.critical || 0;
+                }
+            }
+
+            // Set bonuses
+            if (equippedSets['Hierro'] >= 4) totalDef += 10;
+            if (equippedSets['Caballero'] >= 4) { totalAtk += 5; totalDef += 5; }
+            if (equippedSets['Demonio'] >= 4) { totalAtk += 8; criticalChance += 0.05; }
+            if (equippedSets['León'] >= 4) totalSpd += 5;
+            if (equippedSets['Asesinato'] >= 4) criticalChance += 0.1;
+            if (equippedSets['Noble'] >= 4) player.maxHp += 50;
+            if (equippedSets['Mago'] >= 4) { 
+                player.hasMiniShield = true; 
+                player.miniShieldMaxHP = 50; 
+                if (player.miniShieldHP <= 0 && currentTime > player.miniShieldCooldownEnd) {
+                    player.miniShieldHP = player.miniShieldMaxHP;
+                }
+            } else {
+                player.hasMiniShield = false;
+            }
+
+            player.atk = Math.floor(totalAtk * (player.stealthActive ? player.stealthStatMultiplier : 1));
+            player.def = Math.floor(totalDef * (player.stealthActive ? player.stealthStatMultiplier : 1));
+            player.spd = totalSpd * (player.isSpeedBoosted ? 1.5 : 1);
+            if (player.luckBoostEndTime > Date.now()) criticalChance += 0.05;
+
+            if (player.furyActive && player.hp <= player.maxHp * 0.25) {
+                player.atk *= 2;
+            }
+
+            // Update attack interval based on weapon
+            attackInterval = player.equipped.weapon ? (player.equipped.weapon.attackSpeed || 400) : 400;
+        }
+
+        function resetGame() {
+            difficultyScreen.style.display = 'flex';
+            gameCanvas.style.display = 'none';
+            minimapCanvas.style.display = 'none';
+            gameOver = false;
+            gameStarted = false;
+            keys.KeyR = false;
+
+            lastScoreDisplayElement.textContent = `Última Puntuación: ${lastGameScore}`;
+            difficultyTitleElement.textContent = "Selecciona la Dificultad";
+            
+            // Stop any currently playing music
+            if (currentAudioTrack) {
+                currentAudioTrack.pause();
+                currentAudioTrack.currentTime = 0;
+                currentAudioTrack = null;
+            }
+        }
+
+        function endGame(isVictory) {
+            gameOver = true;
+            lastGameScore = player.level * 1000 + player.xp + player.enemiesDefeatedThisRun * 50;
+            lastEnemiesDefeated = player.enemiesDefeatedThisRun;
+            if (isVictory) {
+                finalOutcomeMessage = "¡Victoria!";
+                finalOutcomeMessageLine2 = "Has conquistado la mazmorra.";
+            } else {
+                finalOutcomeMessage = "Has Muerto";
+                finalOutcomeMessageLine2 = "La mazmorra te ha reclamado.";
+            }
+            savePlayerDataToLocalStorage();
+        }
+
+        // --- Game Loop ---
+        function gameLoop(timestamp) {
+            update();
+            draw();
+            if (!gameOver) {
+                requestAnimationFrame(gameLoop);
+            }
+        }
+
+        function draw() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            const offsetX = player.tileX * tileSize - canvas.width / 2;
+            const offsetY = player.tileY * tileSize - canvas.height / 2;
+
+            for (let y = 0; y < mapHeight; y++) {
+                for (let x = 0; x < mapWidth; x++) {
+                    const screenX = x * tileSize - offsetX;
+                    const screenY = y * tileSize - offsetY;
+                    if (screenX > -tileSize && screenX < canvas.width && screenY > -tileSize && screenY < canvas.height) {
+                        if (map[y][x] === 0) drawWall(screenX, screenY);
+                        else if (map[y][x] === 1) drawFloor(screenX, screenY);
+                        else if (map[y][x] === 2) drawChest(screenX, screenY);
+                    }
+                }
+            }
+
+            if (stairLocation.active) {
+                const screenX = stairLocation.x * tileSize - offsetX;
+                const screenY = stairLocation.y * tileSize - offsetY;
+                drawStairs(screenX, screenY);
+            }
+
+            monsters.forEach(m => {
+                const screenX = m.tileX * tileSize - offsetX;
+                const screenY = m.tileY * tileSize - offsetY;
+                drawMonster(m, screenX, screenY);
+            });
+
+            drawPlayer(canvas.width / 2, canvas.height / 2);
+            drawProjectiles(offsetX, offsetY);
+            drawDamageTexts(offsetX, offsetY);
+            drawCriticalHitEffects(offsetX, offsetY);
+            drawUI();
+            drawMinimap();
+
+            if (gameOver) {
+                drawGameOver();
+            }
+        }
+
+        // --- Menu Handling ---
+        function toggleInventory() {
+            isInventoryOpen = !isInventoryOpen;
+            document.getElementById('inventoryMenu').style.display = isInventoryOpen ? 'block' : 'none';
+            if (isInventoryOpen) {
+                isSkillMenuOpen = false;
+                document.getElementById('skillMenu').style.display = 'none';
+                isEquipmentOpen = false;
+                document.getElementById('equipmentMenu').style.display = 'none';
+                updateInventoryMenu();
+            }
+        }
+
+        function toggleSkillMenu() {
+            isSkillMenuOpen = !isSkillMenuOpen;
+            document.getElementById('skillMenu').style.display = isSkillMenuOpen ? 'block' : 'none';
+            if (isSkillMenuOpen) {
+                isInventoryOpen = false;
+                document.getElementById('inventoryMenu').style.display = 'none';
+                isEquipmentOpen = false;
+                document.getElementById('equipmentMenu').style.display = 'none';
+                updateSkillMenu();
+            }
+        }
+
+        function toggleEquipmentMenu() {
+            isEquipmentOpen = !isEquipmentOpen;
+            equipmentMenu.style.display = isEquipmentOpen ? 'block' : 'none';
+            difficultyScreen.style.display = isEquipmentOpen ? 'none' : 'flex';
+            if (isEquipmentOpen) {
+                playMusic('equipmentOpen');
+                isInventoryOpen = false;
+                document.getElementById('inventoryMenu').style.display = 'none';
+                isSkillMenuOpen = false;
+                document.getElementById('skillMenu').style.display = 'none';
+                updateEquipmentMenu();
+            }
+        }
+
+        function updateInventoryMenu() {
+            const gearListElement = document.getElementById('gearList');
+            gearListElement.innerHTML = '';
+            document.getElementById('playerGoldInventory').textContent = player.gold;
+
+            const categorizedInventory = {};
+            player.inventory.forEach(item => {
+                if (!categorizedInventory[item.type]) {
+                    categorizedInventory[item.type] = [];
+                }
+                categorizedInventory[item.type].push(item);
+            });
+
+            for (const type in categorizedInventory) {
+                const typeHeader = document.createElement('li');
+                typeHeader.innerHTML = `<strong>${type.charAt(0).toUpperCase() + type.slice(1)}</strong>`;
+                typeHeader.style.backgroundColor = '#ccc';
+                gearListElement.appendChild(typeHeader);
+
+                categorizedInventory[type].forEach((item, index) => {
+                    const li = document.createElement('li');
+                    const isEquipped = Object.values(player.equipped).some(equippedItem => equippedItem && equippedItem.name === item.name);
+                    li.textContent = `${item.name} (Lvl ${item.itemLevel}) - ATK:${item.atk || 0} DEF:${item.def || 0} SPD:${item.spd || 0}`;
+                    li.className = isEquipped ? 'inventory-equipped' : 'inventory-unequipped';
+                    if (index === selectedIndex) {
+                        li.classList.add('selected');
+                    }
+                    gearListElement.appendChild(li);
+                });
+            }
+        }
+
+        function updateSkillMenu() {
+            const skillListElement = document.getElementById('skillList');
+            skillListElement.innerHTML = '';
+            document.getElementById('skillPoints').textContent = `Puntos de Habilidad: ${player.skillPoints}`;
+
+            skills.forEach((skill, index) => {
+                const li = document.createElement('li');
+                const isUnlocked = player.unlockedSkills.includes(skill.name);
+                const isEquipped = Object.values(player.equipped).includes(skill.name);
+                const isUsed = player.skillUsageThisFloor[skill.name];
+
+                li.innerHTML = `<strong>${skill.name}</strong>: ${skill.effect}`;
+                if (isEquipped) {
+                    li.classList.add('skill-equipped');
+                } else if (isUnlocked) {
+                    li.classList.add('unlocked');
+                } else {
+                    li.classList.add('locked');
+                }
+                if (isUsed) {
+                    li.classList.add('skill-used');
+                }
+                if (index === selectedSkillIndex) {
+                    li.classList.add('selected');
+                }
+                skillListElement.appendChild(li);
+            });
+        }
+
+        function updateEquipmentMenu() {
+            equippedSlotsDiv.innerHTML = '';
+            const slots = ['weapon', 'helmet', 'armor', 'gloves', 'boots', 'habilidad1', 'habilidad2', 'habilidad3'];
+            
+            slots.forEach((slot, index) => {
+                const row = document.createElement('div');
+                row.className = 'equipment-slot-row';
+                if (index === selectedEquipmentSlotIndex) {
+                    row.classList.add('selected');
+                }
+
+                const slotName = document.createElement('span');
+                slotName.textContent = `${slot.charAt(0).toUpperCase() + slot.slice(1)}:`;
+                row.appendChild(slotName);
+
+                const itemName = document.createElement('span');
+                const equippedItem = player.equipped[slot];
+                itemName.textContent = equippedItem ? (typeof equippedItem === 'string' ? equippedItem : equippedItem.name) : 'Vacío';
+                row.appendChild(itemName);
+
+                const navButtons = document.createElement('div');
+                const prevButton = document.createElement('button');
+                prevButton.textContent = '<';
+                prevButton.className = 'nav-button';
+                prevButton.onclick = () => navigateEquipment(slot, -1);
+                navButtons.appendChild(prevButton);
+
+                const nextButton = document.createElement('button');
+                nextButton.textContent = '>';
+                nextButton.className = 'nav-button';
+                nextButton.onclick = () => navigateEquipment(slot, 1);
+                navButtons.appendChild(nextButton);
+
+                row.appendChild(navButtons);
+                equippedSlotsDiv.appendChild(row);
+            });
+
+            equipmentMenuInstructions.textContent = "Usa las flechas para cambiar el equipo. Presiona Enter para guardar.";
+        }
+
+        function handleInventoryInput(e) {
+            if (e.code === 'ArrowUp') selectedIndex = Math.max(0, selectedIndex - 1);
+            if (e.code === 'ArrowDown') selectedIndex = Math.min(player.inventory.length - 1, selectedIndex + 1);
+            if (e.code === 'Enter') {
+                const selectedItem = player.inventory[selectedIndex];
+                if (selectedItem) {
+                    const slot = selectedItem.type;
+                    if (player.equipped[slot] && player.equipped[slot].name === selectedItem.name) {
+                        player.equipped[slot] = null; // Unequip
+                    } else {
+                        player.equipped[slot] = selectedItem; // Equip
+                    }
+                    updateStats();
+                }
+            }
+            if (e.code === 'KeyI' || e.code === 'Escape') toggleInventory();
+            updateInventoryMenu();
+        }
+
+        function handleSkillInput(e) {
+            if (e.code === 'ArrowUp') selectedSkillIndex = Math.max(0, selectedSkillIndex - 1);
+            if (e.code === 'ArrowDown') selectedSkillIndex = Math.min(skills.length - 1, selectedSkillIndex + 1);
+            if (e.code === 'Enter') {
+                const selectedSkill = skills[selectedSkillIndex];
+                if (player.skillPoints > 0 && !player.unlockedSkills.includes(selectedSkill.name)) {
+                    player.unlockedSkills.push(selectedSkill.name);
+                    player.skillPoints--;
+                } else if (player.unlockedSkills.includes(selectedSkill.name)) {
+                    // Logic to equip the skill
+                    const equippedSlots = ['habilidad1', 'habilidad2', 'habilidad3'];
+                    const alreadyEquippedIndex = equippedSlots.findIndex(slot => player.equipped[slot] === selectedSkill.name);
+                    if (alreadyEquippedIndex !== -1) {
+                        player.equipped[equippedSlots[alreadyEquippedIndex]] = null; // Unequip
+                    } else {
+                        const freeSlot = equippedSlots.find(slot => !player.equipped[slot]);
+                        if (freeSlot) {
+                            player.equipped[freeSlot] = selectedSkill.name;
+                        }
+                    }
+                }
+            }
+            if (e.code === 'KeyY' || e.code === 'Escape') toggleSkillMenu();
+            updateSkillMenu();
+        }
+
+        function handleEquipmentInput(e) {
+            if (e.code === 'ArrowUp') selectedEquipmentSlotIndex = Math.max(0, selectedEquipmentSlotIndex - 1);
+            if (e.code === 'ArrowDown') selectedEquipmentSlotIndex = Math.min(7, selectedEquipmentSlotIndex + 1);
+            if (e.code === 'ArrowLeft') navigateEquipment(getSelectedSlot(), -1);
+            if (e.code === 'ArrowRight') navigateEquipment(getSelectedSlot(), 1);
+            if (e.code === 'KeyO' || e.code === 'Escape') toggleEquipmentMenu();
+            updateEquipmentMenu();
+        }
+
+        function getSelectedSlot() {
+            const slots = ['weapon', 'helmet', 'armor', 'gloves', 'boots', 'habilidad1', 'habilidad2', 'habilidad3'];
+            return slots[selectedEquipmentSlotIndex];
+        }
+
+        function navigateEquipment(slot, direction) {
+            if (slot.startsWith('habilidad')) {
+                const availableSkills = player.permanentlyLearnedSkills;
+                const currentSkill = player.equipped[slot];
+                let currentIndex = availableSkills.indexOf(currentSkill);
+                let nextIndex = (currentIndex + direction + availableSkills.length) % availableSkills.length;
+                player.equipped[slot] = availableSkills[nextIndex];
+            } else {
+                const availableItems = player.inventory.filter(item => item.type === slot);
+                if (availableItems.length === 0) return;
+                const currentItem = player.equipped[slot];
+                let currentIndex = currentItem ? availableItems.findIndex(item => item.name === currentItem.name) : -1;
+                let nextIndex = (currentIndex + direction + availableItems.length) % availableItems.length;
+                player.equipped[slot] = availableItems[nextIndex];
+            }
+            updateStats();
+            loadSprites(); // Reload sprites to reflect equipment changes
+            updateEquipmentMenu();
+        }
+
+        // Initial load
+        loadPlayerDataFromLocalStorage();
+        updateStats();
+        loadSprites();
+        resetGame();
