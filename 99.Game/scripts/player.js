@@ -242,11 +242,11 @@ export function applySetBonuses() {
  * Recalcula todas las estadísticas del jugador basándose en el nivel, equipo y bonificaciones.
  */
 export function updateStats() {
-    player.atk = player.baseAtk;
-    player.def = player.baseDef;
+    player.atk = player.baseAtk + (player.level - 1) * 2; // +2 ATK per level
+    player.def = player.baseDef + (player.level - 1) * 1; // +1 DEF per level
     player.spd = player.baseSpd; 
     player.maxHp = 100 + (player.level - 1) * 20;
-     
+    player.criticalChanceBonus = 0.05; // Reset critical chance to base
 
     player.hasMiniShield = false;
     player.miniShieldHP = 0;

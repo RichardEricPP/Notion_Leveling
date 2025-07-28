@@ -43,7 +43,9 @@ const minimapCtx = minimapCanvas.getContext('2d');
 export function drawFloor(x, y) { if(loadedImages.floor && loadedImages.floor.complete) ctx.drawImage(loadedImages.floor, 0,0,64,64, x, y, tileSize, tileSize); else { ctx.fillStyle = '#aaa'; ctx.fillRect(x,y,tileSize,tileSize);}}
 export function drawWall(x, y) { if(loadedImages.wall && loadedImages.wall.complete) ctx.drawImage(loadedImages.wall, 0,0,64,64, x, y, tileSize, tileSize); else { ctx.fillStyle = '#555'; ctx.fillRect(x,y,tileSize,tileSize);}}
 export function drawChest(x, y) { if(loadedImages.chest && loadedImages.chest.complete) ctx.drawImage(loadedImages.chest, 0,0,64,64, x, y, tileSize, tileSize); else { ctx.fillStyle = '#8B4513'; ctx.fillRect(x,y,tileSize,tileSize);}}
-export function drawStairs(x,y) { if(loadedImages.stairs && loadedImages.stairs.complete) ctx.drawImage(loadedImages.stairs, 0,0,64,64, x, y, tileSize, tileSize); else { ctx.fillStyle = '#704214'; ctx.fillRect(x,y,tileSize,tileSize);}}
+export function drawStairs(x,y) { 
+    console.log("Drawing stairs. Image loaded:", loadedImages.stairs && loadedImages.stairs.complete);
+    if(loadedImages.stairs && loadedImages.stairs.complete) ctx.drawImage(loadedImages.stairs, 0,0,64,64, x, y, tileSize, tileSize); else { ctx.fillStyle = '#704214'; ctx.fillRect(x,y,tileSize,tileSize);}}
 
 function drawPlayer(x, y) {
     let drawX = x;
@@ -358,14 +360,13 @@ export function drawMap() {
             const screenX = x * tileSize - offsetX; const screenY = y * tileSize - offsetY;
             if (map[y] && map[y][x] !== undefined) { 
                 if (map[y][x] === 0) drawWall(screenX, screenY);
-                else if (map[y][x] === 1) drawFloor(screenX, screenY);
-                else if (map[y][x] === 2) { drawFloor(screenX, screenY); drawChest(screenX, screenY); }
-                else if (map[y][x] === stairLocation.type && stairLocation.active) { 
-                    drawFloor(screenX, screenY); 
+                else drawFloor(screenX, screenY);
+
+                if (map[y][x] === 2) { drawChest(screenX, screenY); }
+
+                if (x === stairLocation.x && y === stairLocation.y && stairLocation.active) { 
+                    console.log(`Attempting to draw stairs at (${x}, ${y}). stairLocation.active: ${stairLocation.active}`);
                     drawStairs(screenX, screenY);
-                }
-                else { 
-                    drawFloor(screenX, screenY);
                 }
             } else { 
                 drawFloor(screenX, screenY);
@@ -399,8 +400,8 @@ export function drawMap() {
         } else { 
             ctx.fillStyle = '#00BFFF'; 
             ctx.font = '26px Arial'; 
-            ctx.fillText("Haz Completado la Mazmorra", gameCanvas.width/2, gameCanvas.height/2 - 70);
-            ctx.fillText("Haz superado la clase E", gameCanvas.width/2, gameCanvas.height/2 - 40);
+            ctx.fillText(finalOutcomeMessage, gameCanvas.width/2, gameCanvas.height/2 - 70);
+            ctx.fillText(finalOutcomeMessageLine2, gameCanvas.width/2, gameCanvas.height/2 - 40);
         }
 
         ctx.fillStyle = 'white'; 
@@ -427,10 +428,14 @@ function drawMinimap() {
                 minimapCtx.fillStyle = '#888';
             } else if (map[y][x] === 2) { 
                 minimapCtx.fillStyle = '#FFD700'; 
-            } else if (map[y][x] === stairLocation.type && stairLocation.active) { 
-                minimapCtx.fillStyle = '#00FFFF'; 
             }
             minimapCtx.fillRect(miniX, miniY, minimapTileSize, minimapTileSize);
+
+            // Draw stairs on top if active
+            if (x === stairLocation.x && y === stairLocation.y && stairLocation.active) { 
+                minimapCtx.fillStyle = '#00FF00'; // Bright Green
+                minimapCtx.fillRect(miniX, miniY, minimapTileSize, minimapTileSize);
+            }
         }
     }
 
@@ -762,21 +767,62 @@ equippedSlotsDiv.addEventListener('click', (e) => {
 // --- Music and Sound ---
 const musicTracks = {
     menu: '../2.Music/98. System.mp3',
-    dungeon: '../2.Music/1. - Solo LevelingSymphonicSuite Lv.1.mp3',
     boss: '../2.Music/99. Bozz.mp3',
     equipmentOpen: '../2.Music/98. System.mp3'
 };
+
+const audioDungeon = [
+    '../2.Music/1. - Solo LevelingSymphonicSuite Lv.1.mp3',
+    '../2.Music/10. - [Solo-Leveling]SymphonicSuite-Lv.10.mp3',
+    '../2.Music/2. - [Solo-Leveling]SymphonicSuite-Lv.2 - OST_AnimeOriginal.mp3',
+    '../2.Music/3. - [Solo-Leveling]SymphonicSuite-Lv.3.mp3',
+    '../2.Music/4. - [Solo-Leveling]SymphonicSuite-Lv.4.mp3',
+    '../2.Music/5. - [Solo-Leveling]SymphonicSuite-Lv.5.mp3',
+    '../2.Music/6. - [Solo-Leveling]SymphonicSuite-Lv.6 - OST_AnimeOriginal.mp3',
+    '../2.Music/7. - [Solo-Leveling]SymphonicSuite-Lv.7 - OST_AnimeOriginal.mp3',
+    '../2.Music/8. - [Solo-Leveling]SymphonicSuite-Lv.8.mp3',
+    '../2.Music/9. - [Solo-Leveling]SymphonicSuite-Lv.9.mp3'
+];
+
 let currentMusic = new Audio();
 let currentTrackName = '';
+let dungeonMusicTimeout;
+
+function playRandomDungeonMusic() {
+    if (currentTrackName !== 'dungeon') return;
+
+    const randomIndex = Math.floor(Math.random() * audioDungeon.length);
+    const nextTrack = audioDungeon[randomIndex];
+    
+    currentMusic.src = nextTrack;
+    currentMusic.volume = 0.3;
+    currentMusic.play();
+
+    currentMusic.onended = function() {
+        playRandomDungeonMusic();
+    };
+}
 
 export function playMusic(trackName) {
-    if (currentTrackName === trackName) return;
+    if (currentTrackName === trackName && trackName !== 'dungeon') return;
+    
+    if (dungeonMusicTimeout) {
+        clearTimeout(dungeonMusicTimeout);
+        dungeonMusicTimeout = null;
+    }
+    currentMusic.onended = null;
+
     currentTrackName = trackName;
     currentMusic.pause();
-    currentMusic.src = musicTracks[trackName];
-    currentMusic.loop = true;
-    currentMusic.volume = 0.3;
-    
+
+    if (trackName === 'dungeon') {
+        playRandomDungeonMusic();
+    } else {
+        currentMusic.src = musicTracks[trackName];
+        currentMusic.loop = true;
+        currentMusic.volume = 0.3;
+        currentMusic.play();
+    }
 }
 
 // --- Initial Setup ---

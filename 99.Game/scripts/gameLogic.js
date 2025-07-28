@@ -7,11 +7,12 @@ import { player, updateStats, checkLevelUp, createPlayerSprite, createMinionSpri
 import * as ui from './ui.js';
 import { monsters, chests, sprites, loadedImages, loadSprites } from './enemies.js';
 import { gearList, skills } from './data.js';
+import { playMusic, gameCanvas } from './ui.js';
 
 // --- EXPORTS (Game State Variables) ---
 export let currentFloor = 1;
 export const maxFloors = 4;
-export const mapWidth = 50, mapHeight = 50; // Increased map size
+export const mapWidth = 40, mapHeight = 40; // Reduced map size for shorter corridors
 export const tileSize = 50;
 export let map = Array(mapHeight).fill().map(() => Array(mapWidth).fill(0));
 export let stairLocation = { x: -1, y: -1, active: false, type: 4 };
@@ -378,7 +379,8 @@ function updateMonsters(timestamp) {
             const attackSpeed = m.isAttackSlowed ? m.attackSpeed * 1.5 : m.attackSpeed;
 
             // --- ATTACK LOGIC ---
-            if (distanceToPlayer <= m.attackRange) {
+            if ((Math.abs(player.tileX - m.tileX) === 1 && player.tileY === m.tileY) ||
+                (Math.abs(player.tileY - m.tileY) === 1 && player.tileX === m.tileX)) {
                 console.log(`Monster ${m.type} at (${m.tileX}, ${m.tileY}) is in attack range. Distance: ${distanceToPlayer.toFixed(2)}`);
                 if (currentTime - m.lastAttackTime > attackSpeed) {
                     console.log(`Monster ${m.type} attacking! Attack Speed: ${attackSpeed}`);
@@ -435,10 +437,11 @@ function updateMonsters(timestamp) {
 async function generateFloor() {
             map = Array(mapHeight).fill(0).map(() => Array(mapWidth).fill(0)); 
             stairLocation = { x: -1, y: -1, active: false, type: 4 };
-            player.skillUsageThisFloor = {}; 
+            Object.keys(player.skillUsageThisFloor).forEach(key => delete player.skillUsageThisFloor[key]);
+            monsters.length = 0; // Changed from monsters = [];
 
-            let hpMultiplier = 1.0; 
-            let atkMultiplier = 1.0;
+            var hpMultiplier = 1.0; 
+            var atkMultiplier = 1.0;
 
             if (selectedDifficulty === 'facil') { 
                 hpMultiplier = 0.6; 
@@ -467,6 +470,8 @@ async function generateFloor() {
                 }
                 player.tileX = arenaX + Math.floor(arenaWidth / 2);
                 player.tileY = arenaY + arenaHeight - 2; 
+                stairLocation.x = player.tileX;
+                stairLocation.y = player.tileY; 
 
                 const bossSpawnX = arenaX + Math.floor(arenaWidth / 2) -1; 
                 const bossSpawnY = arenaY + 1;
@@ -474,14 +479,14 @@ async function generateFloor() {
                 let finalBossBaseHp = 350; let finalBossBaseAtk = 70;
                 let fbHp = Math.floor(finalBossBaseHp * (1 + (currentFloor - 1) * 0.6) * hpMultiplier);
                 let fbAtk = Math.floor(finalBossBaseAtk * (1 + (currentFloor - 1) * 0.4) * atkMultiplier);
-                monsters.push({ type: 'finalBoss', hp: fbHp, maxHp: fbHp, atk: fbAtk, spd: 0.7, tileX: bossSpawnX, tileY: bossSpawnY, xp: 5000, lastMoveTime: 0, hitFrame: 0, width: 2, height: 2, abilityCooldowns: {webShot:0, summon:0}, lastAttackTime: 0, moveSpeed: 800, attackSpeed: 1000, attackRange: 1.5, aggroRange: 8 }); 
+                monsters.push({ type: 'finalBoss', hp: fbHp, maxHp: fbHp, atk: fbAtk, spd: 0.7, tileX: bossSpawnX, tileY: bossSpawnY, xp: 5000, lastMoveTime: 0, hitFrame: 0, width: 2, height: 2, abilityCooldowns: {webShot:0, summon:0}, lastAttackTime: 0, moveSpeed: 800, attackSpeed: 1000, attackRange: 1.5, aggroRange: 8 }); // Changed type to finalBoss
                 for(let r=0; r<2; r++) { for(let c=0; c<2; c++) { map[bossSpawnY+r][bossSpawnX+c] = 1;}}
 
             } else { 
                 const rooms = [];
                 const numRooms = Math.floor(Math.random() * 3) + 8; 
-                const minRoomSize = 4;
-                const maxRoomSize = 7; 
+                const minRoomSize = 5; // Adjusted from 4
+                const maxRoomSize = 8; // Adjusted from 7
 
                 for (let i = 0; i < numRooms; i++) {
                     let roomW, roomH, roomX, roomY;
@@ -498,8 +503,8 @@ async function generateFloor() {
                         
                         overlaps = false;
                         for(const otherRoom of rooms){
-                            if(newRoom.x < otherRoom.x + otherRoom.w + 1 && newRoom.x + newRoom.w + 1 > otherRoom.x &&
-                                newRoom.y < otherRoom.y + otherRoom.h + 1 && newRoom.y + newRoom.h + 1 > otherRoom.y){
+                            if(newRoom.x < otherRoom.x + otherRoom.w && newRoom.x + newRoom.w > otherRoom.x && // Adjusted for shorter corridors
+                                newRoom.y < otherRoom.y + otherRoom.h && newRoom.y + newRoom.h > otherRoom.y){ // Adjusted for shorter corridors
                                 overlaps = true;
                                 break;
                             }
@@ -533,6 +538,11 @@ async function generateFloor() {
                 for (let i = 0; i < rooms.length - 1; i++) { 
                     carvePathBetweenRooms(rooms[i], rooms[i+1]);
                 }
+                if (rooms.length > 1) { 
+                    for(let i = 1; i < rooms.length; i++){ 
+                            carvePathBetweenRooms(rooms[0], rooms[i]);
+                    }
+                }
 
                 const playerStartY = rooms[0].centerY;
                 const playerStartX = rooms[0].centerX;
@@ -561,7 +571,6 @@ async function generateFloor() {
                 player.tileX = playerStartX; player.tileY = playerStartY;
                 player.hasKey = false; player.doorOpened = false;
 
-                monsters.length = 0;
                 const duendeCount = 6 + (currentFloor - 1) * 2; 
                 const skeletonCount = 3 + Math.floor((currentFloor - 1) * 1.5);
                 const wolfCount = 2 + currentFloor; 
@@ -595,15 +604,15 @@ async function generateFloor() {
                 monsters.push(createMonster('boss', bossAreaX, bossAreaY, currentFloor)); 
                 
                 chests.length = 0; spawnChests(monsterSpawnLocations); 
-            }
-            await loadSprites(); 
+            } 
+            await loadAllSprites(); // Changed from loadSprites()
 
-            if (monsters.some(m => m.type === 'final-arachnid-boss')) {
+            if (monsters.some(m => m.type === 'finalBoss')) { // Changed type to finalBoss
                 playMusic('boss');
             } else {
                 playMusic('dungeon');
             }
-}
+        }
 
 function carvePathBetweenRooms(room1, room2) {
     const x1 = room1.centerX;
@@ -677,7 +686,7 @@ function createMonster(type, x, y, floor) {
             monster.atk = Math.floor((25 + floor * 8) * atkMultiplier * floorMultiplier);
             monster.def = Math.floor((15 + floor * 5) * floorMultiplier);
             monster.xp = 300 + floor * 20;
-            monster.moveSpeed = 100;
+            monster.moveSpeed = 400; // Reduced from 100
             monster.attackSpeed = 1000;
             break;
     }
@@ -689,12 +698,40 @@ function createMonster(type, x, y, floor) {
 function spawnChests(spawnLocations) {
     let numChestsToSpawn;
     if (selectedDifficulty === 'facil') {
-        numChestsToSpawn = Math.floor(Math.random() * 3) + 1;
+        numChestsToSpawn = 3;
     } else if (selectedDifficulty === 'medio') {
-        numChestsToSpawn = Math.floor(Math.random() * 2) + 1;
+        numChestsToSpawn = Math.floor(Math.random() * 3) + 1; // 1 to 3 chests
     } else if (selectedDifficulty === 'dificil') {
-        numChestsToSpawn = Math.floor(Math.random() * 3);
+        numChestsToSpawn = Math.floor(Math.random() * 3); // 0 to 2 chests
     }
+
+    const smallPotion = gearList.find(item => item.name === 'Poción de Vida Pequeña');
+    const mediumPotion = gearList.find(item => item.name === 'Poción de Vida Mediana');
+    const largePotion = gearList.find(item => item.name === 'Poción de Vida Grande');
+
+    const getWeightedRandomPotion = () => {
+        let potionsPool = [];
+        if (selectedDifficulty === 'facil') {
+            potionsPool = [
+                ...Array(1).fill(smallPotion),
+                ...Array(2).fill(mediumPotion),
+                ...Array(5).fill(largePotion) 
+            ];
+        } else if (selectedDifficulty === 'medio') {
+            potionsPool = [
+                ...Array(2).fill(smallPotion),
+                ...Array(3).fill(mediumPotion),
+                ...Array(2).fill(largePotion) 
+            ];
+        } else if (selectedDifficulty === 'dificil') {
+            potionsPool = [
+                ...Array(5).fill(smallPotion),
+                ...Array(2).fill(mediumPotion),
+                ...Array(1).fill(largePotion) 
+            ];
+        }
+        return potionsPool[Math.floor(Math.random() * potionsPool.length)];
+    };
 
     for (let i = spawnLocations.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
@@ -705,7 +742,8 @@ function spawnChests(spawnLocations) {
         const loc = spawnLocations[i];
         if (map[loc.y][loc.x] === 1) {
             map[loc.y][loc.x] = 2;
-            chests.push({ tileX: loc.x, tileY: loc.y, opened: false });
+            const potion = getWeightedRandomPotion();
+            chests.push({ tileX: loc.x, tileY: loc.y, opened: false, item: potion });
         }
     }
 }
@@ -777,35 +815,238 @@ function performAttack() {
 
     const equippedWeapon = player.equipped.weapon;
     let targetTiles = [];
+    let projectileType = null;
+    let projectileRange = 1;
 
-    if (player.facingDirection === 'right') targetTiles.push({ x: player.tileX + 1, y: player.tileY });
-    else if (player.facingDirection === 'left') targetTiles.push({ x: player.tileX - 1, y: player.tileY });
-    else if (player.facingDirection === 'up') targetTiles.push({ x: player.tileX, y: player.tileY - 1 });
-    else if (player.facingDirection === 'down') targetTiles.push({ x: player.tileX, y: player.tileY + 1 });
-
-    for (const targetCoord of targetTiles) {
-        const monster = getMonsterAt(targetCoord.x, targetCoord.y);
-        if (monster) {
-            let isCritical = player.nextHitCritical || (Math.random() < (player.criticalChanceBonus || 0));
-            let damage = player.atk;
-            if (isCritical) {
-                damage *= 1.5; 
+    if (equippedWeapon) {
+                switch (equippedWeapon.name) {
+                    case 'Arco del Bosque':
+                        projectileType = 'arrow';
+                        projectileRange = 3;
+                        break;
+                    case 'Rayo de Oscuridad':
+                        projectileType = 'dark_ray';
+                        projectileRange = 3;
+                        break;
+                    case 'Libro Celestial':
+                        projectileType = 'celestial_ray'; 
+                        projectileRange = 3;
+                        break;
+                    case 'Maza de Guerra':
+                        if (player.facingDirection === 'right') {
+                            targetTiles.push({ x: player.tileX + 1, y: player.tileY });
+                            targetTiles.push({ x: player.tileX + 1, y: player.tileY - 1 });
+                            targetTiles.push({ x: player.tileX + 1, y: player.tileY + 1 });
+                        } else if (player.facingDirection === 'left') {
+                            targetTiles.push({ x: player.tileX - 1, y: player.tileY });
+                            targetTiles.push({ x: player.tileX - 1, y: player.tileY - 1 });
+                            targetTiles.push({ x: player.tileX - 1, y: player.tileY + 1 });
+                        } else if (player.facingDirection === 'up') {
+                            targetTiles.push({ x: player.tileX, y: player.tileY - 1 });
+                            targetTiles.push({ x: player.tileX - 1, y: player.tileY - 1 });
+                            targetTiles.push({ x: player.tileX + 1, y: player.tileY - 1 });
+                        } else if (player.facingDirection === 'down') {
+                            targetTiles.push({ x: player.tileX, y: player.tileY + 1 });
+                            targetTiles.push({ x: player.tileX - 1, y: player.tileY + 1 });
+                            targetTiles.push({ x: player.tileX + 1, y: player.tileY + 1 });
+                        }
+                        break;
+                    default: 
+                        if (player.facingDirection === 'right') targetTiles.push({ x: player.tileX + 1, y: player.tileY });
+                        else if (player.facingDirection === 'left') targetTiles.push({ x: player.tileX - 1, y: player.tileY });
+                        else if (player.facingDirection === 'up') targetTiles.push({ x: player.tileX, y: player.tileY - 1 });
+                        else if (player.facingDirection === 'down') targetTiles.push({ x: player.tileX, y: player.tileY + 1 });
+                        break;
+                }
+            } else { 
+                if (player.facingDirection === 'right') targetTiles.push({ x: player.tileX + 1, y: player.tileY });
+                else if (player.facingDirection === 'left') targetTiles.push({ x: player.tileX - 1, y: player.tileY });
+                else if (player.facingDirection === 'up') targetTiles.push({ x: player.tileX, y: player.tileY - 1 });
+                else if (player.facingDirection === 'down') targetTiles.push({ x: player.tileX, y: player.tileY + 1 });
             }
-            takeDamage(monster, damage, isCritical, 'player');
-            player.nextHitCritical = false;
-        }
-    }
+
+            let monstersHit = [];
+            if (!projectileType) { 
+                for (const targetCoord of targetTiles) {
+                    const monster = monsters.find(m => !m.isMinion && (m.width && m.height ? (targetCoord.x >= m.tileX && targetCoord.x < m.tileX + m.width && targetCoord.y >= m.tileY && targetCoord.y < m.tileY + m.height) : (m.tileX === targetCoord.x && m.tileY === targetCoord.y)));
+                    if (monster && !monstersHit.includes(monster)) {
+                        monstersHit.push(monster);
+                        if (equippedWeapon && equippedWeapon.name === 'Maza de Guerra' && monstersHit.length >= 2) {
+                            break; 
+                        }
+                    }
+                }
+            }
+            
+            const offsetX = Math.max(0, Math.min(player.tileX*tileSize - gameCanvas.width/2 + tileSize/2, mapWidth*tileSize - gameCanvas.width));
+            const offsetY = Math.max(0, Math.min(player.tileY*tileSize - gameCanvas.height/2 + tileSize/2, mapHeight*tileSize - gameCanvas.height));
+            const playerScreenX = player.tileX * tileSize - offsetX;
+            const playerScreenY = player.tileY * tileSize - offsetY;
+
+            if (projectileType) { 
+                let dx = 0, dy = 0;
+                if (nearestMonster) {
+                    dx = nearestMonster.tileX - player.tileX;
+                    dy = nearestMonster.tileY - player.tileY;
+                } else {
+                    if (player.facingDirection === 'right') dx = 1;
+                    else if (player.facingDirection === 'left') dx = -1;
+                    else if (player.facingDirection === 'up') dy = -1;
+                    else if (player.facingDirection === 'down') dy = 1;
+                }
+                
+                let isCriticalProjectile = Math.random() < (0.2 + player.criticalChanceBonus);
+                if (player.luckBoostEndTime > Date.now()) {
+                    isCriticalProjectile = isCriticalProjectile || (Math.random() < 0.05);
+                }
+
+                if (equippedWeapon.name === 'Libro Celestial') {
+                    player.celestialBookCritCounter++;
+                    if (player.celestialBookCritCounter >= 10) {
+                        isCriticalProjectile = true;
+                        player.celestialBookCritCounter = 0;
+                        ui.showMessage("¡Libro Celestial: Golpe Crítico garantizado!");
+                    }
+                }
+                
+                projectiles.push(new Projectile(player.tileX, player.tileY, dx, dy, projectileType, 'player', player.atk, isCriticalProjectile, projectileRange));
+            }
+
+            monstersHit.forEach(monsterToAttack => {
+                let isCritical = Math.random() < (0.2 + player.criticalChanceBonus); 
+                if (player.luckBoostEndTime > Date.now()) { 
+                    isCritical = isCritical || (Math.random() < 0.05); 
+                }
+
+                const damageMultiplier = isCritical ? 1.5 : 1;
+                let damage = Math.floor(player.atk * damageMultiplier);
+
+                if (player.nextHitCritical) { 
+                    damage *= 1.5;
+                    player.nextHitCritical = false; 
+                }
+                
+                if (monsterToAttack.isWeakened && Date.now() < monsterToAttack.weaknessEndTime) {
+                    damage *= 1.05; 
+                }
+
+                monsterToAttack.hp -= damage;
+                monsterToAttack.hitFrame = isCritical ? 10 : 5;
+                
+                const monsterScreenX = monsterToAttack.tileX * tileSize - offsetX;
+                const monsterScreenY = monsterToAttack.tileY * tileSize - offsetY;
+                
+                damageTexts.push({
+                    x: monsterScreenX + tileSize/2 * (monsterToAttack.width || 1), 
+                    y: monsterScreenY - 10 + tileSize/2 * (monsterToAttack.height || 1) - tileSize/2, 
+                    text: isCritical ? `¡CRÍTICO! ${Math.floor(damage)}` : `${Math.floor(damage)}`,
+                    color: isCritical ? '#ff0000' : '#ffffff', size: isCritical ? 24 : 16,
+                    life: 40, velY: -1.5
+                });
+                if (isCritical) {
+                    screenShake = 8; 
+                    criticalHitEffects.push({ x: monsterScreenX, y: monsterScreenY, size: tileSize * (monsterToAttack.width || 1) * 1.5, life: 15, monster: monsterToAttack });
+                }
+                
+                if (player.soulExtractionActive) {
+                    const hpRecovered = Math.floor(damage * 0.05);
+                    if (hpRecovered > 0) { 
+                        player.hp = Math.min(player.maxHp, player.hp + hpRecovered); 
+                        damageTexts.push({ 
+                            x: playerScreenX + tileSize/2, y: playerScreenY - 5, 
+                            text: `+${hpRecovered} HP`,
+                            color: '#00ff00', 
+                            size: 14, life: 30, velY: -1
+                        });
+                    }
+                }
+
+                if (equippedWeapon) {
+                    const currentTime = Date.now();
+                    if (equippedWeapon.name === 'Guadaña Helada') {
+                        monsterToAttack.isAttackSlowed = true;
+                        monsterToAttack.attackSlowEndTime = currentTime + 3000; 
+                        ui.showMessage(`Guadaña Helada: ${monsterToAttack.type} ralentizado.`);
+                    } else if (equippedWeapon.name === 'Daga de Poder') {
+                        const bleedChance = 0.25; 
+                        if (Math.random() < bleedChance) {
+                            monsterToAttack.isBleeding = true;
+                            monsterToAttack.bleedingDamagePerTick = Math.floor(player.atk * 0.05); 
+                            monsterToAttack.bleedingTickInterval = 1000; 
+                            monsterToAttack.bleedingNextTickTime = currentTime + monsterToAttack.bleedingTickInterval;
+                            monsterToAttack.bleedingEndTime = currentTime + 5000; 
+                            ui.showMessage(`Daga de Poder: ${monsterToAttack.type} está sangrando.`);
+                        }
+                    } else if (equippedWeapon.name === 'Maza de Guerra' && monstersHit.length >= 2) {
+                        warMaceShockwave = { x: player.tileX, y: player.tileY, life: 15 }; 
+                    }
+                }
+
+                if (monsterToAttack.hp <= 0) {
+                    let xpGained = monsterToAttack.xp;
+                    if (activeSetBonusName === 'Mago' && setBonuses.Mago.xpGain_percent) {
+                        xpGained = Math.floor(xpGained * (1 + setBonuses.Mago.xpGain_percent));
+                    }
+                    player.xp += xpGained;
+
+                    player.enemiesDefeatedThisRun++; 
+                    
+                    if (isCritical) {
+                        const healthRecovered = Math.floor(monsterToAttack.maxHp * 0.05); 
+                        if (healthRecovered > 0) { 
+                            player.hp = Math.min(player.maxHp, player.hp + healthRecovered); 
+                            damageTexts.push({ 
+                                x: playerScreenX + tileSize/2, y: playerScreenY - 5, 
+                                text: `+${healthRecovered} HP`,
+                                color: '#00ff00', 
+                                size: 14, life: 30, velY: -1
+                            });
+                        }
+                    }
+
+                    if (equippedWeapon && equippedWeapon.name === 'Rayo de Oscuridad') {
+                        player.darkRayEnemiesDefeated++;
+                        if (player.darkRayEnemiesDefeated >= 10) {
+                            const healedAmount = Math.floor(player.maxHp * 0.05); 
+                            if (healedAmount > 0) { 
+                                player.hp = Math.min(player.maxHp, player.hp + healedAmount);
+                                ui.showMessage("¡Rayo de Oscuridad: ¡5% HP recuperado!");
+                            }
+                            player.darkRayEnemiesDefeated = 0;
+                        }
+                    }
+
+                    checkLevelUp();
+                    
+                    const monsterIndex = monsters.indexOf(monsterToAttack);
+                    if (monsterIndex > -1) {
+                        monsters.splice(monsterIndex, 1);
+                    }
+
+                    const remainingMonsters = monsters.filter(m => !m.isMinion);
+                    
+                    if (target.type === 'finalBoss') {
+                        gameOver = true;
+                        finalOutcomeMessage = "¡Has derrotado al Jefe Final!";
+                        finalOutcomeMessageLine2 = "¡Has completado la Mazmorra!";
+                        lastGameScore = calculateScore();
+                        lastEnemiesDefeated = player.enemiesDefeatedThisRun;
+                    } else if (remainingMonsters.length === 0) {
+                        stairLocation.active = true;
+                        ui.showMessage("¡Todos los monstruos derrotados! Las escaleras han aparecido.");
+                        console.log(`Stairs activated at: (${stairLocation.x}, ${stairLocation.y})`);
+                    }
+                }
+            });
 }
 
 function openChest(chest) {
     if (chest.opened) return;
     chest.opened = true;
     map[chest.tileY][chest.tileX] = 1;
-    const potions = gearList.filter(item => item.type === 'potion');
-    if (potions.length > 0) {
-        const item = potions[Math.floor(Math.random() * potions.length)];
-        player.inventory.push(item);
-        useItem(item);
+    if (chest.item) {
+        player.inventory.push(chest.item);
+        useItem(chest.item);
     }
 }
 
@@ -900,10 +1141,16 @@ function takeDamage(target, damage, isCritical, attackerType = 'player') {
 
             const remainingMonsters = monsters.filter(m => !m.isMinion);
             
-            if (remainingMonsters.length === 0) {
+            if (target.type === 'finalBoss') {
+                gameOver = true;
+                finalOutcomeMessage = "¡Has derrotado al Jefe Final!";
+                finalOutcomeMessageLine2 = "¡Has completado la Mazmorra!";
+                lastGameScore = calculateScore();
+                lastEnemiesDefeated = player.enemiesDefeatedThisRun;
+            } else if (remainingMonsters.length === 0) {
                 stairLocation.active = true;
                 ui.showMessage("¡Todos los monstruos derrotados! Las escaleras han aparecido.");
-                
+                console.log(`Stairs activated at: (${stairLocation.x}, ${stairLocation.y})`);
             }
         }
     }
@@ -994,6 +1241,15 @@ export function activateSkill(skillName) {
         case 'Regeneración':
             const healedAmount = Math.floor(player.maxHp * 0.5);
             player.hp = Math.min(player.maxHp, player.hp + healedAmount);
+            damageTexts.push({
+                text: `+${Math.floor(healedAmount)}`,
+                x: player.tileX,
+                y: player.tileY,
+                life: 60,
+                color: '#00ff00',
+                size: 20,
+                velY: -0.01
+            });
             ui.showMessage(`¡Has regenerado ${healedAmount} HP!`);
             break;
         case 'Velocidad':
