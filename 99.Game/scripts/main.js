@@ -65,7 +65,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (e.code === 'KeyI') { toggleInventory(); e.preventDefault(); return; }
         if (e.code === 'KeyY') { toggleSkillMenu(); e.preventDefault(); return; }
-        if (e.code === 'KeyO') { toggleEquipmentMenu(); e.preventDefault(); return; }
+        
 
         if (!gameStarted) return;
         

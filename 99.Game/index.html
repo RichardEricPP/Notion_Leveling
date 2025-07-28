@@ -42,61 +42,6 @@
         </div>
     </div>
     <div id="messageBox"></div>
-    <audio id="audioDungeon1" src="https://richardericpp.github.io/Notion_Leveling/2.Music/1.%20-%20Solo%20LevelingSymphonicSuite%20Lv.1.mp3" loop preload="auto" volume="0.1"></audio>
-    <audio id="audioDungeon2" src="https://richardericpp.github.io/Notion_Leveling/2.Music/2.%20-%20%5BSolo-Leveling%5DSymphonicSuite-Lv.2%20-%20OST_AnimeOriginal.mp3" loop preload="auto" volume="0.1"></audio>
-    <audio id="audioDungeon3" src="https://richardericpp.github.io/Notion_Leveling/2.Music/3.%20-%20%5BSolo-Leveling%5DSymphonicSuite-Lv.3.mp3" loop preload="auto" volume="0.1"></audio>
-    <audio id="audioDungeon4" src="https://richardericpp.github.io/Notion_Leveling/2.Music/4.%20-%20%5BSolo-Leveling%5DSymphonicSuite-Lv.4.mp3" loop preload="auto" volume="0.1"></audio>
-    <audio id="audioDungeon5" src="https://richardericpp.github.io/Notion_Leveling/2.Music/5.%20-%20%5BSolo-Leveling%5DSymphonicSuite-Lv.5.mp3" loop preload="auto" volume="0.1"></audio>
-    <audio id="audioDungeon6" src="https://richardericpp.github.io/Notion_Leveling/2.Music/6.%20-%20%5BSolo-Leveling%5DSymphonicSuite-Lv.6%20-%20OST_AnimeOriginal.mp3" loop preload="auto" volume="0.1"></audio>
-    <audio id="audioDungeon7" src="https://richardericpp.github.io/Notion_Leveling/2.Music/7.%20-%20%5BSolo-Leveling%5DSymphonicSuite-Lv.7%20-%20OST_AnimeOriginal.mp3" loop preload="auto" volume="0.1"></audio>
-    <audio id="audioDungeon8" src="https://richardericpp.github.io/Notion_Leveling/2.Music/8.%20-%20%5BSolo-Leveling%5DSymphonicSuite-Lv.8.mp3" loop preload="auto" volume="0.1"></audio>
-    <audio id="audioDungeon9" src="https://richardericpp.github.io/Notion_Leveling/2.Music/9.%20-%20%5BSolo-Leveling%5DSymphonicSuite-Lv.9.mp3" loop preload="auto" volume="0.1"></audio>
-    <audio id="audioDungeon10" src="https://richardericpp.github.io/Notion_Leveling/2.Music/10.%20-%20%5BSolo-Leveling%5DSymphonicSuite-Lv.10.mp3" loop preload="auto" volume="0.1"></audio>
-    <audio id="audioBoss" src="https://richardericpp.github.io/Notion_Leveling/2.Music/99.%20Bozz.mp3" loop preload="auto" volume="0.2"></audio>
-    <audio id="audioEquipmentOpen" src="https://richardericpp.github.io/Notion_Leveling/2.Music/98.%20System.mp3" preload="auto" volume="0.5"></audio>
-
-    <script>
-        // --- DOM Element Selections ---
-        const dungeonTracks = document.querySelectorAll('[id^="audioDungeon"]');
-        const audioBoss = document.getElementById('audioBoss');
-        const audioEquipmentOpen = document.getElementById('audioEquipmentOpen');
-
-        // --- Private Module Variables ---
-        let currentDungeonTrackIndex = 0;
-        let currentAudioTrack = null;
-
-        function playMusic(track) {
-            let nextTrackElement = null;
-
-            if (currentAudioTrack) {
-                currentAudioTrack.pause();
-                currentAudioTrack.currentTime = 0;
-            }
-
-            switch (track) {
-                case 'dungeon':
-                    currentDungeonTrackIndex = Math.floor(Math.random() * dungeonTracks.length);
-                    nextTrackElement = dungeonTracks[currentDungeonTrackIndex];
-                    break;
-                case 'boss':
-                    nextTrackElement = audioBoss;
-                    break;
-                case 'equipmentOpen':
-                    nextTrackElement = audioEquipmentOpen;
-                    break;
-                default:
-                    nextTrackElement = null;
-            }
-
-            currentAudioTrack = nextTrackElement;
-            if (currentAudioTrack) {
-                if (track === 'equipmentOpen') {
-                    currentAudioTrack.currentTime = 0; 
-                }
-                currentAudioTrack.play().catch(e => console.error("Error playing audio:", e));
-            }
-        }
-    </script>
     <script type="module" src="scripts/main.js"></script>
 </body>
 </html>

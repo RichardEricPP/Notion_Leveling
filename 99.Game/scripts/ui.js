@@ -44,7 +44,6 @@ export function drawFloor(x, y) { if(loadedImages.floor && loadedImages.floor.co
 export function drawWall(x, y) { if(loadedImages.wall && loadedImages.wall.complete) ctx.drawImage(loadedImages.wall, 0,0,64,64, x, y, tileSize, tileSize); else { ctx.fillStyle = '#555'; ctx.fillRect(x,y,tileSize,tileSize);}}
 export function drawChest(x, y) { if(loadedImages.chest && loadedImages.chest.complete) ctx.drawImage(loadedImages.chest, 0,0,64,64, x, y, tileSize, tileSize); else { ctx.fillStyle = '#8B4513'; ctx.fillRect(x,y,tileSize,tileSize);}}
 export function drawStairs(x,y) { 
-    console.log("Drawing stairs. Image loaded:", loadedImages.stairs && loadedImages.stairs.complete);
     if(loadedImages.stairs && loadedImages.stairs.complete) ctx.drawImage(loadedImages.stairs, 0,0,64,64, x, y, tileSize, tileSize); else { ctx.fillStyle = '#704214'; ctx.fillRect(x,y,tileSize,tileSize);}}
 
 function drawPlayer(x, y) {
@@ -129,6 +128,21 @@ function drawPlayer(x, y) {
 }
 
 function drawMonster(m, screenX, screenY) {
+    let drawX = screenX;
+    let drawY = screenY;
+
+    if (m.isAttackingPlayer) {
+        const progress = m.attackAnimFrame / m.attackAnimDuration;
+        let lunge = 0;
+        if (progress < 0.5) {
+            lunge = m.attackLungeDistance * (progress / 0.5);
+        } else {
+            lunge = m.attackLungeDistance * ((1 - progress) / 0.5);
+        }
+        drawX += lunge * m.attackDirectionX;
+        drawY += lunge * m.attackDirectionY;
+    }
+
     let monsterImage;
     if (m.type === 'duende') monsterImage = loadedImages.duende; 
     else if (m.type === 'lobo') monsterImage = loadedImages.lobo;
@@ -144,35 +158,35 @@ function drawMonster(m, screenX, screenY) {
     if (monsterImage && monsterImage.complete) {
         let drawWidth = tileSize * (m.width || 1);
         let drawHeight = tileSize * (m.height || 1);
-        ctx.drawImage(monsterImage, 0,0,64,64, screenX, screenY, drawWidth, drawHeight);
+        ctx.drawImage(monsterImage, 0,0,64,64, drawX, drawY, drawWidth, drawHeight);
         
     } else { 
         ctx.fillStyle = m.type === 'duende' ? '#5C6B00' : (m.type === 'lobo' ? '#8C0000' : (m.type === 'final-arachnid-boss' ? '#3A1E00' : (m.type === 'spiderling' ? '#4A2A05' : 'gray'))); 
-        ctx.fillRect(screenX, screenY, tileSize * (m.width || 1), tileSize * (m.height || 1));
+        ctx.fillRect(drawX, drawY, tileSize * (m.width || 1), tileSize * (m.height || 1));
         
     }
-    if (m.hitFrame > 0) { ctx.fillStyle = 'rgba(255,0,0,0.5)'; ctx.fillRect(screenX, screenY, tileSize * (m.width || 1), tileSize * (m.height || 1)); }
+    if (m.hitFrame > 0) { ctx.fillStyle = 'rgba(255,0,0,0.5)'; ctx.fillRect(drawX, drawY, tileSize * (m.width || 1), tileSize * (m.height || 1)); }
     if (m.isFrozen && Date.now() < m.frozenEndTime) {
         ctx.fillStyle = 'rgba(0, 191, 255, 0.3)'; 
-        ctx.fillRect(screenX, screenY, tileSize * (m.width || 1), tileSize * (m.height || 1));
+        ctx.fillRect(drawX, drawY, tileSize * (m.width || 1), tileSize * (m.height || 1));
     }
     if (m.isWeakened && Date.now() < m.weaknessEndTime) {
         ctx.fillStyle = 'rgba(128, 0, 128, 0.3)'; 
-        ctx.fillRect(screenX, screenY, tileSize * (m.width || 1), tileSize * (m.height || 1));
+        ctx.fillRect(drawX, drawY, tileSize * (m.width || 1), tileSize * (m.height || 1));
     }
     if (m.isBleeding && Date.now() < m.bleedingEndTime) {
         ctx.fillStyle = 'rgba(255, 0, 0, 0.3)'; 
-        ctx.fillRect(screenX, screenY, tileSize * (m.width || 1), tileSize * (m.height || 1));
+        ctx.fillRect(drawX, drawY, tileSize * (m.width || 1), tileSize * (m.height || 1));
     }
     if (m.isAttackSlowed && Date.now() < m.attackSlowEndTime) {
         ctx.fillStyle = 'rgba(135, 206, 235, 0.3)'; 
-        ctx.fillRect(screenX, screenY, tileSize * (m.width || 1), tileSize * (m.height || 1));
+        ctx.fillRect(drawX, drawY, tileSize * (m.width || 1), tileSize * (m.height || 1));
     }
 
     const healthPercentMonster = m.hp / m.maxHp; 
-    ctx.fillStyle = 'rgba(0,0,0,0.7)'; ctx.fillRect(screenX+5, screenY-10, tileSize-10, 5);
+    ctx.fillStyle = 'rgba(0,0,0,0.7)'; ctx.fillRect(drawX+5, drawY-10, tileSize-10, 5);
     ctx.fillStyle = healthPercentMonster > 0.5 ? 'rgba(0,255,0,0.7)' : healthPercentMonster > 0.25 ? 'rgba(255,255,0,0.7)' : 'rgba(255,0,0,0.7)';
-    ctx.fillRect(screenX+5, screenY-10, (tileSize-10)*healthPercentMonster, 5);
+    ctx.fillRect(drawX+5, drawY-10, (tileSize-10)*healthPercentMonster, 5);
 }
 
 function drawProjectiles(offsetX, offsetY) {
@@ -272,7 +286,7 @@ function drawDamageTexts(offsetX, offsetY) {
         text.life--;
 
         const screenX = text.x * tileSize - offsetX + tileSize / 2;
-        const screenY = text.y * tileSize - offsetY;
+        const screenY = text.y * tileSize - offsetY + tileSize / 2;
 
         const alpha = Math.min(1, text.life / 60);
         ctx.font = `bold ${text.size}px Arial`;
@@ -350,7 +364,7 @@ export function drawMap() {
     if (screenShake > 0) {
         shakeOffsetX = (Math.random() - 0.5) * screenShake * 2; 
         shakeOffsetY = (Math.random() - 0.5) * screenShake * 2;
-        screenShake--;
+        
     }
     ctx.fillStyle = '#2a1f15'; ctx.fillRect(0, 0, gameCanvas.width, gameCanvas.height);
     ctx.save(); ctx.translate(shakeOffsetX, shakeOffsetY);
@@ -365,7 +379,6 @@ export function drawMap() {
                 if (map[y][x] === 2) { drawChest(screenX, screenY); }
 
                 if (x === stairLocation.x && y === stairLocation.y && stairLocation.active) { 
-                    console.log(`Attempting to draw stairs at (${x}, ${y}). stairLocation.active: ${stairLocation.active}`);
                     drawStairs(screenX, screenY);
                 }
             } else { 
@@ -682,19 +695,13 @@ function updateEquipmentDisplay() {
         const itemNameSpan = document.createElement('span');
         if (slotType.startsWith('habilidad')) { 
             const equippedSkillName = player.equipped[slotType];
-            const allSkills = skills.filter(s => s.type === 'active'); // Use all skills from data.js
+            const allSkills = skills; // Use all skills from data.js
             const currentSkillIndex = equippedSkillName ? allSkills.findIndex(s => s.name === equippedSkillName) : -1;
             
             let displaySkillName = equippedSkillName ? equippedSkillName : '(Ninguna)';
-            if (allSkills.length > 0) {
-                displaySkillName += ` (${currentSkillIndex + 1}/${allSkills.length})`;
-            }
             itemNameSpan.textContent = `${equipmentSlotNames[slotType]}: ${displaySkillName}`;
         } else { 
             const item = player.equipped[slotType];
-            const allItemsForSlot = player.inventory.filter(g => g.type === slotType); // Use all gear from data.js
-            const currentItemIndex = item ? allItemsForSlot.findIndex(g => g.name === item.name) : -1;
-
             let statsText = '';
             if (item) {
                 const stats = [];
@@ -706,11 +713,10 @@ function updateEquipmentDisplay() {
                 statsText = stats.length > 0 ? ` (${stats.join(', ')})` : '';
             }
             let displayItemName = item ? item.name : '(Vacío)';
-            if (allItemsForSlot.length > 0) {
-                displayItemName += ` (${currentItemIndex + 1}/${allItemsForSlot.length})`;
-            }
             itemNameSpan.textContent = `${equipmentSlotNames[slotType]}: ${displayItemName}${statsText}`;
         }
+        itemNameSpan.style.textAlign = 'center';
+        itemNameSpan.style.flexGrow = '1';
         div.appendChild(itemNameSpan);
 
         const rightButton = document.createElement('button');
@@ -737,7 +743,7 @@ export function handleEquipmentInput(e) {
     } else if (e.code === 'ArrowRight') {
         const currentSlotType = equipmentSlotsOrder[selectedEquipmentSlotIndex];
         navigateEquipment(currentSlotType, 'right');
-    } else if (e.code === 'KeyO' || e.code === 'Escape') {
+    } else if (e.code === 'Escape') {
         toggleEquipmentMenu(); 
         return;
     }
@@ -787,16 +793,21 @@ const audioDungeon = [
 let currentMusic = new Audio();
 let currentTrackName = '';
 let dungeonMusicTimeout;
+let isDungeonMusicPlaying = false; // New flag
 
 function playRandomDungeonMusic() {
-    if (currentTrackName !== 'dungeon') return;
+    if (currentTrackName !== 'dungeon') return; // Safety check, should not be hit if logic is correct
 
     const randomIndex = Math.floor(Math.random() * audioDungeon.length);
     const nextTrack = audioDungeon[randomIndex];
     
     currentMusic.src = nextTrack;
     currentMusic.volume = 0.3;
-    currentMusic.play();
+    currentMusic.play().catch(error => {
+        if (error.name !== 'AbortError') {
+            console.error("Error playing music:", error);
+        }
+    });
 
     currentMusic.onended = function() {
         playRandomDungeonMusic();
@@ -804,26 +815,46 @@ function playRandomDungeonMusic() {
 }
 
 export function playMusic(trackName) {
-    if (currentTrackName === trackName && trackName !== 'dungeon') return;
-    
+    // If the requested track is already playing, do nothing (unless it's dungeon and we want to restart it, but that's not the current requirement)
+    if (currentTrackName === trackName) {
+        // Special handling for dungeon music: if it's already playing, don't restart it unless explicitly needed.
+        // For now, assume we don't want to restart it if it's already playing.
+        if (trackName === 'dungeon' && isDungeonMusicPlaying) {
+            return;
+        }
+        // For other tracks, if it's the same track, just return.
+        if (trackName !== 'dungeon') {
+            return;
+        }
+    }
+
+    // Stop any currently playing music
+    if (!currentMusic.paused) {
+        currentMusic.pause();
+    }
+    currentMusic.onended = null; // Clear previous onended handler
     if (dungeonMusicTimeout) {
         clearTimeout(dungeonMusicTimeout);
         dungeonMusicTimeout = null;
     }
-    currentMusic.onended = null;
 
     currentTrackName = trackName;
-    currentMusic.pause();
 
     if (trackName === 'dungeon') {
+        isDungeonMusicPlaying = true; // Set flag when starting dungeon music
         playRandomDungeonMusic();
     } else {
+        isDungeonMusicPlaying = false; // Clear flag for other music types
         currentMusic.src = musicTracks[trackName];
         currentMusic.loop = true;
         currentMusic.volume = 0.3;
-        currentMusic.play();
+        currentMusic.play().catch(error => {
+            if (error.name !== 'AbortError') {
+                console.error("Error playing music:", error);
+            }
+        });
     }
-}
+} // Added to force refresh
 
 // --- Initial Setup ---
 

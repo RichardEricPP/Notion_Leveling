@@ -70,7 +70,8 @@ export let player = {
     miniShieldHP: 0, 
     miniShieldMaxHP: 0, 
     miniShieldCooldownEnd: 0, 
-    darkRayEnemiesDefeated: 0 
+    darkRayEnemiesDefeated: 0,
+    hitsSinceLastSoulExtraction: 0 
 };
 
 /**
@@ -248,6 +249,10 @@ export function updateStats() {
     player.maxHp = 100 + (player.level - 1) * 20;
     player.criticalChanceBonus = 0.05; // Reset critical chance to base
 
+    // Preserve passive skill states
+    const currentFuryActive = player.furyActive;
+    const currentSoulExtractionActive = player.soulExtractionActive;
+
     player.hasMiniShield = false;
     player.miniShieldHP = 0;
     player.miniShieldMaxHP = 0;
@@ -279,8 +284,12 @@ export function updateStats() {
     if (player.isSpeedBoosted && currentTime < player.speedBoostEndTime) {
         player.spd *= 1.5; 
     }
+
     if (player.furyActive && player.hp <= player.maxHp * 0.25) {
+        console.log(`Fury Active: ${player.furyActive}, Current HP: ${player.hp}, Max HP: ${player.maxHp}, 25% Max HP: ${player.maxHp * 0.25}`);
+        console.log(`Player ATK before Fury: ${player.atk}`);
         player.atk *= 2;
+        console.log(`Player ATK after Fury: ${player.atk}`);
     }
     if (player.stealthActive && currentTime < player.stealthEndTime) {
         player.atk = Math.floor(player.atk * player.stealthStatMultiplier);
@@ -292,6 +301,9 @@ export function updateStats() {
     }
 
     player.hp = Math.min(player.hp, player.maxHp);
+    // Restore passive skill states
+    player.furyActive = currentFuryActive;
+    player.soulExtractionActive = currentSoulExtractionActive;
     // La llamada a loadSprites() se elimina de aquí para evitar dependencias circulares.
     // Debe ser llamada desde gameLogic.js después de llamar a updateStats().
 }

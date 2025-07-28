@@ -3,7 +3,7 @@
 // Adaptado de la versión funcional en 0.Game
 
 // --- IMPORTS ---
-import { player, updateStats, checkLevelUp, createPlayerSprite, createMinionSprite } from './player.js';
+import { player, updateStats, checkLevelUp, createPlayerSprite, createMinionSprite, activeSetBonusName } from './player.js';
 import * as ui from './ui.js';
 import { monsters, chests, sprites, loadedImages, loadSprites } from './enemies.js';
 import { gearList, skills } from './data.js';
@@ -26,7 +26,7 @@ export let finalOutcomeMessageLine2 = "";
 export let keys = {
     ArrowLeft: false, ArrowRight: false, ArrowUp: false, ArrowDown: false,
     KeyA: false, KeyD: false, KeyW: false, KeyS: false,
-    Space: false, KeyE: false, KeyI: false, KeyY: false, KeyO: false, KeyR: false,
+    Space: false, KeyE: false, KeyI: false, KeyY: false, KeyR: false,
     Digit1: false, Digit2: false, Digit3: false
 };
 export let screenShake = 0;
@@ -45,15 +45,15 @@ const monsterAttackInterval = 1000; // Default monster attack speed in ms
 
 // --- Projectile Class ---
 export class Projectile {
-    constructor(x, y, dx, dy, type, owner = 'player', damage = 0, isCritical = false, maxRangeTiles = 1) {
+    constructor(x, y, dx, dy, type, owner = 'player', damage = 0, isCritical = false, maxRangeTiles = 1, speedMultiplier = 1) {
         this.x = x;
         this.y = y;
         this.initialX = x;
         this.initialY = y;
         const magnitude = Math.sqrt(dx * dx + dy * dy);
         if (magnitude > 0) {
-            this.dx = (dx / magnitude) * fixedProjectileSpeed;
-            this.dy = (dy / magnitude) * fixedProjectileSpeed;
+            this.dx = (dx / magnitude) * fixedProjectileSpeed * speedMultiplier;
+            this.dy = (dy / magnitude) * fixedProjectileSpeed * speedMultiplier;
         } else {
             this.dx = 0;
             this.dy = 0;
@@ -83,47 +83,44 @@ async function loadAllSprites() {
 
     const allSpriteKeys = Object.keys(sprites);
     let loadedCount = 0;
-    const totalImages = allSpriteKeys.length;
-
-    if (totalImages === 0) {
-        return Promise.resolve();
-    }
-
     return new Promise(resolve => {
-        allSpriteKeys.forEach(key => {
+        let imagesToLoad = Object.keys(sprites).length;
+        if (imagesToLoad === 0) {
+            resolve();
+            return;
+        }
+
+        const checkAllLoaded = () => {
+            if (Object.keys(loadedImages).length === imagesToLoad) {
+                resolve();
+            }
+        };
+
+        Object.keys(sprites).forEach(key => {
             const img = new Image();
             img.src = sprites[key];
             img.onload = () => {
                 loadedImages[key] = img;
-                loadedCount++;
                 if (key === 'player') {
                     // Create minion sprite after player sprite is loaded
                     sprites.minion = createMinionSprite(loadedImages.player);
+                    imagesToLoad++; // Increment total count for minion
                     const minionImg = new Image();
                     minionImg.src = sprites.minion;
                     minionImg.onload = () => {
                         loadedImages.minion = minionImg;
-                        // Check if all images (including minion) are loaded
-                        if (Object.keys(loadedImages).length === totalImages + 1) { // +1 for minion
-                            resolve();
-                        }
+                        checkAllLoaded();
                     };
                     minionImg.onerror = () => {
                         console.error(`Failed to load minion sprite`);
-                        if (Object.keys(loadedImages).length === totalImages + 1) {
-                            resolve();
-                        }
+                        checkAllLoaded();
                     };
-                } else if (loadedCount === totalImages) {
-                    resolve();
                 }
+                checkAllLoaded();
             };
             img.onerror = () => {
                 console.error(`Failed to load sprite: ${key}`);
-                loadedCount++;
-                if (loadedCount === totalImages) {
-                    resolve(); 
-                }
+                checkAllLoaded(); // Still call checkAllLoaded even on error
             };
         });
     });
@@ -154,11 +151,13 @@ export async function setDifficultyAndStart(difficulty, startFloor = 1, baseLeve
         isInvincible: false, invincibleEndTime: 0,
         isSpeedBoosted: false, speedBoostEndTime: 0,
         luckBoostEndTime: 0,
-        soulExtractionActive: false, furyActive: false,
         baseSpd: 4, baseAtk: 5, baseDef: 5,
         criticalChanceBonus: 0.05,
         invulnerabilityTime: 0,
+        darkRayEnemiesDefeated: 0,
     });
+
+    
 
     updateStats(); 
     player.hp = player.maxHp; 
@@ -218,6 +217,10 @@ function updateGame(timestamp) {
     updateMonsters(timestamp);
     criticalHitEffects = criticalHitEffects.filter(effect => effect.life > 0);
     damageTexts = damageTexts.filter(text => text.life > 0);
+
+    if (screenShake > 0) {
+        screenShake--;
+    }
 
     if (!ui.isInventoryOpen && !ui.isSkillMenuOpen && !ui.isEquipmentOpen) {
         handlePlayerInput(timestamp);
@@ -309,38 +312,15 @@ function updateMonsters(timestamp) {
             if (m.isAttackSlowed && currentTime > m.attackSlowEndTime) m.isAttackSlowed = false;
             if (m.isFrozen) return; // Skip turn if frozen
 
-            // --- BOSS ABILITIES ---
-            const distanceToPlayer = getDistance(player.tileX, player.tileY, m.tileX, m.tileY);
-            if (m.type === 'finalBoss') {
-                if (currentTime - (m.abilityCooldowns.webShot || 0) > 10000 && distanceToPlayer > 1) {
-                    const dx = player.tileX - m.tileX;
-                    const dy = player.tileY - m.tileY;
-                    projectiles.push(new Projectile(m.tileX, m.tileY, dx, dy, 'web', 'monster', m.atk * 0.5, false, 5));
-                    ui.showMessage("¡La Araña Jefe lanza una telaraña!");
-                    m.abilityCooldowns.webShot = currentTime;
-                }
-                if (currentTime - (m.abilityCooldowns.summon || 0) > 15000 && distanceToPlayer <= 5) {
-                    let spawned = false;
-                    for (let i = 0; i < 2; i++) {
-                        let spawnX, spawnY, attempts = 0;
-                        do {
-                            spawnX = m.tileX + (Math.floor(Math.random() * 3) - 1);
-                            spawnY = m.tileY + (Math.floor(Math.random() * 3) - 1);
-                            attempts++;
-                        } while ((!isPassable(spawnX, spawnY) || (spawnX === m.tileX && spawnY === m.tileY)) && attempts < 10);
-                        
-                        if (isPassable(spawnX, spawnY)) {
-                            monsters.push({ type: 'spiderling', hp: 20, maxHp: 20, atk: 10, spd: 2.5, tileX: spawnX, tileY: spawnY, xp: 15, lastMoveTime: 0, hitFrame: 0, lastAttackTime: 0, isMinion: false, attackRange: 1.5, aggroRange: 8, moveSpeed: 400, attackSpeed: 1200 });
-                            spawned = true;
-                        }
-                    }
-                    if (spawned) {
-                        ui.showMessage("¡La Araña Jefe ha invocado mini-arañas!");
-                        m.abilityCooldowns.summon = currentTime;
-                    }
+            if (m.isAttackingPlayer) {
+                m.attackAnimFrame++;
+                if (m.attackAnimFrame >= m.attackAnimDuration) {
+                    m.isAttackingPlayer = false;
+                    m.attackAnimFrame = 0;
                 }
             }
 
+            // --- BOSS ABILITIES ---
             // --- TARGET SELECTION ---
             let target = null;
             if (m.isMinion) {
@@ -376,29 +356,74 @@ function updateMonsters(timestamp) {
 
             if (!target) return;
 
+            const distanceToTarget = getDistance(m.tileX, m.tileY, target.tileX, target.tileY);
+            if (m.type === 'finalBoss') {
+                if (currentTime - (m.abilityCooldowns.webShot || 0) > 10000 && distanceToTarget > 1) {
+                    const dx = target.tileX - m.tileX;
+                    const dy = target.tileY - m.tileY;
+                    projectiles.push(new Projectile(m.tileX, m.tileY, dx, dy, 'web', 'monster', m.atk * 0.5, false, 5));
+                    ui.showMessage("¡La Araña Jefe lanza una telaraña!");
+                    m.abilityCooldowns.webShot = currentTime;
+                }
+                if (currentTime - (m.abilityCooldowns.summon || 0) > 15000 && distanceToTarget <= 5) {
+                    let spawned = false;
+                    for (let i = 0; i < 2; i++) {
+                        let spawnX, spawnY, attempts = 0;
+                        do {
+                            spawnX = m.tileX + (Math.floor(Math.random() * 3) - 1);
+                            spawnY = m.tileY + (Math.floor(Math.random() * 3) - 1);
+                            attempts++;
+                        } while ((!isPassable(spawnX, spawnY) || (spawnX === m.tileX && spawnY === m.tileY)) && attempts < 10);
+                        
+                        if (isPassable(spawnX, spawnY)) {
+                            monsters.push({ type: 'spiderling', hp: 20, maxHp: 20, atk: 10, spd: 2.5, tileX: spawnX, tileY: spawnY, xp: 15, lastMoveTime: 0, hitFrame: 0, lastAttackTime: 0, isMinion: false, attackRange: 1.5, aggroRange: 8, moveSpeed: 400, attackSpeed: 1200 });
+                            spawned = true;
+                        }
+                    }
+                    if (spawned) {
+                        ui.showMessage("¡La Araña Jefe ha invocado mini-arañas!");
+                        m.abilityCooldowns.summon = currentTime;
+                    }
+                }
+            }
+
             const attackSpeed = m.isAttackSlowed ? m.attackSpeed * 1.5 : m.attackSpeed;
 
             // --- ATTACK LOGIC ---
-            if ((Math.abs(player.tileX - m.tileX) === 1 && player.tileY === m.tileY) ||
-                (Math.abs(player.tileY - m.tileY) === 1 && player.tileX === m.tileX)) {
-                console.log(`Monster ${m.type} at (${m.tileX}, ${m.tileY}) is in attack range. Distance: ${distanceToPlayer.toFixed(2)}`);
+            if (((Math.abs(target.tileX - m.tileX) === 1 && target.tileY === m.tileY) || (Math.abs(target.tileY - m.tileY) === 1 && target.tileX === m.tileX))) {
+                // console.log(`Monster ${m.type} at (${m.tileX}, ${m.tileY}) is in attack range. Distance: ${distanceToTarget.toFixed(2)}`);
                 if (currentTime - m.lastAttackTime > attackSpeed) {
-                    console.log(`Monster ${m.type} attacking! Attack Speed: ${attackSpeed}`);
-                    // Only apply damage if player is not invulnerable
-                    if (currentTime - player.lastHitTime > (player.invulnerabilityTime || 0)) {
+                    // console.log(`Monster ${m.type} attacking! Attack Speed: ${attackSpeed}`);
+                    // Only apply damage if target is not invulnerable
+                    if (target === player && currentTime - player.lastHitTime > (player.invulnerabilityTime || 0)) {
                         takeDamage(player, m.atk, false, 'monster'); // Use existing takeDamage function
                         player.lastHitTime = currentTime; // Update player's last hit time
+                        m.isAttackingPlayer = true;
+                        m.attackAnimFrame = 0;
+                        m.attackDirectionX = Math.sign(player.tileX - m.tileX);
+                        m.attackDirectionY = Math.sign(player.tileY - m.tileY);
+                        // Adjust animation duration for first attack
+                        if (m.isFirstAttack) {
+                            m.attackAnimDuration = Math.floor(m.attackAnimDuration * 0.7); // Make first attack faster
+                            m.isFirstAttack = false;
+                        }
+                    } else if (target !== player) { // Monster attacking minion
+                        takeDamage(target, m.atk, false, 'monster');
+                        m.isAttackingPlayer = true; // Re-use for minion attack anim
+                        m.attackAnimFrame = 0;
+                        m.attackDirectionX = Math.sign(target.tileX - m.tileX);
+                        m.attackDirectionY = Math.sign(target.tileY - m.tileY);
                     }
                     m.lastAttackTime = currentTime; // Update monster's last attack time
                 } else {
-                    console.log(`Monster ${m.type} attack on cooldown. Time left: ${((attackSpeed - (currentTime - m.lastAttackTime)) / 1000).toFixed(2)}s`);
+                    // console.log(`Monster ${m.type} attack on cooldown. Time left: ${((attackSpeed - (currentTime - m.lastAttackTime)) / 1000).toFixed(2)}s`);
                 }
             }
             // --- MOVEMENT LOGIC ---
-            else if (distanceToPlayer < m.aggroRange) {
-                console.log(`Monster ${m.type} at (${m.tileX}, ${m.tileY}) is in aggro range but not attack range. Distance: ${distanceToPlayer.toFixed(2)}`);
+            else if (distanceToTarget < m.aggroRange) {
+                // console.log(`Monster ${m.type} at (${m.tileX}, ${m.tileY}) is in aggro range but not attack range. Distance: ${distanceToTarget.toFixed(2)}`);
                 if (currentTime - m.lastMoveTime > m.moveSpeed) { // Use monster's moveSpeed
-                    console.log(`Monster ${m.type} moving! Move Speed: ${m.moveSpeed}`);
+                    // console.log(`Monster ${m.type} moving! Move Speed: ${m.moveSpeed}`);
                     const dx = target.tileX - m.tileX;
                     const dy = target.tileY - m.tileY;
 
@@ -421,14 +446,14 @@ function updateMonsters(timestamp) {
                         }
                     }
                     if (!moved) {
-                        console.log(`Monster ${m.type} could not find a passable tile to move to.`);
+                        // console.log(`Monster ${m.type} could not find a passable tile to move to.`);
                     }
                     m.lastMoveTime = currentTime;
                 } else {
-                    console.log(`Monster ${m.type} movement on cooldown. Time left: ${((m.moveSpeed - (currentTime - m.lastMoveTime)) / 1000).toFixed(2)}s`);
+                    // console.log(`Monster ${m.type} movement on cooldown. Time left: ${((m.moveSpeed - (currentTime - m.lastMoveTime)) / 1000).toFixed(2)}s`);
                 }
             } else {
-                console.log(`Monster ${m.type} at (${m.tileX}, ${m.tileY}) is out of aggro range. Distance: ${distanceToPlayer.toFixed(2)}`);
+                // console.log(`Monster ${m.type} at (${m.tileX}, ${m.tileY}) is out of aggro range. Distance: ${distanceToTarget.toFixed(2)}`);
             }
         });
     }
@@ -639,7 +664,10 @@ function createMonster(type, x, y, floor) {
         isFrozen: false, frozenEndTime: 0,
         isWeakened: false, weaknessEndTime: 0,
         isBleeding: false, bleedingEndTime: 0,
-        isAttackSlowed: false, attackSlowEndTime: 0
+        isAttackSlowed: false, attackSlowEndTime: 0,
+        isAttackingPlayer: false, attackAnimFrame: 0, attackAnimDuration: 7, attackLungeDistance: 12.5,
+        attackDirectionX: 0, attackDirectionY: 0,
+        isFirstAttack: true // New property
     };
 
     let hpMultiplier = 1.0, atkMultiplier = 1.0;
@@ -656,6 +684,8 @@ function createMonster(type, x, y, floor) {
             monster.xp = 10 + floor * 2;
             monster.moveSpeed = 450;
             monster.attackSpeed = 1000;
+            monster.attackAnimDuration = 8; // Faster attack
+            monster.attackLungeDistance = 10; // Shorter lunge
             break;
         case 'lobo':
             monster.maxHp = Math.floor((30 + floor * 6) * hpMultiplier * floorMultiplier);
@@ -664,6 +694,8 @@ function createMonster(type, x, y, floor) {
             monster.xp = 15 + floor * 3;
             monster.moveSpeed = 350;
             monster.attackSpeed = 800;
+            monster.attackAnimDuration = 6; // Very fast attack
+            monster.attackLungeDistance = 15; // Medium lunge
             break;
         case 'skeleton':
             monster.maxHp = Math.floor((40 + floor * 8) * hpMultiplier * floorMultiplier);
@@ -672,6 +704,8 @@ function createMonster(type, x, y, floor) {
             monster.xp = 20 + floor * 4;
             monster.moveSpeed = 600;
             monster.attackSpeed = 1200;
+            monster.attackAnimDuration = 10; // Slower attack
+            monster.attackLungeDistance = 8; // Shorter lunge
             break;
         case 'miniBoss':
             monster.maxHp = Math.floor((100 + floor * 10) * hpMultiplier * floorMultiplier);
@@ -680,6 +714,8 @@ function createMonster(type, x, y, floor) {
             monster.xp = 100 + floor * 10;
             monster.moveSpeed = 700;
             monster.attackSpeed = 900;
+            monster.attackAnimDuration = 12; // Slower, more impactful
+            monster.attackLungeDistance = 20; // Longer lunge
             break;
         case 'boss':
             monster.maxHp = Math.floor((200 + floor * 20) * hpMultiplier * floorMultiplier);
@@ -688,6 +724,33 @@ function createMonster(type, x, y, floor) {
             monster.xp = 300 + floor * 20;
             monster.moveSpeed = 400; // Reduced from 100
             monster.attackSpeed = 1000;
+            monster.attackAnimDuration = 15; // Very slow, very impactful
+            monster.attackLungeDistance = 25; // Very long lunge
+            break;
+        case 'finalBoss':
+            monster.maxHp = Math.floor((350 + floor * 30) * hpMultiplier * floorMultiplier);
+            monster.atk = Math.floor((70 + floor * 10) * atkMultiplier * floorMultiplier);
+            monster.def = Math.floor((20 + floor * 5) * floorMultiplier);
+            monster.xp = 5000;
+            monster.moveSpeed = 800;
+            monster.attackSpeed = 1000;
+            monster.attackAnimDuration = 18; // Even slower, more impactful
+            monster.attackLungeDistance = 30; // Even longer lunge
+            break;
+        case 'spiderling':
+            monster.maxHp = Math.floor((15 + floor * 2) * hpMultiplier * floorMultiplier);
+            monster.atk = Math.floor((7 + floor * 1) * atkMultiplier * floorMultiplier);
+            monster.def = Math.floor((1 + floor * 0.5) * floorMultiplier);
+            monster.xp = 8 + floor * 1;
+            monster.moveSpeed = 300;
+            monster.attackSpeed = 700;
+            monster.attackAnimDuration = 5; // Quick, small lunge
+            monster.attackLungeDistance = 8;
+            break;
+        case 'minion':
+            // Minions inherit player stats, so their attack animation will be based on player's
+            monster.attackAnimDuration = player.attackAnimDuration;
+            monster.attackLungeDistance = player.attackLungeDistance;
             break;
     }
     monster.hp = monster.maxHp;
@@ -788,6 +851,7 @@ async function handleFloorTransition() {
 }
 
 function performAttack() {
+    
     let nearestMonster = null;
     let minDistance = Infinity;
 
@@ -909,7 +973,7 @@ function performAttack() {
                     }
                 }
                 
-                projectiles.push(new Projectile(player.tileX, player.tileY, dx, dy, projectileType, 'player', player.atk, isCriticalProjectile, projectileRange));
+                projectiles.push(new Projectile(player.tileX, player.tileY, dx, dy, projectileType, 'player', player.atk, isCriticalProjectile, projectileRange, projectileType === 'dark_ray' ? 0.5 : 1));
             }
 
             monstersHit.forEach(monsterToAttack => {
@@ -918,7 +982,7 @@ function performAttack() {
                     isCritical = isCritical || (Math.random() < 0.05); 
                 }
 
-                const damageMultiplier = isCritical ? 1.5 : 1;
+                const damageMultiplier = isCritical ? 2 : 1;
                 let damage = Math.floor(player.atk * damageMultiplier);
 
                 if (player.nextHitCritical) { 
@@ -937,27 +1001,38 @@ function performAttack() {
                 const monsterScreenY = monsterToAttack.tileY * tileSize - offsetY;
                 
                 damageTexts.push({
-                    x: monsterScreenX + tileSize/2 * (monsterToAttack.width || 1), 
-                    y: monsterScreenY - 10 + tileSize/2 * (monsterToAttack.height || 1) - tileSize/2, 
+                    x: monsterToAttack.tileX,
+                    y: monsterToAttack.tileY,
                     text: isCritical ? `¡CRÍTICO! ${Math.floor(damage)}` : `${Math.floor(damage)}`,
                     color: isCritical ? '#ff0000' : '#ffffff', size: isCritical ? 24 : 16,
-                    life: 40, velY: -1.5
+                    life: 60, velY: -0.01
                 });
                 if (isCritical) {
-                    screenShake = 8; 
+                    if (screenShake > 0) {
+        screenShake--;
+    } 
                     criticalHitEffects.push({ x: monsterScreenX, y: monsterScreenY, size: tileSize * (monsterToAttack.width || 1) * 1.5, life: 15, monster: monsterToAttack });
                 }
                 
                 if (player.soulExtractionActive) {
-                    const hpRecovered = Math.floor(damage * 0.05);
-                    if (hpRecovered > 0) { 
-                        player.hp = Math.min(player.maxHp, player.hp + hpRecovered); 
-                        damageTexts.push({ 
-                            x: playerScreenX + tileSize/2, y: playerScreenY - 5, 
-                            text: `+${hpRecovered} HP`,
-                            color: '#00ff00', 
-                            size: 14, life: 30, velY: -1
-                        });
+                    console.log("Checking Soul Extraction: player.soulExtractionActive is", player.soulExtractionActive);
+                    console.log("Soul Extraction is active in performAttack. hitsSinceLastSoulExtraction: ", player.hitsSinceLastSoulExtraction);
+                    player.hitsSinceLastSoulExtraction++;
+                    if (player.hitsSinceLastSoulExtraction >= 5) {
+                        const hpRecovered = Math.floor(player.maxHp * 0.05);
+                        console.log("Attempting to recover HP: ", hpRecovered);
+                        if (hpRecovered > 0) {
+                            player.hp = Math.min(player.maxHp, player.hp + hpRecovered);
+                            ui.showMessage("¡Extracción de Almas: ¡5% HP recuperado!");
+                            damageTexts.push({
+                                x: playerScreenX + tileSize/2, y: playerScreenY - 5,
+                                text: `+${hpRecovered} HP`,
+                                color: '#00FF00',
+                                size: 14, life: 30, velY: -1
+                            });
+                        }
+                        player.hitsSinceLastSoulExtraction = 0;
+                        console.log("Soul Extraction triggered. Hits reset.");
                     }
                 }
 
@@ -1025,7 +1100,7 @@ function performAttack() {
 
                     const remainingMonsters = monsters.filter(m => !m.isMinion);
                     
-                    if (target.type === 'finalBoss') {
+                    if (monsterToAttack.type === 'finalBoss') {
                         gameOver = true;
                         finalOutcomeMessage = "¡Has derrotado al Jefe Final!";
                         finalOutcomeMessageLine2 = "¡Has completado la Mazmorra!";
@@ -1033,8 +1108,7 @@ function performAttack() {
                         lastEnemiesDefeated = player.enemiesDefeatedThisRun;
                     } else if (remainingMonsters.length === 0) {
                         stairLocation.active = true;
-                        ui.showMessage("¡Todos los monstruos derrotados! Las escaleras han aparecido.");
-                        console.log(`Stairs activated at: (${stairLocation.x}, ${stairLocation.y})`);
+                    ui.showMessage("¡Todos los monstruos derrotados! Las escaleras han aparecido.");
                     }
                 }
             });
@@ -1045,8 +1119,26 @@ function openChest(chest) {
     chest.opened = true;
     map[chest.tileY][chest.tileX] = 1;
     if (chest.item) {
-        player.inventory.push(chest.item);
-        useItem(chest.item);
+        if (chest.item.type === 'potion') {
+            const oldHp = player.hp;
+            const healedAmount = chest.item.heal || 0;
+            player.hp = Math.min(player.maxHp, player.hp + healedAmount);
+            const actualHealedAmount = player.hp - oldHp;
+            if (actualHealedAmount > 0) {
+                damageTexts.push({
+                    text: `+${Math.floor(actualHealedAmount)} HP`,
+                    x: player.tileX,
+                    y: player.tileY,
+                    life: 60,
+                    color: '#4CAF50',
+                    size: 20,
+                    velY: -0.01
+                });
+            }
+        } else {
+            player.inventory.push(chest.item);
+        }
+        ui.showMessage(`Has encontrado: ${chest.item.name}`);
     }
 }
 
@@ -1150,7 +1242,6 @@ function takeDamage(target, damage, isCritical, attackerType = 'player') {
             } else if (remainingMonsters.length === 0) {
                 stairLocation.active = true;
                 ui.showMessage("¡Todos los monstruos derrotados! Las escaleras han aparecido.");
-                console.log(`Stairs activated at: (${stairLocation.x}, ${stairLocation.y})`);
             }
         }
     }
@@ -1167,6 +1258,14 @@ function calculateScore() {
 export function activateSkill(skillName) {
     const skill = skills.find(s => s.name === skillName);
     if (!skill) return;
+
+    // Passive skills are handled in updateStats based on being equipped.
+    // This function is primarily for active skills.
+    if (skill.type === 'passive') {
+        ui.showMessage(`Esta habilidad (${skill.name}) es pasiva y se activa automáticamente al equiparla.`);
+        return;
+    }
+
     const isSkillEquipped = player.equipped.habilidad1 === skillName ||
                               player.equipped.habilidad2 === skillName ||
                               player.equipped.habilidad3 === skillName;
@@ -1182,7 +1281,7 @@ export function activateSkill(skillName) {
     switch (skillName) {
         case 'Sigilo':
             player.stealthActive = true; 
-            player.stealthEndTime = currentTime + 7000; 
+            player.stealthEndTime = currentTime + 10000; 
             player.stealthStatMultiplier = 0.5;
             updateStats(); 
             ui.showMessage("¡Te has vuelto sigiloso!");
@@ -1198,8 +1297,8 @@ export function activateSkill(skillName) {
                 newX = Math.floor(Math.random() * mapWidth);
                 newY = Math.floor(Math.random() * mapHeight);
                 attempts++;
-            } while (map[newY][newX] !== 1 && attempts < 100); 
-            if (map[newY][newX] === 1) {
+            } while ((map[newY][newX] !== 1 || monsters.some(m => m.tileX === newX && m.tileY === newY)) && attempts < 100); 
+            if (map[newY][newX] === 1 && !monsters.some(m => m.tileX === newX && m.tileY === newY)) {
                 player.tileX = newX;
                 player.tileY = newY;
                 ui.showMessage("¡Teletransportación exitosa!");
@@ -1208,8 +1307,8 @@ export function activateSkill(skillName) {
             }
             break;
         case 'Invocar':
-            const minionHp = Math.floor(player.maxHp * 0.25);
-            const minionAtk = Math.floor(player.atk * 0.25);
+            const minionHp = Math.floor(player.maxHp * 0.75);
+            const minionAtk = Math.floor(player.atk * 0.75);
             const minionSpd = player.spd * 0.75; 
             
             let spawnX = player.tileX;
@@ -1239,7 +1338,7 @@ export function activateSkill(skillName) {
             }
             break;
         case 'Regeneración':
-            const healedAmount = Math.floor(player.maxHp * 0.5);
+            const healedAmount = Math.floor(player.maxHp * 0.75);
             player.hp = Math.min(player.maxHp, player.hp + healedAmount);
             damageTexts.push({
                 text: `+${Math.floor(healedAmount)}`,
@@ -1254,57 +1353,47 @@ export function activateSkill(skillName) {
             break;
         case 'Velocidad':
             player.isSpeedBoosted = true;
-            player.speedBoostEndTime = currentTime + 5000; 
-            player.spd *= 1.5; 
+            player.speedBoostEndTime = currentTime + 10000; 
+            player.spd *= 1.25; 
             ui.showMessage("¡Velocidad aumentada!");
             break;
         case 'Invencible':
             player.isInvincible = true;
-            player.invincibleEndTime = currentTime + 3000; 
+            player.invincibleEndTime = currentTime + 4000; 
             ui.showMessage("¡Eres invencible!");
             break;
         case 'Rayo de Hielo':
-            let nearestMonster = null;
-            let minDist = Infinity;
-            monsters.filter(m => !m.isMinion).forEach(m => {
-                const dist = Math.abs(player.tileX - m.tileX) + Math.abs(player.tileY - m.tileY);
-                if (dist < minDist && dist > 0) { 
-                    minDist = dist;
-                    nearestMonster = m;
-                }
+            monsters.filter(m => !m.isMinion && Math.abs(player.tileX - m.tileX) + Math.abs(player.tileY - m.tileY) <= 3).forEach(m => {
+                m.isFrozen = true;
+                m.frozenEndTime = currentTime + 5000; 
+                ui.showMessage(`¡${m.type} ha sido congelado!`);
             });
-            if (nearestMonster) {
-                nearestMonster.isFrozen = true;
-                nearestMonster.frozenEndTime = currentTime + 5000; 
-                ui.showMessage(`¡${nearestMonster.type} ha sido congelado!`);
-            } else {
+            if (!monsters.some(m => !m.isMinion && Math.abs(player.tileX - m.tileX) + Math.abs(player.tileY - m.tileY) <= 3)) {
                 ui.showMessage("No hay enemigos cerca para congelar.");
             }
             break;
         case 'Suerte':
             player.luckBoostEndTime = currentTime + 10000; 
+            player.criticalChanceBonus += 0.25; // Aumenta la probabilidad de crítico en 25%
             ui.showMessage("¡Tu suerte ha aumentado!");
+            updateStats(); // Recalcula las estadísticas para aplicar el bonus
             break;
         case 'Debilidad':
-            monsters.filter(m => !m.isMinion).forEach(m => {
-                const dist = Math.abs(player.tileX - m.tileX) + Math.abs(player.tileY - m.tileY);
-                if (dist <= 3) { 
-                    m.isWeakened = true;
-                    m.weaknessEndTime = currentTime + 8000; 
-                    ui.showMessage(`¡${m.type} ha sido debilitado!`);
-                }
+            monsters.filter(m => !m.isMinion && Math.abs(player.tileX - m.tileX) + Math.abs(player.tileY - m.tileY) <= 3).forEach(m => {
+                m.isWeakened = true;
+                m.weaknessEndTime = currentTime + 8000; 
+                m.def *= 0.75; // Reduce la defensa en un 25%
+                ui.showMessage(`¡${m.type} ha sido debilitado!`);
             });
             if (!monsters.some(m => !m.isMinion && Math.abs(player.tileX - m.tileX) + Math.abs(player.tileY - m.tileY) <= 3)) {
                 ui.showMessage("No hay enemigos cerca para debilitar.");
             }
             break;
         case 'Furia': 
-            player.furyActive = true;
-            ui.showMessage("Habilidad Furia activada (pasiva).");
+            ui.showMessage("Esta habilidad (Furia) es pasiva y se activa automáticamente al equiparla.");
             break;
         case 'Extracción de Almas': 
-            player.soulExtractionActive = true;
-            ui.showMessage("Habilidad Extracción de Almas activada (pasiva).");
+            ui.showMessage("Esta habilidad (Extracción de Almas) es pasiva y se activa automáticamente al equiparla.");
             break;
     }
     if (skill.cooldown > 0) {
@@ -1378,19 +1467,59 @@ export function equipItem(slotType, direction, specificItem = null) {
 }
 
 export function equipSkill(slotType, direction) {
-    const availableSkillsForSlot = skills.filter(s => s.type === 'active');
+    console.log(`Attempting to equip skill for slot: ${slotType}, direction: ${direction}`);
+    const availableSkillsForSlot = skills.filter(s => player.permanentlyLearnedSkills.includes(s.name));
+    // Add a null option to the end of the available skills list
+    const allPossibleSkills = [...availableSkillsForSlot, { name: null }];
+    console.log("All possible skills for slot:", allPossibleSkills.map(s => s.name));
+
     const equippedSkillName = player.equipped[slotType];
-    const currentIndex = equippedSkillName ? availableSkillsForSlot.findIndex(s => s.name === equippedSkillName) : -1;
+    const currentIndex = allPossibleSkills.findIndex(s => s.name === equippedSkillName);
 
-    let nextIndex = currentIndex + (direction === 'right' ? 1 : -1);
+    let nextIndex = currentIndex;
+    let foundUniqueSkill = false;
+    let attempts = 0;
+    const maxAttempts = allPossibleSkills.length; // Max attempts is the number of possible skills
 
-    if (nextIndex >= availableSkillsForSlot.length) {
-        nextIndex = -1;
-    } else if (nextIndex < -1) {
-        nextIndex = availableSkillsForSlot.length - 1;
-    }
+    do {
+        if (direction === 'right') {
+            nextIndex = (nextIndex + 1) % allPossibleSkills.length;
+        } else { // 'left'
+            nextIndex = (nextIndex - 1 + allPossibleSkills.length) % allPossibleSkills.length;
+        }
 
-    player.equipped[slotType] = nextIndex === -1 ? null : availableSkillsForSlot[nextIndex].name;
+        const potentialSkill = allPossibleSkills[nextIndex];
+        const potentialSkillName = potentialSkill.name;
+
+        // Check if the potential skill is already equipped in other slots
+        let isAlreadyEquippedInOtherSlot = false;
+        if (potentialSkillName !== null) {
+            if (slotType !== 'habilidad1' && player.equipped.habilidad1 === potentialSkillName) {
+                isAlreadyEquippedInOtherSlot = true;
+            }
+            if (slotType !== 'habilidad2' && player.equipped.habilidad2 === potentialSkillName) {
+                isAlreadyEquippedInOtherSlot = true;
+            }
+            if (slotType !== 'habilidad3' && player.equipped.habilidad3 === potentialSkillName) {
+                isAlreadyEquippedInOtherSlot = true;
+            }
+        }
+
+        if (!isAlreadyEquippedInOtherSlot) {
+            foundUniqueSkill = true;
+        }
+        attempts++;
+    } while (!foundUniqueSkill && attempts < maxAttempts);
+
+    player.equipped[slotType] = allPossibleSkills[nextIndex].name;
+
+    // Recalculate passive skill flags based on all equipped skills
+    player.furyActive = player.equipped.habilidad1 === 'Furia' || player.equipped.habilidad2 === 'Furia' || player.equipped.habilidad3 === 'Furia';
+    player.soulExtractionActive = player.equipped.habilidad1 === 'Extracción de Almas' || player.equipped.habilidad2 === 'Extracción de Almas' || player.equipped.habilidad3 === 'Extracción de Almas';
+
+    console.log(`Fury Active (after equipSkill): ${player.furyActive}`);
+    console.log(`Soul Extraction Active (after equipSkill): ${player.soulExtractionActive}`);
+
     updateStats();
 }
 

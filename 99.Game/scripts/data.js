@@ -43,18 +43,18 @@ export const gearList = [
 ];
 
 export const skills = [
-    { name: 'Sigilo', type: 'active', effect: 'Te vuelves uno con las sombras, imperceptible para los monstruos durante 7 segundos.', cooldown: 15000 },
-    { name: 'Golpe Crítico', type: 'active', effect: 'El siguiente golpe que asestes será un 50% más devastador.', cooldown: 5000 },
-    { name: 'Teletransportación', type: 'active', effect: 'Desplázate instantáneamente a un punto aleatorio del mapa.', cooldown: 10000 },
-    { name: 'Invocar', type: 'active', effect: 'Manifiesta un súbdito leal con el 25% de tus estadísticas.', cooldown: 20000 },
-    { name: 'Regeneración', type: 'active', effect: 'Restaura el 50% de tu salud máxima al instante.', cooldown: 10000 },
-    { name: 'Velocidad', type: 'active', effect: 'Incrementa tu velocidad de movimiento en un 10% durante 5 segundos.', cooldown: 8000 },
-    { name: 'Invencible', type: 'active', effect: 'Te vuelves inmune a todo daño durante 3 segundos.', cooldown: 25000 },
-    { name: 'Rayo de Hielo', type: 'active', effect: 'Congela a un enemigo en su lugar durante 5 segundos.', cooldown: 12000 },
-    { name: 'Suerte', type: 'active', effect: 'Aumenta tu probabilidad de asestar un golpe crítico en un 5% durante 10 segundos.', cooldown: 15000 },
-    { name: 'Debilidad', type: 'active', effect: 'Reduce la resistencia de los enemigos cercanos en un 5% durante 8 segundos.', cooldown: 10000 },
+    { name: 'Sigilo', type: 'active', effect: 'Te vuelves uno con las sombras, imperceptible para los monstruos durante 10 segundos.', cooldown: 15000 },
+    { name: 'Golpe Crítico', type: 'active', effect: 'El siguiente golpe que asestes será un 100% más devastador.', cooldown: 5000 },
+    { name: 'Teletransportación', type: 'active', effect: 'Desplázate instantáneamente a un punto seguro del mapa sin enemigos.', cooldown: 10000 },
+    { name: 'Invocar', type: 'active', effect: 'Manifiesta un súbdito leal con el 75% de tus estadísticas.', cooldown: 20000 },
+    { name: 'Regeneración', type: 'active', effect: 'Restaura el 75% de tu salud máxima al instante.', cooldown: 10000 },
+    { name: 'Velocidad', type: 'active', effect: 'Incrementa tu velocidad de movimiento en un 25% durante 10 segundos.', cooldown: 8000 },
+    { name: 'Invencible', type: 'active', effect: 'Te vuelves inmune a todo daño durante 4 segundos.', cooldown: 25000 },
+    { name: 'Rayo de Hielo', type: 'active', effect: 'Congela a todos los enemigos cercanos durante 5 segundos.', cooldown: 12000 },
+    { name: 'Suerte', type: 'active', effect: 'Aumenta tu probabilidad de asestar un golpe crítico en un 25% durante 10 segundos.', cooldown: 15000 },
+    { name: 'Debilidad', type: 'active', effect: 'Reduce la resistencia de los enemigos cercanos en un 25% durante 8 segundos.', cooldown: 10000 },
     { name: 'Furia', type: 'passive', effect: 'Duplica tu ataque cuando tu salud desciende al 25% o menos (pasiva).', cooldown: 0 }, 
-    { name: 'Extracción de Almas', type: 'passive', effect: 'Recupera salud por cada 5 golpes exitosos que asestes (pasiva).', cooldown: 0 } 
+    { name: 'Extracción de Almas', type: 'passive', effect: 'Recupera el 5% de tu salud máxima cada 5 golpes exitosos (pasiva).', cooldown: 0 } 
 ];
 
 

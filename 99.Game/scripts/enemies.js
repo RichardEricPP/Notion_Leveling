@@ -149,8 +149,165 @@ export function createWolfSprite() {
     return canvas.toDataURL();
 }
 
+export function createWhiteWolfSprite() {
+    const canvas = document.createElement('canvas');
+    canvas.width = 64; canvas.height = 64;
+    const ctx = canvas.getContext('2d');
+    const bodyMain = '#F0F0F0'; 
+    const furLight = '#FFFFFF';   
+    const shadowGrey = '#D0D0D0'; 
+    const eyeColor = '#ADD8E6'; 
+    const clawColor = '#555555'; 
+    const highlightWhite = '#E0E0E0'; 
+    ctx.fillStyle = bodyMain;
+    ctx.beginPath();
+    ctx.moveTo(10, 40); 
+    ctx.quadraticCurveTo(0, 35, 8, 25); 
+    ctx.quadraticCurveTo(15, 30, 10, 40); 
+    ctx.closePath();
+    ctx.fill();
+    ctx.fillStyle = furLight;
+    ctx.beginPath();
+    ctx.moveTo(11, 38); 
+    ctx.quadraticCurveTo(3, 34, 9, 28); 
+    ctx.quadraticCurveTo(14, 32, 11, 38);
+    ctx.closePath();
+    ctx.fill();
+    ctx.fillStyle = shadowGrey;
+    ctx.beginPath(); ctx.ellipse(18, 48, 6, 12, -0.25 * Math.PI, 0, Math.PI * 2); ctx.fill(); 
+    ctx.beginPath(); ctx.ellipse(46, 48, 6, 12, 0.25 * Math.PI, 0, Math.PI * 2); ctx.fill();  
+    
+    ctx.fillStyle = bodyMain;
+    ctx.beginPath(); ctx.ellipse(25, 50, 7, 13, -0.1 * Math.PI, 0, Math.PI * 2); ctx.fill(); 
+    ctx.beginPath(); ctx.ellipse(39, 50, 7, 13, 0.1 * Math.PI, 0, Math.PI * 2); ctx.fill();  
+    ctx.fillStyle = bodyMain;
+    ctx.beginPath();
+    ctx.ellipse(32, 40, 20, 14, 0, 0, Math.PI * 2); 
+    ctx.fill();
+    
+    ctx.fillStyle = furLight;
+    for (let i = 0; i < 5; i++) {
+        ctx.beginPath();
+        ctx.moveTo(18 + i * 7, 30); 
+        ctx.lineTo(21 + i * 7, 22 - Math.random()*3); 
+        ctx.lineTo(24 + i * 7, 30);
+        ctx.closePath();
+        ctx.fill();
+    }
+    ctx.fillStyle = bodyMain;
+    ctx.beginPath();
+    ctx.ellipse(50, 29, 13, 9, -0.1 * Math.PI, 0, Math.PI * 2); 
+    ctx.fill();
+    ctx.fillStyle = highlightWhite; 
+    ctx.beginPath();
+    ctx.ellipse(54, 26, 6, 3, -0.1 * Math.PI, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = shadowGrey; 
+    ctx.beginPath();
+    ctx.ellipse(59, 23, 3.5, 2.5, -0.1 * Math.PI, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = shadowGrey;
+    ctx.beginPath(); 
+    ctx.moveTo(43, 20); ctx.lineTo(39, 8); ctx.lineTo(47, 17); ctx.closePath(); ctx.fill();
+    ctx.beginPath(); 
+    ctx.moveTo(57, 20); ctx.lineTo(53, 8); ctx.lineTo(61, 17); ctx.closePath(); ctx.fill();
+    
+    ctx.fillStyle = eyeColor;
+    ctx.shadowColor = eyeColor;
+    ctx.shadowBlur = 5;
+    ctx.beginPath(); ctx.ellipse(46, 28, 3.5, 2.5, 0,0, Math.PI*2); ctx.fill(); 
+    ctx.beginPath(); ctx.ellipse(55, 28, 3.5, 2.5, 0,0, Math.PI*2); ctx.fill(); 
+    ctx.shadowBlur = 0; 
+    ctx.fillStyle = clawColor;
+    ctx.beginPath(); ctx.moveTo(20,59); ctx.lineTo(18,63); ctx.lineTo(22,61); ctx.closePath(); ctx.fill(); 
+    ctx.beginPath(); ctx.moveTo(34,59); ctx.lineTo(32,63); ctx.lineTo(36,61); ctx.closePath(); ctx.fill(); 
+    
+    return canvas.toDataURL();
+}
+
 export function createSkeletonSprite() { const c = document.createElement('canvas'); c.width=64;c.height=64; const x=c.getContext('2d'); x.fillStyle = '#f0f0f0';x.fillRect(28,24,8,24);x.fillRect(20,32,24,4);x.fillRect(20,38,24,4);x.beginPath();x.ellipse(32,16,10,12,0,0,Math.PI*2);x.fill();x.fillStyle = '#000';x.beginPath();x.ellipse(28,14,3,4,0,0,Math.PI*2);x.fill();x.beginPath();x.ellipse(36,14,3,4,0,0,Math.PI*2);x.fill();x.fillStyle = '#f0f0f0';x.beginPath();x.ellipse(32,22,8,4,0,0,Math.PI);x.fill();x.strokeStyle = '#000';x.lineWidth = 1;x.beginPath();x.moveTo(24,22);x.lineTo(40,22);x.stroke();x.fillStyle = '#f0f0f0';x.fillRect(16,32,12,4);x.fillRect(36,32,12,4);x.fillRect(24,48,4,12);x.fillRect(36,48,4,12);x.fillStyle = '#a0a0a0';x.fillRect(48,28,12,2);x.fillStyle = '#8b4513';x.fillRect(44,27,4,4); return c.toDataURL(); }
 export function createMiniBossSprite() { const c = document.createElement('canvas'); c.width=64;c.height=64; const x=c.getContext('2d'); x.fillStyle = '#ff6600';x.beginPath();x.ellipse(32,32,20,24,0,0,Math.PI*2);x.fill();x.beginPath();x.ellipse(32,16,14,12,0,0,Math.PI*2);x.fill();x.fillStyle = '#ffff00';x.beginPath();x.ellipse(26,14,4,4,0,0,Math.PI*2);x.fill();x.beginPath();x.ellipse(38,14,4,4,0,0,Math.PI*2);x.fill();x.fillStyle = '#000';x.beginPath();x.ellipse(26,14,2,2,0,0,Math.PI*2);x.fill();x.beginPath();x.ellipse(38,14,2,2,0,0,Math.PI*2);x.fill();x.beginPath();x.ellipse(32,22,8,4,0,0,Math.PI);x.fill();x.fillStyle = '#8b4513';x.beginPath();x.moveTo(22,10);x.lineTo(18,2);x.lineTo(26,8);x.fill();x.beginPath();x.moveTo(42,10);x.lineTo(46,2);x.lineTo(38,8);x.fill();x.fillStyle = '#8b4513';x.fillRect(48,28,4,16);x.fillStyle = '#a0a0a0';x.beginPath();x.moveTo(52,28);x.lineTo(60,22);x.lineTo(60,34);x.lineTo(52,28);x.fill(); return c.toDataURL(); }
+export function createGolemMiniBossSprite() {
+    const canvas = document.createElement('canvas');
+    canvas.width = 64; canvas.height = 64;
+    const ctx = canvas.getContext('2d');
+
+    // Define colors
+    const darkStone = '#424242';
+    const mediumStone = '#616161';
+    const lightStone = '#9E9E9E';
+    const neonBlue = '#00FFFF';
+
+    // Body - segmented large stone
+    ctx.fillStyle = mediumStone;
+    ctx.fillRect(15, 25, 34, 35); // Main body
+    ctx.fillStyle = darkStone;
+    ctx.fillRect(15, 25, 34, 5); // Top segment
+    ctx.fillRect(15, 35, 34, 5); // Middle segment
+    ctx.fillRect(15, 45, 34, 5); // Bottom segment
+
+    // Head - segmented stone
+    ctx.fillStyle = mediumStone;
+    ctx.fillRect(22, 10, 20, 18); // Head base
+    ctx.fillStyle = darkStone;
+    ctx.fillRect(22, 10, 20, 4); // Head top segment
+
+    // Arms - segmented stone
+    ctx.fillStyle = mediumStone;
+    ctx.fillRect(5, 30, 10, 25); // Left arm
+    ctx.fillRect(49, 30, 10, 25); // Right arm
+    ctx.fillStyle = darkStone;
+    ctx.fillRect(5, 30, 10, 5); // Left arm top segment
+    ctx.fillRect(49, 30, 10, 5); // Right arm top segment
+
+    // Legs - segmented stone
+    ctx.fillStyle = mediumStone;
+    ctx.fillRect(20, 60, 10, 15); // Left leg
+    ctx.fillRect(34, 60, 10, 15); // Right leg
+    ctx.fillStyle = darkStone;
+    ctx.fillRect(20, 60, 10, 3); // Left leg top segment
+    ctx.fillRect(34, 60, 10, 3); // Right leg top segment
+
+    // Neon blue eyes
+    ctx.fillStyle = neonBlue;
+    ctx.shadowColor = neonBlue;
+    ctx.shadowBlur = 10;
+    ctx.beginPath();
+    ctx.arc(28, 18, 4, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.beginPath();
+    ctx.arc(36, 18, 4, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.shadowBlur = 0;
+
+    // Neon blue glowing cracks/lines on body
+    ctx.strokeStyle = neonBlue;
+    ctx.lineWidth = 2;
+    ctx.shadowColor = neonBlue;
+    ctx.shadowBlur = 5;
+
+    ctx.beginPath();
+    ctx.moveTo(20, 30);
+    ctx.lineTo(18, 32);
+    ctx.lineTo(22, 38);
+    ctx.stroke();
+
+    ctx.beginPath();
+    ctx.moveTo(44, 30);
+    ctx.lineTo(46, 32);
+    ctx.lineTo(42, 38);
+    ctx.stroke();
+
+    ctx.beginPath();
+    ctx.moveTo(32, 40);
+    ctx.lineTo(30, 42);
+    ctx.lineTo(34, 48);
+    ctx.stroke();
+
+    ctx.shadowBlur = 0;
+
+    return canvas.toDataURL();
+}
 export function createBossSprite() { const c = document.createElement('canvas'); c.width=64;c.height=64; const x=c.getContext('2d'); x.fillStyle = '#990000';x.fillRect(12,12,40,40);x.fillStyle = '#cc0000';x.beginPath();x.ellipse(32,20,16,10,0,0,Math.PI*2);x.fill();x.fillStyle = '#ffff00';x.beginPath();x.ellipse(24,18,5,5,0,0,Math.PI*2);x.fill();x.beginPath();x.ellipse(40,18,5,5,0,0,Math.PI*2);x.fill();x.fillStyle = '#000';x.beginPath();x.ellipse(24,18,2,3,0,0,Math.PI*2);x.fill();x.beginPath();x.ellipse(40,18,2,3,0,0,Math.PI*2);x.fill();x.beginPath();x.ellipse(32,26,10,4,0,0,Math.PI);x.fill();x.fillStyle = '#fff';for(let i=0;i<5;i++){x.beginPath();x.moveTo(24+i*4,26);x.lineTo(26+i*4,26);x.lineTo(25+i*4,30);x.fill();}x.fillStyle = '#660000';x.fillRect(12,32,40,4);x.fillRect(12,42,40,4);x.fillStyle = '#000';x.fillRect(52,20,4,24);x.fillStyle = '#a0a0a0';x.beginPath();x.moveTo(54,12);x.lineTo(60,20);x.lineTo(48,20);x.fill(); return c.toDataURL(); }
 export function createArachnidBossSprite() { 
     const canvas = document.createElement('canvas');
@@ -253,9 +410,9 @@ export function loadSprites() {
     if (!sprites.lobo) sprites.lobo = createWolfSprite();
     if (!sprites.skeleton) sprites.skeleton = createSkeletonSprite();
     if (!sprites.miniBoss) {
-        sprites.miniBoss = createMiniBossSprite();
+        sprites.miniBoss = createWhiteWolfSprite();
     }
-    if (!sprites.boss) sprites.boss = createBossSprite();
+    if (!sprites.boss) sprites.boss = createGolemMiniBossSprite();
     if (!sprites.finalBoss) sprites.finalBoss = createArachnidBossSprite();
     if (!sprites.spiderling) sprites.spiderling = createSpiderlingSprite();
     if (!sprites.floor) sprites.floor = createFloorSprite();
