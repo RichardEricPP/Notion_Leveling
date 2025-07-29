@@ -59,8 +59,7 @@ export let player = {
     isSpeedBoosted: false,
     speedBoostEndTime: 0,
     luckBoostEndTime: 0,
-    soulExtractionActive: false,
-    furyActive: false, 
+    secondWindUsedThisRun: false, 
     baseSpd: 4, 
     baseAtk: 5, 
     baseDef: 5, 
@@ -145,10 +144,15 @@ export function loadPlayerDataFromLocalStorage() {
             .filter(item => item !== undefined);
 
         // Validate permanently learned skills
-        const validSkills = loadedPlayer.permanentlyLearnedSkills.filter(skillName => 
-            skills.some(s => s.name === skillName)
-        );
-        player.permanentlyLearnedSkills = validSkills.length > 0 ? validSkills : getInitialSkills();
+        // Start with all initial skills
+        let currentLearnedSkills = new Set(getInitialSkills());
+        // Add skills from loaded data if they still exist
+        loadedPlayer.permanentlyLearnedSkills.forEach(skillName => {
+            if (skills.some(s => s.name === skillName)) {
+                currentLearnedSkills.add(skillName);
+            }
+        });
+        player.permanentlyLearnedSkills = Array.from(currentLearnedSkills);
 
         // If, after validation, no skills are equipped, set the default ones.
         if (!player.equipped.habilidad1 && !player.equipped.habilidad2 && !player.equipped.habilidad3) {
@@ -182,7 +186,7 @@ function initializeNewPlayer() {
 }
 
 function getInitialSkills() {
-    return ['Sigilo', 'Golpe Crítico', 'Regeneración'];
+    return ['Sigilo', 'Golpe Crítico', 'Regeneración', 'Segundo Aliento', 'Tormenta de Cuchillas'];
 }
 
 /**
@@ -285,12 +289,7 @@ export function updateStats() {
         player.spd *= 1.5; 
     }
 
-    if (player.furyActive && player.hp <= player.maxHp * 0.25) {
-        console.log(`Fury Active: ${player.furyActive}, Current HP: ${player.hp}, Max HP: ${player.maxHp}, 25% Max HP: ${player.maxHp * 0.25}`);
-        console.log(`Player ATK before Fury: ${player.atk}`);
-        player.atk *= 2;
-        console.log(`Player ATK after Fury: ${player.atk}`);
-    }
+    player.hp = Math.min(player.hp, player.maxHp);
     if (player.stealthActive && currentTime < player.stealthEndTime) {
         player.atk = Math.floor(player.atk * player.stealthStatMultiplier);
         player.def = Math.floor(player.def * player.stealthStatMultiplier);
@@ -301,9 +300,7 @@ export function updateStats() {
     }
 
     player.hp = Math.min(player.hp, player.maxHp);
-    // Restore passive skill states
-    player.furyActive = currentFuryActive;
-    player.soulExtractionActive = currentSoulExtractionActive;
+    
     // La llamada a loadSprites() se elimina de aquí para evitar dependencias circulares.
     // Debe ser llamada desde gameLogic.js después de llamar a updateStats().
 }

@@ -32,14 +32,14 @@ export const gearList = [
     { name: 'Botas de Asesinato', type: 'boots', spd: 9, itemLevel: 3, baseValue: 70, set: 'Asesinato' },
     { name: 'Botas de Noble', type: 'boots', spd: 4, itemLevel: 2, baseValue: 30, set: 'Noble' },
     { name: 'Botas de Mago', type: 'boots', spd: 6, itemLevel: 1, baseValue: 25, set: 'Mago' },
-    { name: 'Escudo Colosal', type: 'weapon', def: 10, itemLevel: 2, baseValue: 80, set: 'Hierro', attackSpeed: 400 }, 
-    { name: 'Maza de Guerra', type: 'weapon', atk: 9, itemLevel: 2, baseValue: 75, set: 'Caballero', attackSpeed: 400 },
-    { name: 'Espada de Luz', type: 'weapon', atk: 7, spd: 3, itemLevel: 3, baseValue: 90, set: 'Demonio', attackSpeed: 250 },
-    { name: 'Libro Celestial', type: 'weapon', atk: 5, spd: 4, itemLevel: 3, baseValue: 85, set: 'Mago', attackSpeed: 400 }, 
-    { name: 'Rayo de Oscuridad', type: 'weapon', atk: 7, critical: 0.03, itemLevel: 3, baseValue: 95, set: 'Asesinato', attackSpeed: 400 }, 
-    { name: 'Daga de Poder', type: 'weapon', atk: 6, spd: 4, itemLevel: 1, baseValue: 50, set: 'Asesinato', attackSpeed: 400 },
-    { name: 'Arco del Bosque', type: 'weapon', atk: 6, critical: 0.04, itemLevel: 2, baseValue: 70, set: 'León', attackSpeed: 400 }, 
-    { name: 'Guadaña Helada', type: 'weapon', atk: 8, itemLevel: 2, baseValue: 80, set: 'Noble', attackSpeed: 400 },
+    { name: 'Escudo Colosal', type: 'weapon', def: 10, itemLevel: 2, baseValue: 80, set: 'Hierro', attackSpeed: 250 }, 
+    { name: 'Maza de Guerra', type: 'weapon', atk: 9, itemLevel: 2, baseValue: 75, set: 'Caballero', attackSpeed: 250 },
+    { name: 'Espada de Luz', type: 'weapon', atk: 7, spd: 3, itemLevel: 3, baseValue: 90, set: 'Demonio', attackSpeed: 150 },
+    { name: 'Libro Celestial', type: 'weapon', atk: 5, spd: 4, itemLevel: 3, baseValue: 85, set: 'Mago', attackSpeed: 250 }, 
+    { name: 'Rayo de Oscuridad', type: 'weapon', atk: 7, critical: 0.03, itemLevel: 3, baseValue: 95, set: 'Asesinato', attackSpeed: 250 }, 
+    { name: 'Daga de Poder', type: 'weapon', atk: 6, spd: 4, itemLevel: 1, baseValue: 50, set: 'Asesinato', attackSpeed: 200 },
+    { name: 'Arco del Bosque', type: 'weapon', atk: 6, critical: 0.04, itemLevel: 2, baseValue: 70, set: 'León', attackSpeed: 250 }, 
+    { name: 'Guadaña Helada', type: 'weapon', atk: 8, itemLevel: 2, baseValue: 80, set: 'Noble', attackSpeed: 250 },
 ];
 
 export const skills = [
@@ -53,8 +53,8 @@ export const skills = [
     { name: 'Rayo de Hielo', type: 'active', effect: 'Congela a todos los enemigos cercanos durante 5 segundos.', cooldown: 12000 },
     { name: 'Suerte', type: 'active', effect: 'Aumenta tu probabilidad de asestar un golpe crítico en un 25% durante 10 segundos.', cooldown: 15000 },
     { name: 'Debilidad', type: 'active', effect: 'Reduce la resistencia de los enemigos cercanos en un 25% durante 8 segundos.', cooldown: 10000 },
-    { name: 'Furia', type: 'passive', effect: 'Duplica tu ataque cuando tu salud desciende al 25% o menos (pasiva).', cooldown: 0 }, 
-    { name: 'Extracción de Almas', type: 'passive', effect: 'Recupera el 5% de tu salud máxima cada 5 golpes exitosos (pasiva).', cooldown: 0 } 
+    { name: 'Tormenta de Cuchillas', type: 'active', effect: 'Lanzas cuchillos en todas las direcciones. Daño: 50% del ataque base por cuchillo.', cooldown: 0 }, 
+    { name: 'Segundo Aliento', type: 'passive', effect: 'Una vez por partida, si mueres, revives automáticamente con 25% de salud.', cooldown: 0 } 
 ];
 
 

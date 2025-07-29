@@ -30,6 +30,7 @@ export let keys = {
     Digit1: false, Digit2: false, Digit3: false
 };
 export let screenShake = 0;
+export let revealedMap;
 
 // --- EXPORTS (Game Mechanics Variables) ---
 export let projectiles = [];
@@ -64,11 +65,13 @@ export class Projectile {
         this.isCritical = isCritical;
         this.maxRangeTiles = maxRangeTiles;
         this.distanceTraveled = 0;
+        console.log(`Projectile created: Type=${type}, Damage=${damage}, Range=${maxRangeTiles}, Speed=${speedMultiplier}`);
     }
     update() {
         this.x += this.dx;
         this.y += this.dy;
         this.distanceTraveled = Math.sqrt(Math.pow(this.x - this.initialX, 2) + Math.pow(this.y - this.initialY, 2));
+        console.log(`Projectile updated: Type=${this.type}, X=${this.x.toFixed(2)}, Y=${this.y.toFixed(2)}, Distance=${this.distanceTraveled.toFixed(2)}`);
         return this.distanceTraveled <= this.maxRangeTiles;
     }
 }
@@ -155,12 +158,18 @@ export async function setDifficultyAndStart(difficulty, startFloor = 1, baseLeve
         criticalChanceBonus: 0.05,
         invulnerabilityTime: 0,
         darkRayEnemiesDefeated: 0,
+        hitsSinceLastSoulExtraction: 0,
+        _furyEffectApplied: false,
+        secondWindUsedThisRun: false
     });
+
+    revealedMap = Array(mapHeight).fill(0).map(() => Array(mapWidth).fill(false));
 
     
 
     updateStats(); 
     player.hp = player.maxHp; 
+    revealMapAroundPlayer(); 
 
     projectiles.length = 0;
     damageTexts.length = 0;
@@ -174,6 +183,7 @@ export async function setDifficultyAndStart(difficulty, startFloor = 1, baseLeve
     gameOver = false;
 
     await generateFloor();
+    tryMove(0,0); // Simulate a move to reveal the starting room
     await loadAllSprites(); 
     
     ui.difficultyScreen.style.display = 'none';
@@ -277,7 +287,8 @@ function updateProjectiles(currentTime) {
         if (p.owner === 'player') {
             const monster = getMonsterAt(tileX, tileY);
             if (monster) {
-                takeDamage(monster, p.damage, p.isCritical, 'player');
+                const projectileDamage = p.damage;
+                takeDamage(monster, projectileDamage, p.isCritical, 'player');
                 return false;
             }
         } else { 
@@ -464,6 +475,7 @@ async function generateFloor() {
             stairLocation = { x: -1, y: -1, active: false, type: 4 };
             Object.keys(player.skillUsageThisFloor).forEach(key => delete player.skillUsageThisFloor[key]);
             monsters.length = 0; // Changed from monsters = [];
+            revealedMap = Array(mapHeight).fill(0).map(() => Array(mapWidth).fill(false));
 
             var hpMultiplier = 1.0; 
             var atkMultiplier = 1.0;
@@ -555,7 +567,10 @@ async function generateFloor() {
                 rooms.forEach(room => { 
                     for (let y = room.y; y < room.y + room.h; y++) {
                         for (let x = room.x; x < room.x + room.w; x++) {
-                            if (x > 0 && x < mapWidth -1 && y > 0 && y < mapHeight -1) map[y][x] = 1;
+                            // Ensure coordinates are within map bounds before setting to 1
+                            if (x >= 0 && x < mapWidth && y >= 0 && y < mapHeight) {
+                                map[y][x] = 1;
+                            }
                         }
                     }
                 });
@@ -833,7 +848,58 @@ function tryMove(dx, dy) {
     if (isPassable(newX, newY)) {
         player.tileX = newX;
         player.tileY = newY;
+        revealMapAroundPlayer();
     }
+}
+
+function revealMapAroundPlayer() {
+    const tilesToReveal = [];
+    const px = player.tileX;
+    const py = player.tileY;
+
+    // Always reveal player's current tile
+    tilesToReveal.push({ x: px, y: py });
+
+    switch (player.facingDirection) {
+        case 'up':
+            tilesToReveal.push({ x: px, y: py - 1 });
+            tilesToReveal.push({ x: px, y: py - 2 });
+            tilesToReveal.push({ x: px - 1, y: py - 1 });
+            tilesToReveal.push({ x: px + 1, y: py - 1 });
+            tilesToReveal.push({ x: px - 1, y: py - 2 });
+            tilesToReveal.push({ x: px + 1, y: py - 2 });
+            break;
+        case 'down':
+            tilesToReveal.push({ x: px, y: py + 1 });
+            tilesToReveal.push({ x: px, y: py + 2 });
+            tilesToReveal.push({ x: px - 1, y: py + 1 });
+            tilesToReveal.push({ x: px + 1, y: py + 1 });
+            tilesToReveal.push({ x: px - 1, y: py + 2 });
+            tilesToReveal.push({ x: px + 1, y: py + 2 });
+            break;
+        case 'left':
+            tilesToReveal.push({ x: px - 1, y: py });
+            tilesToReveal.push({ x: px - 2, y: py });
+            tilesToReveal.push({ x: px - 1, y: py - 1 });
+            tilesToReveal.push({ x: px - 1, y: py + 1 });
+            tilesToReveal.push({ x: px - 2, y: py - 1 });
+            tilesToReveal.push({ x: px - 2, y: py + 1 });
+            break;
+        case 'right':
+            tilesToReveal.push({ x: px + 1, y: py });
+            tilesToReveal.push({ x: px + 2, y: py });
+            tilesToReveal.push({ x: px + 1, y: py - 1 });
+            tilesToReveal.push({ x: px + 1, y: py + 1 });
+            tilesToReveal.push({ x: px + 2, y: py - 1 });
+            tilesToReveal.push({ x: px + 2, y: py + 1 });
+            break;
+    }
+
+    tilesToReveal.forEach(tile => {
+        if (tile.x >= 0 && tile.x < mapWidth && tile.y >= 0 && tile.y < mapHeight) {
+            revealedMap[tile.y][tile.x] = true;
+        }
+    });
 }
 
 async function handleFloorTransition() {
@@ -959,7 +1025,7 @@ function performAttack() {
                     else if (player.facingDirection === 'down') dy = 1;
                 }
                 
-                let isCriticalProjectile = Math.random() < (0.2 + player.criticalChanceBonus);
+                let isCriticalProjectile = Math.random() < (0.05 + player.criticalChanceBonus);
                 if (player.luckBoostEndTime > Date.now()) {
                     isCriticalProjectile = isCriticalProjectile || (Math.random() < 0.05);
                 }
@@ -977,7 +1043,7 @@ function performAttack() {
             }
 
             monstersHit.forEach(monsterToAttack => {
-                let isCritical = Math.random() < (0.2 + player.criticalChanceBonus); 
+                let isCritical = Math.random() < (0.05 + player.criticalChanceBonus); 
                 if (player.luckBoostEndTime > Date.now()) { 
                     isCritical = isCritical || (Math.random() < 0.05); 
                 }
@@ -994,47 +1060,8 @@ function performAttack() {
                     damage *= 1.05; 
                 }
 
-                monsterToAttack.hp -= damage;
-                monsterToAttack.hitFrame = isCritical ? 10 : 5;
-                
-                const monsterScreenX = monsterToAttack.tileX * tileSize - offsetX;
-                const monsterScreenY = monsterToAttack.tileY * tileSize - offsetY;
-                
-                damageTexts.push({
-                    x: monsterToAttack.tileX,
-                    y: monsterToAttack.tileY,
-                    text: isCritical ? `¡CRÍTICO! ${Math.floor(damage)}` : `${Math.floor(damage)}`,
-                    color: isCritical ? '#ff0000' : '#ffffff', size: isCritical ? 24 : 16,
-                    life: 60, velY: -0.01
-                });
-                if (isCritical) {
-                    if (screenShake > 0) {
-        screenShake--;
-    } 
-                    criticalHitEffects.push({ x: monsterScreenX, y: monsterScreenY, size: tileSize * (monsterToAttack.width || 1) * 1.5, life: 15, monster: monsterToAttack });
-                }
-                
-                if (player.soulExtractionActive) {
-                    console.log("Checking Soul Extraction: player.soulExtractionActive is", player.soulExtractionActive);
-                    console.log("Soul Extraction is active in performAttack. hitsSinceLastSoulExtraction: ", player.hitsSinceLastSoulExtraction);
-                    player.hitsSinceLastSoulExtraction++;
-                    if (player.hitsSinceLastSoulExtraction >= 5) {
-                        const hpRecovered = Math.floor(player.maxHp * 0.05);
-                        console.log("Attempting to recover HP: ", hpRecovered);
-                        if (hpRecovered > 0) {
-                            player.hp = Math.min(player.maxHp, player.hp + hpRecovered);
-                            ui.showMessage("¡Extracción de Almas: ¡5% HP recuperado!");
-                            damageTexts.push({
-                                x: playerScreenX + tileSize/2, y: playerScreenY - 5,
-                                text: `+${hpRecovered} HP`,
-                                color: '#00FF00',
-                                size: 14, life: 30, velY: -1
-                            });
-                        }
-                        player.hitsSinceLastSoulExtraction = 0;
-                        console.log("Soul Extraction triggered. Hits reset.");
-                    }
-                }
+                console.log(`Player attacking. Soul Extraction Active: ${player.soulExtractionActive}`);
+                takeDamage(monsterToAttack, damage, isCritical, 'player');
 
                 if (equippedWeapon) {
                     const currentTime = Date.now();
@@ -1182,6 +1209,32 @@ function takeDamage(target, damage, isCritical, attackerType = 'player') {
 
     if (actualDamage > 0) {
         target.hp -= actualDamage;
+        console.log(`Damage taken by ${target.type}: ${actualDamage}. Remaining HP: ${target.hp}`);
+    }
+
+    
+
+    if (attackerType === 'player' && player.soulExtractionActive) {
+        console.log("Soul Extraction: Player hit. Current hitsSinceLastSoulExtraction:", player.hitsSinceLastSoulExtraction);
+        player.hitsSinceLastSoulExtraction = (player.hitsSinceLastSoulExtraction || 0) + 1;
+        if (player.hitsSinceLastSoulExtraction >= 5) {
+            const hpRecovered = Math.floor(player.maxHp * 0.05);
+            if (hpRecovered > 0) {
+                player.hp = Math.min(player.maxHp, player.hp + hpRecovered);
+                damageTexts.push({
+                    text: `+${hpRecovered} HP`,
+                    x: player.tileX,
+                    y: player.tileY - 0.5,
+                    life: 60,
+                    color: '#00ff00',
+                    size: 18,
+                    velY: -0.5
+                });
+                console.log("Soul Extraction: Recovered", hpRecovered, "HP. Player HP:", player.hp);
+            }
+            player.hitsSinceLastSoulExtraction = 0;
+            console.log("Soul Extraction: Counter reset.");
+        }
     }
 
     let damageColor = attackerType === 'player' ? (isCritical ? '#ff0000' : '#ffffff') : '#ff0000';
@@ -1189,7 +1242,7 @@ function takeDamage(target, damage, isCritical, attackerType = 'player') {
         text: Math.floor(actualDamage).toString(),
         x: target.tileX,
         y: target.tileY,
-        life: 60,
+        life: 30,
         color: damageColor,
         size: isCritical ? 24 : 18,
         velY: -0.01
@@ -1201,7 +1254,7 @@ function takeDamage(target, damage, isCritical, attackerType = 'player') {
             text: 'CRÍTICO!',
             x: target.tileX,
             y: target.tileY - 0.5,
-            life: 60,
+            life: 30,
             color: '#ff0000',
             size: 20,
             velY: -0.015
@@ -1215,6 +1268,20 @@ function takeDamage(target, damage, isCritical, attackerType = 'player') {
 
     if (target.hp <= 0) {
         if (target === player) {
+            // Check for Second Wind
+            const secondWindSkill = skills.find(s => s.name === 'Segundo Aliento');
+            const isSecondWindEquipped = player.equipped.habilidad1 === 'Segundo Aliento' ||
+                                         player.equipped.habilidad2 === 'Segundo Aliento' ||
+                                         player.equipped.habilidad3 === 'Segundo Aliento';
+
+            if (isSecondWindEquipped && !player.secondWindUsedThisRun) {
+                player.hp = Math.floor(player.maxHp * 0.25);
+                player.secondWindUsedThisRun = true;
+                ui.showMessage("¡Segundo Aliento! Has revivido con 25% de salud.");
+                // Prevent immediate game over
+                return;
+            }
+
             gameOver = true;
             finalOutcomeMessage = "¡Has sido derrotado!";
             lastGameScore = calculateScore();
@@ -1389,17 +1456,26 @@ export function activateSkill(skillName) {
                 ui.showMessage("No hay enemigos cerca para debilitar.");
             }
             break;
-        case 'Furia': 
-            ui.showMessage("Esta habilidad (Furia) es pasiva y se activa automáticamente al equiparla.");
+        case 'Tormenta de Cuchillas':
+            const bladeDamage = Math.max(1, Math.floor(player.baseAtk * 0.5));
+            const directions = [
+                { dx: 1, dy: 0 }, { dx: -1, dy: 0 }, { dx: 0, dy: 1 }, { dx: 0, dy: -1 }, // Cardinal
+                { dx: 1, dy: 1 }, { dx: -1, dy: 1 }, { dx: 1, dy: -1 }, { dx: -1, dy: -1 }  // Diagonal
+            ];
+            directions.forEach(dir => {
+                projectiles.push(new Projectile(player.tileX, player.tileY, dir.dx, dir.dy, 'blade', 'player', bladeDamage, false, 7, 0.2)); // Increased range to 7, decreased speed to 0.2
+            });
+            ui.showMessage("¡Has desatado una Tormenta de Cuchillas!");
             break;
-        case 'Extracción de Almas': 
-            ui.showMessage("Esta habilidad (Extracción de Almas) es pasiva y se activa automáticamente al equiparla.");
+        case 'Segundo Aliento': 
+            ui.showMessage("Esta habilidad (Segundo Aliento) es pasiva y se activa automáticamente al equiparla.");
             break;
     }
     if (skill.cooldown > 0) {
         skillCooldowns[skill.name] = currentTime + skill.cooldown;
     }
-    if (skill.cooldown !== 0) { 
+    // Mark active skills as used for this floor if they have a cooldown or are single-use
+    if (skill.type === 'active') { 
         player.skillUsageThisFloor[skill.name] = true; 
     }
 }
@@ -1513,12 +1589,7 @@ export function equipSkill(slotType, direction) {
 
     player.equipped[slotType] = allPossibleSkills[nextIndex].name;
 
-    // Recalculate passive skill flags based on all equipped skills
-    player.furyActive = player.equipped.habilidad1 === 'Furia' || player.equipped.habilidad2 === 'Furia' || player.equipped.habilidad3 === 'Furia';
-    player.soulExtractionActive = player.equipped.habilidad1 === 'Extracción de Almas' || player.equipped.habilidad2 === 'Extracción de Almas' || player.equipped.habilidad3 === 'Extracción de Almas';
-
-    console.log(`Fury Active (after equipSkill): ${player.furyActive}`);
-    console.log(`Soul Extraction Active (after equipSkill): ${player.soulExtractionActive}`);
+    console.log(`Equipped skill for ${slotType}: ${allPossibleSkills[nextIndex].name}`);
 
     updateStats();
 }

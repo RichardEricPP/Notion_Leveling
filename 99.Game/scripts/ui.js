@@ -8,7 +8,7 @@ import { monsters, chests, loadedImages, sprites } from './enemies.js';
 import { 
     gameStarted, gameOver, keys, lastGameScore, lastEnemiesDefeated, finalOutcomeMessage, 
     finalOutcomeMessageLine2, projectiles, damageTexts, criticalHitEffects, warMaceShockwave, 
-    screenShake, map, mapWidth, mapHeight, tileSize, stairLocation, skillCooldowns, currentFloor, 
+    screenShake, map, mapWidth, mapHeight, tileSize, stairLocation, skillCooldowns, currentFloor, revealedMap,
     // Se importarán funciones de lógica para ser llamadas desde los manejadores de eventos
     useItem, learnSkill, equipItem, equipSkill, activateSkill 
 } from './gameLogic.js';
@@ -275,6 +275,13 @@ function drawProjectiles(offsetX, offsetY) {
                 ctx.arc(sparkX, sparkY, sparkSize, 0, Math.PI * 2);
                 ctx.fill();
             }
+        } else if (proj.type === 'blade') { // Drawing for 'blade' projectiles
+            // Draw the blade (gold)
+            ctx.fillStyle = '#FFD700'; // Gold color
+            ctx.fillRect(-7, -1.5, 14, 3); // Blade: longer and thinner
+            // Draw the handle (brown)
+            ctx.fillStyle = '#8B4513'; // SaddleBrown color
+            ctx.fillRect(-7, -2.5, 3, 5); // Handle: shorter and wider, attached to one end
         }
         ctx.restore(); 
     });
@@ -435,33 +442,42 @@ function drawMinimap() {
             const miniX = x * minimapTileSize;
             const miniY = y * minimapTileSize;
 
-            if (map[y][x] === 0) { 
-                minimapCtx.fillStyle = '#333';
-            } else if (map[y][x] === 1) { 
-                minimapCtx.fillStyle = '#888';
-            } else if (map[y][x] === 2) { 
-                minimapCtx.fillStyle = '#FFD700'; 
-            }
-            minimapCtx.fillRect(miniX, miniY, minimapTileSize, minimapTileSize);
+            if (revealedMap[y][x]) { // Only draw if the tile has been revealed
+                if (map[y][x] === 0) { 
+                    minimapCtx.fillStyle = '#333';
+                } else if (map[y][x] === 1) { 
+                    minimapCtx.fillStyle = '#888';
+                } else if (map[y][x] === 2) { 
+                    minimapCtx.fillStyle = '#FFD700'; 
+                }
+                minimapCtx.fillRect(miniX, miniY, minimapTileSize, minimapTileSize);
 
-            // Draw stairs on top if active
-            if (x === stairLocation.x && y === stairLocation.y && stairLocation.active) { 
-                minimapCtx.fillStyle = '#00FF00'; // Bright Green
+                // Draw stairs on top if active and revealed
+                if (x === stairLocation.x && y === stairLocation.y && stairLocation.active) { 
+                    minimapCtx.fillStyle = '#00FF00'; // Bright Green
+                    minimapCtx.fillRect(miniX, miniY, minimapTileSize, minimapTileSize);
+                }
+            } else {
+                // Draw unrevealed areas as black or a dark color
+                minimapCtx.fillStyle = '#000';
                 minimapCtx.fillRect(miniX, miniY, minimapTileSize, minimapTileSize);
             }
         }
     }
 
+    // Always draw player and monsters if they are in a revealed area
     minimapCtx.fillStyle = 'blue';
     minimapCtx.fillRect(player.tileX * minimapTileSize, player.tileY * minimapTileSize, minimapTileSize, minimapTileSize);
 
     monsters.forEach(m => { 
-        if (m.isMinion) { 
-            minimapCtx.fillStyle = 'cyan';
-        } else {
-            minimapCtx.fillStyle = 'red';
+        if (revealedMap[m.tileY][m.tileX]) { // Only draw monster if its tile is revealed
+            if (m.isMinion) { 
+                minimapCtx.fillStyle = 'cyan';
+            } else {
+                minimapCtx.fillStyle = 'red';
+            }
+            minimapCtx.fillRect(m.tileX * minimapTileSize, m.tileY * minimapTileSize, minimapTileSize * (m.width || 1), minimapTileSize * (m.height || 1));
         }
-        minimapCtx.fillRect(m.tileX * minimapTileSize, m.tileY * minimapTileSize, minimapTileSize * (m.width || 1), minimapTileSize * (m.height || 1));
     });
 }
 
@@ -490,7 +506,7 @@ function drawHUD() {
         
         if (equippedSkill) {
             const cooldownRemaining = Math.max(0, (skillCooldowns[equippedSkill.name] - currentTime));
-            if (equippedSkill.cooldown === 0) { 
+            if (equippedSkill.type === 'passive') { 
                 skillText += " (Pasiva)";
                 textColor = '#00008B'; 
             } else if (player.skillUsageThisFloor[equippedSkill.name]) { 
@@ -843,6 +859,19 @@ export function playMusic(trackName) {
     if (trackName === 'dungeon') {
         isDungeonMusicPlaying = true; // Set flag when starting dungeon music
         playRandomDungeonMusic();
+    } else if (trackName === 'equipmentOpen') {
+        if (currentTrackName === trackName && !currentMusic.paused) {
+            return; // Already playing, do nothing
+        }
+        isDungeonMusicPlaying = false; // Clear flag for other music types
+        currentMusic.src = musicTracks[trackName];
+        currentMusic.loop = false; // Play only once
+        currentMusic.volume = 0.3;
+        currentMusic.play().catch(error => {
+            if (error.name !== 'AbortError') {
+                console.error("Error playing music:", error);
+            }
+        });
     } else {
         isDungeonMusicPlaying = false; // Clear flag for other music types
         currentMusic.src = musicTracks[trackName];
