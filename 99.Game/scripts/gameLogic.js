@@ -326,9 +326,9 @@ function updateMonsters(timestamp) {
                 break;
         }
 
-        let actionTaken = false;
+        let actionTakenThisTurn = false;
 
-        // --- Final Boss Ability Usage ---
+        // --- Final Boss Special Abilities ---
         if (m.type === 'finalBoss') {
             if (currentTime - (m.abilityCooldowns.webShot || 0) > 4000 && distanceToPlayer > 2 && canSeePlayer) {
                 const dx = player.tileX - bossCenter.x;
@@ -336,7 +336,7 @@ function updateMonsters(timestamp) {
                 projectiles.push(new Projectile(bossCenter.x, bossCenter.y, dx, dy, 'web', 'monster', m.atk * 0.5, false, 5));
                 ui.showMessage("¡La Araña Jefe lanza una telaraña!");
                 m.abilityCooldowns.webShot = currentTime;
-                actionTaken = true;
+                actionTakenThisTurn = true;
             } else if (currentTime - (m.abilityCooldowns.summon || 0) > 8000) {
                 let spawned = 0;
                 for (let i = 0; i < 15 && spawned < 4; i++) {
@@ -350,14 +350,9 @@ function updateMonsters(timestamp) {
                 if (spawned > 0) {
                     ui.showMessage(`¡La Araña Jefe ha invocado ${spawned} mini-arañas!`);
                     m.abilityCooldowns.summon = currentTime;
-                    actionTaken = true;
+                    actionTakenThisTurn = true;
                 }
             }
-        }
-
-        if (actionTaken) {
-            m.lastMoveTime = currentTime; // Using a skill counts as an action
-            return; // Don't move or attack in the same turn as using a skill
         }
 
         // --- Standard Attack Logic ---
@@ -371,12 +366,12 @@ function updateMonsters(timestamp) {
                 m.attackDirectionX = Math.sign(player.tileX - m.tileX);
                 m.attackDirectionY = Math.sign(player.tileY - m.tileY);
                 m.lastAttackTime = currentTime;
-                actionTaken = true;
+                actionTakenThisTurn = true;
             }
         }
 
         // --- Movement Logic ---
-        if (!actionTaken && currentTime - m.lastMoveTime > m.moveSpeed) {
+        if (!actionTakenThisTurn && currentTime - m.lastMoveTime > m.moveSpeed) {
             let moved = false;
             switch (m.state) {
                 case 'PATROL':
@@ -603,6 +598,12 @@ function createMonster(type, x, y, floor) {
             monster.moveSpeed = 600;
             monster.attackSpeed = 1200;
             break;
+        case 'miniBoss':
+            monster.maxHp = Math.floor((100 + floor * 10) * hpMultiplier * floorMultiplier);
+            monster.atk = Math.floor((15 + floor * 5) * atkMultiplier * floorMultiplier);
+            monster.moveSpeed = 700;
+            monster.attackSpeed = 900;
+            break;
         case 'finalBoss':
             monster.width = 2;
             monster.height = 2;
@@ -690,7 +691,6 @@ async function handleFloorTransition() {
 function performAttack() {
     let nearestMonster = null;
     let minDistance = Infinity;
-
     monsters.forEach(monster => {
         const distance = getDistance(player.tileX, player.tileY, monster.tileX, monster.tileY);
         if (distance < minDistance) {
@@ -704,12 +704,8 @@ function performAttack() {
         const dy = nearestMonster.tileY - player.tileY;
         player.attackDirectionX = Math.sign(dx);
         player.attackDirectionY = Math.sign(dy);
-
-        if (Math.abs(dx) > Math.abs(dy)) {
-            player.facingDirection = dx > 0 ? 'right' : 'left';
-        } else {
-            player.facingDirection = dy > 0 ? 'down' : 'up';
-        }
+        if (Math.abs(dx) > Math.abs(dy)) player.facingDirection = dx > 0 ? 'right' : 'left';
+        else player.facingDirection = dy > 0 ? 'down' : 'up';
     } else {
         switch (player.facingDirection) {
             case 'up': player.attackDirectionX = 0; player.attackDirectionY = -1; break;
@@ -723,7 +719,6 @@ function performAttack() {
     player.attackAnimFrame = 0;
 
     const equippedWeapon = player.equipped.weapon;
-    let targetTiles = [];
     let projectileType = null;
     let projectileRange = 1;
 
@@ -732,37 +727,7 @@ function performAttack() {
             case 'Arco del Bosque': projectileType = 'arrow'; projectileRange = 3; break;
             case 'Rayo de Oscuridad': projectileType = 'dark_ray'; projectileRange = 3; break;
             case 'Libro Celestial': projectileType = 'celestial_ray'; projectileRange = 3; break;
-            case 'Maza de Guerra':
-                if (player.facingDirection === 'right') {
-                    targetTiles.push({ x: player.tileX + 1, y: player.tileY });
-                    targetTiles.push({ x: player.tileX + 1, y: player.tileY - 1 });
-                    targetTiles.push({ x: player.tileX + 1, y: player.tileY + 1 });
-                } else if (player.facingDirection === 'left') {
-                    targetTiles.push({ x: player.tileX - 1, y: player.tileY });
-                    targetTiles.push({ x: player.tileX - 1, y: player.tileY - 1 });
-                    targetTiles.push({ x: player.tileX - 1, y: player.tileY + 1 });
-                } else if (player.facingDirection === 'up') {
-                    targetTiles.push({ x: player.tileX, y: player.tileY - 1 });
-                    targetTiles.push({ x: player.tileX - 1, y: player.tileY - 1 });
-                    targetTiles.push({ x: player.tileX + 1, y: player.tileY - 1 });
-                } else if (player.facingDirection === 'down') {
-                    targetTiles.push({ x: player.tileX, y: player.tileY + 1 });
-                    targetTiles.push({ x: player.tileX - 1, y: player.tileY + 1 });
-                    targetTiles.push({ x: player.tileX + 1, y: player.tileY + 1 });
-                }
-                break;
-            default: 
-                if (player.facingDirection === 'right') targetTiles.push({ x: player.tileX + 1, y: player.tileY });
-                else if (player.facingDirection === 'left') targetTiles.push({ x: player.tileX - 1, y: player.tileY });
-                else if (player.facingDirection === 'up') targetTiles.push({ x: player.tileX, y: player.tileY - 1 });
-                else if (player.facingDirection === 'down') targetTiles.push({ x: player.tileX, y: player.tileY + 1 });
-                break;
         }
-    } else {
-        if (player.facingDirection === 'right') targetTiles.push({ x: player.tileX + 1, y: player.tileY });
-        else if (player.facingDirection === 'left') targetTiles.push({ x: player.tileX - 1, y: player.tileY });
-        else if (player.facingDirection === 'up') targetTiles.push({ x: player.tileX, y: player.tileY - 1 });
-        else if (player.facingDirection === 'down') targetTiles.push({ x: player.tileX, y: player.tileY + 1 });
     }
 
     if (projectileType) {
@@ -770,6 +735,28 @@ function performAttack() {
         let isCriticalProjectile = Math.random() < (0.05 + player.criticalChanceBonus);
         projectiles.push(new Projectile(player.tileX, player.tileY, dx, dy, projectileType, 'player', player.atk, isCriticalProjectile, projectileRange));
     } else {
+        let targetTiles = [];
+        if (player.facingDirection === 'right') targetTiles.push({ x: player.tileX + 1, y: player.tileY });
+        else if (player.facingDirection === 'left') targetTiles.push({ x: player.tileX - 1, y: player.tileY });
+        else if (player.facingDirection === 'up') targetTiles.push({ x: player.tileX, y: player.tileY - 1 });
+        else if (player.facingDirection === 'down') targetTiles.push({ x: player.tileX, y: player.tileY + 1 });
+
+        if (equippedWeapon && equippedWeapon.name === 'Maza de Guerra') {
+            if (player.facingDirection === 'right') {
+                targetTiles.push({ x: player.tileX + 1, y: player.tileY - 1 });
+                targetTiles.push({ x: player.tileX + 1, y: player.tileY + 1 });
+            } else if (player.facingDirection === 'left') {
+                targetTiles.push({ x: player.tileX - 1, y: player.tileY - 1 });
+                targetTiles.push({ x: player.tileX - 1, y: player.tileY + 1 });
+            } else if (player.facingDirection === 'up') {
+                targetTiles.push({ x: player.tileX - 1, y: player.tileY - 1 });
+                targetTiles.push({ x: player.tileX + 1, y: player.tileY - 1 });
+            } else if (player.facingDirection === 'down') {
+                targetTiles.push({ x: player.tileX - 1, y: player.tileY + 1 });
+                targetTiles.push({ x: player.tileX + 1, y: player.tileY + 1 });
+            }
+        }
+
         let monstersHit = [];
         for (const targetCoord of targetTiles) {
             const monster = getMonsterAt(targetCoord.x, targetCoord.y);
