@@ -307,9 +307,12 @@ function updateMonsters(currentTime) {
                 break;
             case 'CHASE':
                 if (!canSeePlayer) m.state = 'SEARCH';
-                else if (distanceToPlayer <= m.attackRange) m.state = 'ATTACK';
-                else m.lastKnownPlayerPosition = { x: player.tileX, y: player.tileY };
-                break;
+                else if (distanceToPlayer <= m.attackRange) {
+                    m.state = 'ATTACK';
+                    m.lastActionTime = 0; // Reset action timer for immediate attack
+                } else {
+                    m.lastKnownPlayerPosition = { x: player.tileX, y: player.tileY };
+                }
             case 'ATTACK':
                 if (distanceToPlayer > m.attackRange) m.state = 'CHASE';
                 break;
@@ -326,14 +329,14 @@ function updateMonsters(currentTime) {
 
         // --- Final Boss Special Abilities ---
         if (m.type === 'finalBoss' && (m.state === 'ATTACK' || m.state === 'CHASE')) {
-            if (currentTime - (m.abilityCooldowns.webShot || 0) > 4000 && distanceToPlayer > 2 && canSeePlayer) {
+            if (currentTime - (m.abilityCooldowns.webShot || 0) > 3500 && distanceToPlayer > 2 && canSeePlayer) {
                 const dx = player.tileX - bossCenter.x;
                 const dy = player.tileY - bossCenter.y;
                 projectiles.push(new Projectile(bossCenter.x, bossCenter.y, dx, dy, 'web', 'monster', m.atk * 0.5, false, 5));
                 ui.showMessage("¡La Araña Jefe lanza una telaraña!");
                 m.abilityCooldowns.webShot = currentTime;
                 actionTaken = true;
-            } else if (currentTime - (m.abilityCooldowns.summon || 0) > 8000) {
+            } else if (currentTime - (m.abilityCooldowns.summon || 0) > 7000) {
                 let spawned = 0;
                 for (let i = 0; i < 15 && spawned < 4; i++) {
                     let spawnX = m.tileX + (Math.floor(Math.random() * 7) - 3);
@@ -353,14 +356,16 @@ function updateMonsters(currentTime) {
 
         // --- Attack Action ---
         if (!actionTaken && m.state === 'ATTACK') {
-            if (currentTime - player.lastHitTime > (player.invulnerabilityTime || 0)) {
-                takeDamage(player, m.atk, false, 'monster');
-                player.lastHitTime = currentTime;
-                m.isAttackingPlayer = true;
-                m.attackAnimFrame = 0;
-                m.attackDirectionX = Math.sign(player.tileX - m.tileX);
-                m.attackDirectionY = Math.sign(player.tileY - m.tileY);
-                actionTaken = true;
+            if (distanceToPlayer <= m.attackRange) { // Check if player is still in range
+                if (currentTime - player.lastHitTime > (player.invulnerabilityTime || 0)) {
+                    takeDamage(player, m.atk, false, 'monster');
+                    player.lastHitTime = currentTime;
+                    m.isAttackingPlayer = true;
+                    m.attackAnimFrame = 0;
+                    m.attackDirectionX = Math.sign(player.tileX - m.tileX);
+                    m.attackDirectionY = Math.sign(player.tileY - m.tileY);
+                    actionTaken = true;
+                }
             }
         } 
         // --- Movement Action ---
@@ -607,7 +612,7 @@ function createMonster(type, x, y, floor) {
             monster.maxHp = Math.floor((350 + floor * 30) * hpMultiplier * floorMultiplier);
             monster.atk = Math.floor((70 + floor * 10) * atkMultiplier * floorMultiplier);
             monster.moveSpeed = 800;
-            monster.attackSpeed = 1200;
+            monster.attackSpeed = 900;
             monster.attackRange = 2.5;
             monster.aggroRange = 12;
             monster.abilityCooldowns = { webShot: 0, summon: 0 };

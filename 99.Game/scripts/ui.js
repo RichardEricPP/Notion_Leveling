@@ -80,15 +80,6 @@ function drawPlayer(x, y) {
         player.hitFrame--; 
     }
     const currentTime = Date.now();
-    if (currentTime - player.lastHitTime < player.invulnerabilityTime) { 
-        ctx.save();
-        ctx.globalAlpha = 0.3 + Math.sin(currentTime / 100) * 0.2; 
-        ctx.fillStyle = 'rgba(100, 100, 255, 0.7)'; 
-        ctx.beginPath();
-        ctx.arc(drawX + tileSize/2, drawY + tileSize/2, tileSize/2 + 3, 0, Math.PI*2);
-        ctx.fill();
-        ctx.restore();
-    }
     if (player.isSlowed && currentTime < player.slowEndTime) {
         ctx.fillStyle = 'rgba(0, 100, 255, 0.3)'; 
         ctx.fillRect(drawX, drawY, tileSize, tileSize);
@@ -102,24 +93,7 @@ function drawPlayer(x, y) {
         ctx.fillRect(drawX, drawY, tileSize, tileSize);
     }
 
-    if (player.hasMiniShield && player.miniShieldHP > 0) {
-        ctx.save();
-        ctx.strokeStyle = 'rgba(0, 255, 255, 0.8)'; 
-        ctx.lineWidth = 3;
-        ctx.beginPath();
-        ctx.arc(drawX + tileSize / 2, drawY + tileSize / 2, tileSize / 2 + 5, 0, Math.PI * 2);
-        ctx.stroke();
-        ctx.fillStyle = 'rgba(0, 255, 255, 0.2)'; 
-        ctx.fill();
-
-        const shieldHealthPercent = player.miniShieldHP / player.miniShieldMaxHP;
-        ctx.fillStyle = 'rgba(0,0,0,0.7)';
-        ctx.fillRect(drawX + 5, drawY - 15, tileSize - 10, 5);
-        ctx.fillStyle = shieldHealthPercent > 0.5 ? 'rgba(0,255,255,0.7)' : shieldHealthPercent > 0.25 ? 'rgba(255,255,0,0.7)' : 'rgba(255,0,0,0.7)';
-        ctx.fillRect(drawX + 5, drawY - 15, (tileSize - 10) * shieldHealthPercent, 5);
-
-        ctx.restore();
-    }
+    
 
     const healthPercent = player.hp / player.maxHp;
     ctx.fillStyle = 'rgba(0,0,0,0.7)'; ctx.fillRect(drawX+5, drawY-10, tileSize-10, 5);
