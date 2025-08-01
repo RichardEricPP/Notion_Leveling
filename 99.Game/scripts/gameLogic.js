@@ -193,8 +193,8 @@ function updateGame(timestamp) {
     }
     const currentTime = Date.now();
     updateStatusEffects(currentTime);
-    updateProjectiles(currentTime);
-    updateMonsters(timestamp);
+    updateProjectiles();
+    updateMonsters(currentTime);
     criticalHitEffects = criticalHitEffects.filter(effect => effect.life > 0);
     damageTexts = damageTexts.filter(text => text.life > 0);
     if (warMaceShockwave) {
@@ -272,19 +272,18 @@ function updateProjectiles() {
     });
 }
 
-function updateMonsters(timestamp) {
+function updateMonsters(currentTime) {
     if (ui.isInventoryOpen || ui.isSkillMenuOpen || ui.isEquipmentOpen) return;
 
-    const currentTime = timestamp;
-
     monsters.forEach(m => {
-        if (!m.lastMoveTime) m.lastMoveTime = 0;
-        if (!m.lastAttackTime) m.lastAttackTime = 0;
+        if (!m.lastActionTime) m.lastActionTime = 0;
 
         if (m.isFrozen && currentTime > m.frozenEndTime) m.isFrozen = false;
         if (m.isWeakened && currentTime > m.weaknessEndTime) m.isWeakened = false;
         if (m.isAttackSlowed && currentTime > m.attackSlowEndTime) m.isAttackSlowed = false;
         if (m.isFrozen) return;
+
+        if (m.hitFrame > 0) m.hitFrame--;
 
         if (m.isAttackingPlayer) {
             m.attackAnimFrame++;
@@ -304,12 +303,6 @@ function updateMonsters(timestamp) {
                 if (canSeePlayer && distanceToPlayer < m.aggroRange) {
                     m.state = 'CHASE';
                     m.lastKnownPlayerPosition = { x: player.tileX, y: player.tileY };
-                    monsters.forEach(otherMonster => {
-                        if (otherMonster !== m && otherMonster.state === 'PATROL' && getDistance(m.tileX, m.tileY, otherMonster.tileX, otherMonster.tileY) < 5) {
-                            otherMonster.state = 'CHASE';
-                            otherMonster.lastKnownPlayerPosition = { x: player.tileX, y: player.tileY };
-                        }
-                    });
                 }
                 break;
             case 'CHASE':
@@ -322,21 +315,24 @@ function updateMonsters(timestamp) {
                 break;
             case 'SEARCH':
                 if (canSeePlayer) m.state = 'CHASE';
-                else if (m.tileX === m.lastKnownPlayerPosition.x && m.tileY === m.lastKnownPlayerPosition.y) m.state = 'PATROL';
+                else if (m.tileX === m.lastKnownPlayerPosition?.x && m.tileY === m.lastKnownPlayerPosition?.y) m.state = 'PATROL';
                 break;
         }
 
-        let actionTakenThisTurn = false;
+        const actionInterval = (m.state === 'ATTACK') ? m.attackSpeed : m.moveSpeed;
+        if (currentTime - m.lastActionTime < actionInterval) return;
+
+        let actionTaken = false;
 
         // --- Final Boss Special Abilities ---
-        if (m.type === 'finalBoss') {
+        if (m.type === 'finalBoss' && (m.state === 'ATTACK' || m.state === 'CHASE')) {
             if (currentTime - (m.abilityCooldowns.webShot || 0) > 4000 && distanceToPlayer > 2 && canSeePlayer) {
                 const dx = player.tileX - bossCenter.x;
                 const dy = player.tileY - bossCenter.y;
                 projectiles.push(new Projectile(bossCenter.x, bossCenter.y, dx, dy, 'web', 'monster', m.atk * 0.5, false, 5));
                 ui.showMessage("¡La Araña Jefe lanza una telaraña!");
                 m.abilityCooldowns.webShot = currentTime;
-                actionTakenThisTurn = true;
+                actionTaken = true;
             } else if (currentTime - (m.abilityCooldowns.summon || 0) > 8000) {
                 let spawned = 0;
                 for (let i = 0; i < 15 && spawned < 4; i++) {
@@ -350,14 +346,13 @@ function updateMonsters(timestamp) {
                 if (spawned > 0) {
                     ui.showMessage(`¡La Araña Jefe ha invocado ${spawned} mini-arañas!`);
                     m.abilityCooldowns.summon = currentTime;
-                    actionTakenThisTurn = true;
+                    actionTaken = true;
                 }
             }
         }
 
-        // --- Standard Attack Logic ---
-        const attackSpeed = m.isAttackSlowed ? m.attackSpeed * 1.5 : m.attackSpeed;
-        if (m.state === 'ATTACK' && currentTime - m.lastAttackTime > attackSpeed) {
+        // --- Attack Action ---
+        if (!actionTaken && m.state === 'ATTACK') {
             if (currentTime - player.lastHitTime > (player.invulnerabilityTime || 0)) {
                 takeDamage(player, m.atk, false, 'monster');
                 player.lastHitTime = currentTime;
@@ -365,13 +360,11 @@ function updateMonsters(timestamp) {
                 m.attackAnimFrame = 0;
                 m.attackDirectionX = Math.sign(player.tileX - m.tileX);
                 m.attackDirectionY = Math.sign(player.tileY - m.tileY);
-                m.lastAttackTime = currentTime;
-                actionTakenThisTurn = true;
+                actionTaken = true;
             }
-        }
-
-        // --- Movement Logic ---
-        if (!actionTakenThisTurn && currentTime - m.lastMoveTime > m.moveSpeed) {
+        } 
+        // --- Movement Action ---
+        else if (!actionTaken && (m.state === 'CHASE' || m.state === 'SEARCH' || m.state === 'PATROL')) {
             let moved = false;
             switch (m.state) {
                 case 'PATROL':
@@ -412,8 +405,12 @@ function updateMonsters(timestamp) {
                     break;
             }
             if (moved) {
-                m.lastMoveTime = currentTime;
+                actionTaken = true;
             }
+        }
+
+        if (actionTaken) {
+            m.lastActionTime = currentTime;
         }
     });
 }
@@ -564,7 +561,7 @@ function createMonster(type, x, y, floor) {
         tileX: x, tileY: y, type: type, isMinion: false,
         hp: 0, maxHp: 0, atk: 0, def: 0, spd: 0, xp: 0,
         moveSpeed: 1000, attackSpeed: 1000, aggroRange: 5, attackRange: 1.5,
-        lastMoveTime: 0, lastAttackTime: 0, hitFrame: 0,
+        lastActionTime: 0, hitFrame: 0,
         isFrozen: false, frozenEndTime: 0,
         isWeakened: false, weaknessEndTime: 0,
         isBleeding: false, bleedingEndTime: 0,
