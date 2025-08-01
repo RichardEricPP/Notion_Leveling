@@ -141,7 +141,7 @@ function drawMonster(m, screenX, screenY) {
     let drawX = screenX;
     let drawY = screenY;
 
-    if (m.isAttacking) {
+    if (m.isAttackingPlayer) {
         const progress = m.attackAnimFrame / m.attackAnimDuration;
         let lunge = 0;
         if (progress < 0.5) {
@@ -149,8 +149,11 @@ function drawMonster(m, screenX, screenY) {
         } else {
             lunge = m.attackLungeDistance * ((1 - progress) / 0.5);
         }
-        drawX += lunge * m.attackDirectionX;
-        drawY += lunge * m.attackDirectionY;
+
+        if (m.attackDirectionX > 0) drawX += lunge;
+        else if (m.attackDirectionX < 0) drawX -= lunge;
+        if (m.attackDirectionY > 0) drawY += lunge;
+        else if (m.attackDirectionY < 0) drawY -= lunge;
     }
 
     let monsterImage;
@@ -171,7 +174,7 @@ function drawMonster(m, screenX, screenY) {
         ctx.drawImage(monsterImage, 0,0,64,64, drawX, drawY, drawWidth, drawHeight);
         
     } else { 
-        ctx.fillStyle = m.type === 'duende' ? '#5C6B00' : (m.type === 'lobo' ? '#8C0000' : (m.type === 'final-arachnid-boss' ? '#3A1E00' : (m.type === 'spiderling' ? '#4A2A05' : 'gray'))); 
+        ctx.fillStyle = m.type === 'duende' ? '#5C6B00' : (m.type === 'lobo' ? '#8C0000' : (m.type === 'finalBoss' ? '#3A1E00' : (m.type === 'spiderling' ? '#4A2A05' : 'gray'))); 
         ctx.fillRect(drawX, drawY, tileSize * (m.width || 1), tileSize * (m.height || 1));
         
     }
@@ -359,12 +362,6 @@ function drawCriticalHitEffects(offsetX, offsetY) {
 function drawWarMaceShockwave(offsetX, offsetY) {
     if (!warMaceShockwave) return;
 
-    warMaceShockwave.life--;
-    if (warMaceShockwave.life <= 0) {
-        warMaceShockwave = null;
-        return;
-    }
-
     const centerX = warMaceShockwave.x * tileSize - offsetX + tileSize / 2;
     const centerY = warMaceShockwave.y * tileSize - offsetY + tileSize / 2;
     const radius = (1 - warMaceShockwave.life / 15) * tileSize * 1.5; 
@@ -499,6 +496,12 @@ function drawMinimap() {
             minimapCtx.fillRect(m.tileX * minimapTileSize, m.tileY * minimapTileSize, minimapTileSize * (m.width || 1), minimapTileSize * (m.height || 1));
         }
     });
+
+    // Always draw the stairs if they are active, regardless of being revealed
+    if (stairLocation.active) {
+        minimapCtx.fillStyle = '#00FF00'; // Bright Green
+        minimapCtx.fillRect(stairLocation.x * minimapTileSize, stairLocation.y * minimapTileSize, minimapTileSize, minimapTileSize);
+    }
 }
 
 function drawHUD() {

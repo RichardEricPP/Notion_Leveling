@@ -228,6 +228,13 @@ function updateGame(timestamp) {
     criticalHitEffects = criticalHitEffects.filter(effect => effect.life > 0);
     damageTexts = damageTexts.filter(text => text.life > 0);
 
+    if (warMaceShockwave) {
+        warMaceShockwave.life--;
+        if (warMaceShockwave.life <= 0) {
+            warMaceShockwave = null;
+        }
+    }
+
     if (screenShake > 0) {
         screenShake--;
     }
@@ -346,22 +353,24 @@ function updateMonsters(timestamp) {
                 });
                 target = nearestEnemy;
             } else {
-                const potentialTargets = monsters.filter(ally => ally.isMinion);
-                if (!player.stealthActive) {
-                    potentialTargets.push(player);
-                }
-
-                if (potentialTargets.length > 0) {
-                    let nearestTarget = null;
-                    let minDist = Infinity;
-                    potentialTargets.forEach(pTarget => {
-                        const dist = getDistance(m.tileX, m.tileY, pTarget.tileX, pTarget.tileY);
-                        if (dist < minDist) {
-                            minDist = dist;
-                            nearestTarget = pTarget;
-                        }
-                    });
-                    target = nearestTarget;
+                // Non-minions always target the player if not stealthed
+                if (!player.stealthedActive) {
+                    target = player;
+                } else {
+                    // If player is stealthed, they can target minions
+                    const potentialTargets = monsters.filter(ally => ally.isMinion);
+                    if (potentialTargets.length > 0) {
+                        let nearestTarget = null;
+                        let minDist = Infinity;
+                        potentialTargets.forEach(pTarget => {
+                            const dist = getDistance(m.tileX, m.tileY, pTarget.tileX, pTarget.tileY);
+                            if (dist < minDist) {
+                                minDist = dist;
+                                nearestTarget = pTarget;
+                            }
+                        });
+                        target = nearestTarget;
+                    }
                 }
             }
 
@@ -369,25 +378,25 @@ function updateMonsters(timestamp) {
 
             const distanceToTarget = getDistance(m.tileX, m.tileY, target.tileX, target.tileY);
             if (m.type === 'finalBoss') {
-                if (currentTime - (m.abilityCooldowns.webShot || 0) > 10000 && distanceToTarget > 1) {
+                if (currentTime - (m.abilityCooldowns.webShot || 0) > 5000 && distanceToTarget > 1) { // Reduced cooldown
                     const dx = target.tileX - m.tileX;
                     const dy = target.tileY - m.tileY;
                     projectiles.push(new Projectile(m.tileX, m.tileY, dx, dy, 'web', 'monster', m.atk * 0.5, false, 5));
                     ui.showMessage("¡La Araña Jefe lanza una telaraña!");
                     m.abilityCooldowns.webShot = currentTime;
                 }
-                if (currentTime - (m.abilityCooldowns.summon || 0) > 15000 && distanceToTarget <= 5) {
+                if (currentTime - (m.abilityCooldowns.summon || 0) > 8000 && distanceToTarget <= 5) { // Reduced cooldown
                     let spawned = false;
-                    for (let i = 0; i < 2; i++) {
+                    for (let i = 0; i < 5; i++) { // Increased summon count
                         let spawnX, spawnY, attempts = 0;
                         do {
-                            spawnX = m.tileX + (Math.floor(Math.random() * 3) - 1);
-                            spawnY = m.tileY + (Math.floor(Math.random() * 3) - 1);
+                            spawnX = m.tileX + (Math.floor(Math.random() * 5) - 2); // Wider spawn area
+                            spawnY = m.tileY + (Math.floor(Math.random() * 5) - 2);
                             attempts++;
                         } while ((!isPassable(spawnX, spawnY) || (spawnX === m.tileX && spawnY === m.tileY)) && attempts < 10);
                         
                         if (isPassable(spawnX, spawnY)) {
-                            monsters.push({ type: 'spiderling', hp: 20, maxHp: 20, atk: 10, spd: 2.5, tileX: spawnX, tileY: spawnY, xp: 15, lastMoveTime: 0, hitFrame: 0, lastAttackTime: 0, isMinion: false, attackRange: 1.5, aggroRange: 8, moveSpeed: 400, attackSpeed: 1200 });
+                            monsters.push(createMonster('spiderling', spawnX, spawnY, currentFloor)); // Use createMonster
                             spawned = true;
                         }
                     }
@@ -401,7 +410,7 @@ function updateMonsters(timestamp) {
             const attackSpeed = m.isAttackSlowed ? m.attackSpeed * 1.5 : m.attackSpeed;
 
             // --- ATTACK LOGIC ---
-            if (((Math.abs(target.tileX - m.tileX) === 1 && target.tileY === m.tileY) || (Math.abs(target.tileY - m.tileY) === 1 && target.tileX === m.tileX))) {
+            if (distanceToTarget <= m.attackRange) {
                 // console.log(`Monster ${m.type} at (${m.tileX}, ${m.tileY}) is in attack range. Distance: ${distanceToTarget.toFixed(2)}`);
                 if (currentTime - m.lastAttackTime > attackSpeed) {
                     // console.log(`Monster ${m.type} attacking! Attack Speed: ${attackSpeed}`);
