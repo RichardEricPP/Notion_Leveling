@@ -65,13 +65,11 @@ export class Projectile {
         this.isCritical = isCritical;
         this.maxRangeTiles = maxRangeTiles;
         this.distanceTraveled = 0;
-        console.log(`Projectile created: Type=${type}, Damage=${damage}, Range=${maxRangeTiles}, Speed=${speedMultiplier}`);
     }
     update() {
         this.x += this.dx;
         this.y += this.dy;
         this.distanceTraveled = Math.sqrt(Math.pow(this.x - this.initialX, 2) + Math.pow(this.y - this.initialY, 2));
-        console.log(`Projectile updated: Type=${this.type}, X=${this.x.toFixed(2)}, Y=${this.y.toFixed(2)}, Distance=${this.distanceTraveled.toFixed(2)}`);
         return this.distanceTraveled <= this.maxRangeTiles;
     }
 }
@@ -336,9 +334,11 @@ function updateMonsters(timestamp) {
                 }
             }
 
+            const bossCenter = m.type === 'finalBoss' ? { x: m.tileX + 0.5, y: m.tileY + 0.5 } : { x: m.tileX, y: m.tileY };
+            const distanceToPlayer = getDistance(bossCenter.x, bossCenter.y, player.tileX, player.tileY);
             const canSeePlayer = hasLineOfSight(m, player);
-            const distanceToPlayer = getDistance(m.tileX, m.tileY, player.tileX, player.tileY);
 
+            // State transitions
             switch (m.state) {
                 case 'PATROL':
                     if (canSeePlayer && distanceToPlayer < m.aggroRange) {
@@ -375,7 +375,50 @@ function updateMonsters(timestamp) {
                     break;
             }
 
-            if (currentTime - m.lastMoveTime > m.moveSpeed) {
+            // --- Final Boss Ability Usage ---
+            if (m.type === 'finalBoss') {
+                // Use Web Shot
+                if (currentTime - (m.abilityCooldowns.webShot || 0) > 4000 && distanceToPlayer > 2) {
+                    const dx = player.tileX - bossCenter.x;
+                    const dy = player.tileY - bossCenter.y;
+                    projectiles.push(new Projectile(bossCenter.x, bossCenter.y, dx, dy, 'web', 'monster', m.atk * 0.5, false, 5));
+                    ui.showMessage("¡La Araña Jefe lanza una telaraña!");
+                    m.abilityCooldowns.webShot = currentTime;
+                }
+                // Use Summon
+                if (currentTime - (m.abilityCooldowns.summon || 0) > 8000) {
+                    let spawned = 0;
+                    for (let i = 0; i < 15 && spawned < 4; i++) { // Try up to 15 times
+                        let spawnX = m.tileX + (Math.floor(Math.random() * 7) - 3);
+                        let spawnY = m.tileY + (Math.floor(Math.random() * 7) - 3);
+                        if (isPassable(spawnX, spawnY)) {
+                            monsters.push(createMonster('spiderling', spawnX, spawnY, currentFloor));
+                            spawned++;
+                        }
+                    }
+                    if (spawned > 0) {
+                        ui.showMessage(`¡La Araña Jefe ha invocado ${spawned} mini-arañas!`);
+                        m.abilityCooldowns.summon = currentTime;
+                    }
+                }
+            }
+
+            // --- Movement and Attack Logic ---
+            // Attack
+            const attackSpeed = m.isAttackSlowed ? m.attackSpeed * 1.5 : m.attackSpeed;
+            if (m.state === 'ATTACK' && currentTime - m.lastAttackTime > attackSpeed) {
+                if (currentTime - player.lastHitTime > (player.invulnerabilityTime || 0)) {
+                    takeDamage(player, m.atk, false, 'monster');
+                    player.lastHitTime = currentTime;
+                    m.isAttackingPlayer = true;
+                    m.attackAnimFrame = 0;
+                    m.attackDirectionX = Math.sign(player.tileX - m.tileX);
+                    m.attackDirectionY = Math.sign(player.tileY - m.tileY);
+                    m.lastAttackTime = currentTime;
+                }
+            } 
+            // Movement
+            else if (currentTime - m.lastMoveTime > m.moveSpeed) {
                 let moved = false;
                 switch (m.state) {
                     case 'PATROL':
@@ -383,20 +426,23 @@ function updateMonsters(timestamp) {
                         const move = moves[Math.floor(Math.random() * moves.length)];
                         const newX = m.tileX + move.x;
                         const newY = m.tileY + move.y;
-                        if (isPassable(newX, newY)) {
+                        if (isPassable(newX, newY, false, m)) {
                             m.tileX = newX;
                             m.tileY = newY;
                             moved = true;
                         }
                         break;
                     case 'CHASE':
-                        let targetPos = findOptimalAttackPosition(m, player);
+                    case 'SEARCH':
+                        let targetPos = (m.state === 'CHASE') ? findOptimalAttackPosition(m, player) : m.lastKnownPlayerPosition;
                         if (!targetPos) {
                             targetPos = m.lastKnownPlayerPosition;
                         }
+                        if (!targetPos) break;
+
                         const dx = targetPos.x - m.tileX;
                         const dy = targetPos.y - m.tileY;
-                        if (dx === 0 && dy === 0) break; // Already at target
+                        if (dx === 0 && dy === 0) break;
 
                         const moveX = Math.sign(dx);
                         const moveY = Math.sign(dy);
@@ -407,37 +453,12 @@ function updateMonsters(timestamp) {
                         if (moveX !== 0 && moveY !== 0) potentialMoves.push({ x: m.tileX + moveX, y: m.tileY + moveY });
 
                         for (const pMove of potentialMoves) {
-                            if (isPassable(pMove.x, pMove.y)) {
+                            if (isPassable(pMove.x, pMove.y, false, m)) {
                                 m.tileX = pMove.x;
                                 m.tileY = pMove.y;
                                 moved = true;
                                 break;
                             }
-                        }
-                        break;
-                    case 'SEARCH':
-                        const searchDx = m.lastKnownPlayerPosition.x - m.tileX;
-                        const searchDy = m.lastKnownPlayerPosition.y - m.tileY;
-                        const searchMoveX = Math.sign(searchDx);
-                        const searchMoveY = Math.sign(searchDy);
-                        if (isPassable(m.tileX + searchMoveX, m.tileY + searchMoveY)) {
-                            m.tileX += searchMoveX;
-                            m.tileY += searchMoveY;
-                            moved = true;
-                        }
-                        break;
-                    case 'ATTACK':
-                        const attackSpeed = m.isAttackSlowed ? m.attackSpeed * 1.5 : m.attackSpeed;
-                        if (currentTime - m.lastAttackTime > attackSpeed) {
-                            if (currentTime - player.lastHitTime > (player.invulnerabilityTime || 0)) {
-                                takeDamage(player, m.atk, false, 'monster');
-                                player.lastHitTime = currentTime;
-                                m.isAttackingPlayer = true;
-                                m.attackAnimFrame = 0;
-                                m.attackDirectionX = Math.sign(player.tileX - m.tileX);
-                                m.attackDirectionY = Math.sign(player.tileY - m.tileY);
-                            }
-                            m.lastAttackTime = currentTime;
                         }
                         break;
                 }
@@ -495,7 +516,7 @@ async function generateFloor() {
                 let finalBossBaseHp = 350; let finalBossBaseAtk = 70;
                 let fbHp = Math.floor(finalBossBaseHp * (1 + (currentFloor - 1) * 0.6) * hpMultiplier);
                 let fbAtk = Math.floor(finalBossBaseAtk * (1 + (currentFloor - 1) * 0.4) * atkMultiplier);
-                monsters.push({ type: 'finalBoss', hp: fbHp, maxHp: fbHp, atk: fbAtk, spd: 0.7, tileX: bossSpawnX, tileY: bossSpawnY, xp: 5000, lastMoveTime: 0, hitFrame: 0, width: 2, height: 2, abilityCooldowns: {webShot:0, summon:0}, lastAttackTime: 0, moveSpeed: 800, attackSpeed: 1000, attackRange: 1.5, aggroRange: 8 }); // Changed type to finalBoss
+                monsters.push(createMonster('finalBoss', bossSpawnX, bossSpawnY, currentFloor));
                 for(let r=0; r<2; r++) { for(let c=0; c<2; c++) { map[bossSpawnY+r][bossSpawnX+c] = 1;}}
 
             } else { 
@@ -650,6 +671,10 @@ function carvePathBetweenRooms(room1, room2) {
 function hasLineOfSight(monster, target) {
     let x0 = monster.tileX;
     let y0 = monster.tileY;
+    if (monster.type === 'finalBoss') {
+        x0 = monster.tileX + 0.5;
+        y0 = monster.tileY + 0.5;
+    }
     const x1 = target.tileX;
     const y1 = target.tileY;
     const dx = Math.abs(x1 - x0);
@@ -659,10 +684,10 @@ function hasLineOfSight(monster, target) {
     let err = dx - dy;
 
     while (true) {
-        if (x0 === x1 && y0 === y1) {
+        if (Math.floor(x0) === x1 && Math.floor(y0) === y1) {
             return true;
         }
-        if (map[y0][x0] === 0) { // Wall
+        if (map[Math.floor(y0)][Math.floor(x0)] === 0) { // Wall
             return false;
         }
 
@@ -680,13 +705,26 @@ function hasLineOfSight(monster, target) {
 
 function findOptimalAttackPosition(monster, target) {
     const attackPositions = [];
-    for (let y = -1; y <= 1; y++) {
-        for (let x = -1; x <= 1; x++) {
-            if (x === 0 && y === 0) continue;
+    const monsterWidth = monster.width || 1;
+    const monsterHeight = monster.height || 1;
+
+    for (let y = -monsterHeight; y <= 1; y++) {
+        for (let x = -monsterWidth; x <= 1; x++) {
+            if (x >= 0 && x < monsterWidth && y >= 0 && y < monsterHeight) continue;
+
             const tileX = target.tileX + x;
             const tileY = target.tileY + y;
-            if (isPassable(tileX, tileY)) {
-                attackPositions.push({ x: tileX, y: tileY });
+            if (isPassable(tileX, tileY, false, monster)) {
+                let isOccupied = false;
+                for (const other of monsters) {
+                    if (other !== monster && other.tileX === tileX && other.tileY === tileY) {
+                        isOccupied = true;
+                        break;
+                    }
+                }
+                if (!isOccupied) {
+                    attackPositions.push({ x: tileX, y: tileY });
+                }
             }
         }
     }
@@ -697,22 +735,14 @@ function findOptimalAttackPosition(monster, target) {
         return distA - distB;
     });
 
-    for (const pos of attackPositions) {
-        if (!monsters.some(m => m.tileX === pos.x && m.tileY === pos.y)) {
-            return pos;
-        }
-    }
-
-    return null;
+    return attackPositions[0] || null;
 }
-
-
 
 function createMonster(type, x, y, floor) {
     let monster = {
         tileX: x, tileY: y, type: type, isMinion: false,
         hp: 0, maxHp: 0, atk: 0, def: 0, spd: 0, xp: 0,
-        moveSpeed: 100, attackSpeed: 1000,         aggroRange: 5, attackRange: 1.5,
+        moveSpeed: 100, attackSpeed: 1000, aggroRange: 5, attackRange: 1.5,
         lastMoveTime: 0, lastAttackTime: 0, hitFrame: 0,
         isFrozen: false, frozenEndTime: 0,
         isWeakened: false, weaknessEndTime: 0,
@@ -783,14 +813,19 @@ function createMonster(type, x, y, floor) {
             monster.attackLungeDistance = 25; // Very long lunge
             break;
         case 'finalBoss':
+            monster.width = 2;
+            monster.height = 2;
             monster.maxHp = Math.floor((350 + floor * 30) * hpMultiplier * floorMultiplier);
             monster.atk = Math.floor((70 + floor * 10) * atkMultiplier * floorMultiplier);
             monster.def = Math.floor((20 + floor * 5) * floorMultiplier);
             monster.xp = 5000;
             monster.moveSpeed = 800;
             monster.attackSpeed = 1000;
-            monster.attackAnimDuration = 18; // Even slower, more impactful
-            monster.attackLungeDistance = 30; // Even longer lunge
+            monster.attackAnimDuration = 18;
+            monster.attackLungeDistance = 30;
+            monster.attackRange = 2.5; // Increased range to account for size
+            monster.aggroRange = 10;
+            monster.abilityCooldowns = { webShot: 0, summon: 0 };
             break;
         case 'spiderling':
             monster.maxHp = Math.floor((15 + floor * 2) * hpMultiplier * floorMultiplier);
@@ -1121,7 +1156,6 @@ function performAttack() {
                     damage *= 1.05; 
                 }
 
-                console.log(`Player attacking. Soul Extraction Active: ${player.soulExtractionActive}`);
                 takeDamage(monsterToAttack, damage, isCritical, 'player');
 
                 if (equippedWeapon) {
@@ -1234,25 +1268,40 @@ function getChestAt(x, y) {
     return chests.find(chest => chest.tileX === x && chest.tileY === y);
 }
 
-function isPassable(x, y, forProjectiles = false) {
-    if (y < 0 || y >= mapHeight || x < 0 || x >= mapWidth) {
-        return false;
-    }
-    if (map[y] && (map[y][x] === 1 || map[y][x] === 2)) {
-        if (forProjectiles) return true; // Projectiles can fly over entities
-        if (x === player.tileX && y === player.tileY) {
-            return false;
+function isPassable(x, y, forProjectiles = false, monster = null) {
+    const monsterWidth = monster ? monster.width || 1 : 1;
+    const monsterHeight = monster ? monster.height || 1 : 1;
+
+    for (let i = 0; i < monsterWidth; i++) {
+        for (let j = 0; j < monsterHeight; j++) {
+            const checkX = x + i;
+            const checkY = y + j;
+
+            if (checkY < 0 || checkY >= mapHeight || checkX < 0 || checkX >= mapWidth) {
+                return false;
+            }
+            if (map[checkY] && (map[checkY][checkX] === 1 || map[checkY][checkX] === 2)) {
+                if (forProjectiles) continue;
+                if (checkX === player.tileX && checkY === player.tileY) {
+                    return false;
+                }
+                if (monsters.some(m => m !== monster && m.tileX === checkX && m.tileY === checkY)) {
+                    return false;
+                }
+            } else {
+                return false;
+            }
         }
-        if (monsters.some(m => m.tileX === x && m.tileY === y)) {
-            return false;
-        }
-        return true;
     }
-    return false;
+    return true;
 }
 
 function getMonsterAt(x, y) {
-    return monsters.find(m => m.tileX === x && m.tileY === y);
+    return monsters.find(m => {
+        const mWidth = m.width || 1;
+        const mHeight = m.height || 1;
+        return x >= m.tileX && x < m.tileX + mWidth && y >= m.tileY && y < m.tileY + mHeight;
+    });
 }
 
 function takeDamage(target, damage, isCritical, attackerType = 'player') {
@@ -1270,13 +1319,9 @@ function takeDamage(target, damage, isCritical, attackerType = 'player') {
 
     if (actualDamage > 0) {
         target.hp -= actualDamage;
-        console.log(`Damage taken by ${target.type}: ${actualDamage}. Remaining HP: ${target.hp}`);
     }
 
-    
-
     if (attackerType === 'player' && player.soulExtractionActive) {
-        console.log("Soul Extraction: Player hit. Current hitsSinceLastSoulExtraction:", player.hitsSinceLastSoulExtraction);
         player.hitsSinceLastSoulExtraction = (player.hitsSinceLastSoulExtraction || 0) + 1;
         if (player.hitsSinceLastSoulExtraction >= 5) {
             const hpRecovered = Math.floor(player.maxHp * 0.05);
@@ -1291,10 +1336,8 @@ function takeDamage(target, damage, isCritical, attackerType = 'player') {
                     size: 18,
                     velY: -0.5
                 });
-                console.log("Soul Extraction: Recovered", hpRecovered, "HP. Player HP:", player.hp);
             }
             player.hitsSinceLastSoulExtraction = 0;
-            console.log("Soul Extraction: Counter reset.");
         }
     }
 
@@ -1329,7 +1372,6 @@ function takeDamage(target, damage, isCritical, attackerType = 'player') {
 
     if (target.hp <= 0) {
         if (target === player) {
-            // Check for Second Wind
             const secondWindSkill = skills.find(s => s.name === 'Segundo Aliento');
             const isSecondWindEquipped = player.equipped.habilidad1 === 'Segundo Aliento' ||
                                          player.equipped.habilidad2 === 'Segundo Aliento' ||
@@ -1339,7 +1381,6 @@ function takeDamage(target, damage, isCritical, attackerType = 'player') {
                 player.hp = Math.floor(player.maxHp * 0.25);
                 player.secondWindUsedThisRun = true;
                 ui.showMessage("¡Segundo Aliento! Has revivido con 25% de salud.");
-                // Prevent immediate game over
                 return;
             }
 
@@ -1387,8 +1428,6 @@ export function activateSkill(skillName) {
     const skill = skills.find(s => s.name === skillName);
     if (!skill) return;
 
-    // Passive skills are handled in updateStats based on being equipped.
-    // This function is primarily for active skills.
     if (skill.type === 'passive') {
         ui.showMessage(`Esta habilidad (${skill.name}) es pasiva y se activa automáticamente al equiparla.`);
         return;

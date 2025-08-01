@@ -20,19 +20,18 @@ document.addEventListener('DOMContentLoaded', () => {
 
     showDifficultyScreen();
 
-    document.getElementById('btnFacil').addEventListener('click', () => { setDifficultyAndStart('facil'); playMusic('dungeon'); });
-    document.getElementById('btnMedio').addEventListener('click', () => { setDifficultyAndStart('medio'); playMusic('dungeon'); });
-    document.getElementById('btnDificil').addEventListener('click', () => { setDifficultyAndStart('dificil'); playMusic('dungeon'); });
+    const startGame = (difficulty) => {
+        const levelInput = document.getElementById('levelInput');
+        const baseLevel = parseInt(levelInput.value, 10) || 1;
+        const floorInput = document.getElementById('floorInput');
+        const startFloor = parseInt(floorInput.value, 10) || 1;
+        setDifficultyAndStart(difficulty, startFloor, baseLevel);
+        playMusic('dungeon');
+    }
 
-    document.getElementById('btnGoToFloor').addEventListener('click', () => {
-        const levelInputElement = document.getElementById('levelInput');
-        const baseLevel = parseInt(levelInputElement.value);
-        if (baseLevel >= 1) {
-            setDifficultyAndStart('medio', 1, baseLevel); 
-        } else {
-            showMessage('Por favor ingresa un nivel base de 1 o superior.');
-        }
-    });
+    document.getElementById('btnFacil').addEventListener('click', () => startGame('facil'));
+    document.getElementById('btnMedio').addEventListener('click', () => startGame('medio'));
+    document.getElementById('btnDificil').addEventListener('click', () => startGame('dificil'));
 
     document.getElementById('btnEquipment').addEventListener('click', toggleEquipmentMenu);
     
