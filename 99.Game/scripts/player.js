@@ -44,6 +44,8 @@ export let player = {
     attackAnimFrame: 0,
     attackAnimDuration: 8, // Duración de la animación de ataque en frames
     attackLungeDistance: 10, // Distancia de la estocada durante el ataque
+    attackDirectionX: 0,
+    attackDirectionY: 0,
     skillUsageThisFloor: {},
     enemiesDefeatedThisRun: 0,
     isSlowed: false,

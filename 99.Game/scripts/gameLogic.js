@@ -957,7 +957,6 @@ async function handleFloorTransition() {
 }
 
 function performAttack() {
-    
     let nearestMonster = null;
     let minDistance = Infinity;
 
@@ -972,11 +971,33 @@ function performAttack() {
     if (nearestMonster) {
         const dx = nearestMonster.tileX - player.tileX;
         const dy = nearestMonster.tileY - player.tileY;
+        player.attackDirectionX = Math.sign(dx);
+        player.attackDirectionY = Math.sign(dy);
 
         if (Math.abs(dx) > Math.abs(dy)) {
             player.facingDirection = dx > 0 ? 'right' : 'left';
         } else {
             player.facingDirection = dy > 0 ? 'down' : 'up';
+        }
+    } else {
+        // Default attack direction if no monster is near
+        switch (player.facingDirection) {
+            case 'up':
+                player.attackDirectionX = 0;
+                player.attackDirectionY = -1;
+                break;
+            case 'down':
+                player.attackDirectionX = 0;
+                player.attackDirectionY = 1;
+                break;
+            case 'left':
+                player.attackDirectionX = -1;
+                player.attackDirectionY = 0;
+                break;
+            case 'right':
+                player.attackDirectionX = 1;
+                player.attackDirectionY = 0;
+                break;
         }
     }
 

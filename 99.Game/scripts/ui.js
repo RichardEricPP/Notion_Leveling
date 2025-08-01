@@ -53,26 +53,16 @@ function drawPlayer(x, y) {
     let drawY = y;
 
     if (player.isAttacking) {
-        const progress = player.attackAnimFrame / player.attackAnimDuration; 
+        const progress = player.attackAnimFrame / player.attackAnimDuration;
         let lunge = 0;
-        if (progress < 0.5) { 
+        if (progress < 0.5) {
             lunge = player.attackLungeDistance * (progress / 0.5);
-        } else { 
+        } else {
             lunge = player.attackLungeDistance * ((1 - progress) / 0.5);
         }
 
-        if (player.isAttackingPerpendicularly) {
-            if (player.facingDirection === 'right' || player.facingDirection === 'left') {
-                drawY += lunge;
-            } else {
-                drawX += lunge;
-            }
-        } else {
-            if (player.facingDirection === 'right') drawX += lunge;
-            else if (player.facingDirection === 'left') drawX -= lunge;
-            else if (player.facingDirection === 'up') drawY -= lunge;
-            else if (player.facingDirection === 'down') drawY += lunge;
-        }
+        drawX += lunge * player.attackDirectionX;
+        drawY += lunge * player.attackDirectionY;
     }
 
     if (loadedImages.player && loadedImages.player.complete) {
