@@ -336,17 +336,14 @@ function updateMonsters(timestamp) {
                 }
             }
 
-            // --- STATE MACHINE LOGIC ---
             const canSeePlayer = hasLineOfSight(m, player);
             const distanceToPlayer = getDistance(m.tileX, m.tileY, player.tileX, player.tileY);
 
-            // State transitions
             switch (m.state) {
                 case 'PATROL':
                     if (canSeePlayer && distanceToPlayer < m.aggroRange) {
                         m.state = 'CHASE';
                         m.lastKnownPlayerPosition = { x: player.tileX, y: player.tileY };
-                        // Alert nearby allies
                         monsters.forEach(otherMonster => {
                             if (otherMonster !== m && otherMonster.state === 'PATROL' && getDistance(m.tileX, m.tileY, otherMonster.tileX, otherMonster.tileY) < 5) {
                                 otherMonster.state = 'CHASE';
@@ -378,11 +375,10 @@ function updateMonsters(timestamp) {
                     break;
             }
 
-            // State actions
             if (currentTime - m.lastMoveTime > m.moveSpeed) {
+                let moved = false;
                 switch (m.state) {
                     case 'PATROL':
-                        // Move randomly
                         const moves = [{ x: 0, y: 1 }, { x: 0, y: -1 }, { x: 1, y: 0 }, { x: -1, y: 0 }];
                         const move = moves[Math.floor(Math.random() * moves.length)];
                         const newX = m.tileX + move.x;
@@ -390,14 +386,18 @@ function updateMonsters(timestamp) {
                         if (isPassable(newX, newY)) {
                             m.tileX = newX;
                             m.tileY = newY;
+                            moved = true;
                         }
                         break;
                     case 'CHASE':
-                    case 'SEARCH':
-                        // Move towards last known player position
-                        const targetPos = m.state === 'CHASE' ? player : m.lastKnownPlayerPosition;
-                        const dx = targetPos.tileX - m.tileX;
-                        const dy = targetPos.tileY - m.tileY;
+                        let targetPos = findOptimalAttackPosition(m, player);
+                        if (!targetPos) {
+                            targetPos = m.lastKnownPlayerPosition;
+                        }
+                        const dx = targetPos.x - m.tileX;
+                        const dy = targetPos.y - m.tileY;
+                        if (dx === 0 && dy === 0) break; // Already at target
+
                         const moveX = Math.sign(dx);
                         const moveY = Math.sign(dy);
 
@@ -406,18 +406,27 @@ function updateMonsters(timestamp) {
                         if (moveY !== 0) potentialMoves.push({ x: m.tileX, y: m.tileY + moveY });
                         if (moveX !== 0 && moveY !== 0) potentialMoves.push({ x: m.tileX + moveX, y: m.tileY + moveY });
 
-                        let moved = false;
-                        for (const move of potentialMoves) {
-                            if (isPassable(move.x, move.y)) {
-                                m.tileX = move.x;
-                                m.tileY = move.y;
+                        for (const pMove of potentialMoves) {
+                            if (isPassable(pMove.x, pMove.y)) {
+                                m.tileX = pMove.x;
+                                m.tileY = pMove.y;
                                 moved = true;
                                 break;
                             }
                         }
                         break;
+                    case 'SEARCH':
+                        const searchDx = m.lastKnownPlayerPosition.x - m.tileX;
+                        const searchDy = m.lastKnownPlayerPosition.y - m.tileY;
+                        const searchMoveX = Math.sign(searchDx);
+                        const searchMoveY = Math.sign(searchDy);
+                        if (isPassable(m.tileX + searchMoveX, m.tileY + searchMoveY)) {
+                            m.tileX += searchMoveX;
+                            m.tileY += searchMoveY;
+                            moved = true;
+                        }
+                        break;
                     case 'ATTACK':
-                        // Attack logic
                         const attackSpeed = m.isAttackSlowed ? m.attackSpeed * 1.5 : m.attackSpeed;
                         if (currentTime - m.lastAttackTime > attackSpeed) {
                             if (currentTime - player.lastHitTime > (player.invulnerabilityTime || 0)) {
@@ -432,7 +441,9 @@ function updateMonsters(timestamp) {
                         }
                         break;
                 }
-                m.lastMoveTime = currentTime;
+                if (moved) {
+                    m.lastMoveTime = currentTime;
+                }
             }
         });
     }
@@ -665,6 +676,34 @@ function hasLineOfSight(monster, target) {
             y0 += sy;
         }
     }
+}
+
+function findOptimalAttackPosition(monster, target) {
+    const attackPositions = [];
+    for (let y = -1; y <= 1; y++) {
+        for (let x = -1; x <= 1; x++) {
+            if (x === 0 && y === 0) continue;
+            const tileX = target.tileX + x;
+            const tileY = target.tileY + y;
+            if (isPassable(tileX, tileY)) {
+                attackPositions.push({ x: tileX, y: tileY });
+            }
+        }
+    }
+
+    attackPositions.sort((a, b) => {
+        const distA = getDistance(monster.tileX, monster.tileY, a.x, a.y);
+        const distB = getDistance(monster.tileX, monster.tileY, b.x, b.y);
+        return distA - distB;
+    });
+
+    for (const pos of attackPositions) {
+        if (!monsters.some(m => m.tileX === pos.x && m.tileY === pos.y)) {
+            return pos;
+        }
+    }
+
+    return null;
 }
 
 
