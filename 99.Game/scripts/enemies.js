@@ -1,7 +1,7 @@
 // --- enemies.js ---
 // Contiene las definiciones de los enemigos, sus sprites y la lógica de carga de imágenes.
 
-// --- IMPORTS ---
+
 
 
 // --- EXPORTS ---
@@ -399,6 +399,105 @@ export function createStairsSprite() {
 export function createFloorSprite() { if (sprites.floor) return sprites.floor; const c=document.createElement('canvas');c.width=64;c.height=64;const x=c.getContext('2d');x.fillStyle='#aaa';x.fillRect(0,0,64,64);x.strokeStyle='#888';x.lineWidth=1;for(let y=8;y<64;y+=16){x.beginPath();x.moveTo(0,y);x.lineTo(64,y);x.stroke();}for(let X=8;X<64;X+=16){x.beginPath();x.moveTo(X,0);x.lineTo(X,64);x.stroke();}x.strokeStyle='#777';const p=[{x:12,y:15,l:10,a:0.5},{x:32,y:24,l:8,a:1.2},{x:48,y:40,l:12,a:2.1},{x:20,y:52,l:9,a:3.6},{x:52,y:8,l:11,a:5.2}];for(const k of p){x.beginPath();x.moveTo(k.x,k.y);x.lineTo(k.x+Math.cos(k.a)*k.l,k.y+Math.sin(k.a)*k.l);x.stroke();}return c.toDataURL(); }
 export function createWallSprite() { if (sprites.wall) return sprites.wall; const c=document.createElement('canvas');c.width=64;c.height=64;const x=c.getContext('2d');x.fillStyle='#555';x.fillRect(0,0,64,64);x.strokeStyle='#333';x.lineWidth=2;for(let y=16;y<64;y+=16){x.beginPath();x.moveTo(0,y);x.lineTo(64,y);x.stroke();}for(let r=0;r<4;r++){const o=r%2===0?0:16;for(let X=o;X<64;X+=32){x.beginPath();x.moveTo(X,r*16);x.lineTo(X,r*16+16);x.stroke();}}x.fillStyle='#444';const d=[{x:10,y:8,r:1.5},{x:25,y:12,r:2},{x:40,y:7,r:1.2},{x:55,y:10,r:1.8},{x:15,y:22,r:1.3},{x:30,y:26,r:2.2},{x:48,y:24,r:1.7},{x:8,y:38,r:1.9},{x:22,y:42,r:1.4},{x:38,y:40,r:2.1},{x:52,y:44,r:1.6},{x:12,y:56,r:1.8},{x:28,y:58,r:1.5},{x:44,y:54,r:2},{x:58,y:60,r:1.7},{x:18,y:5,r:1.3},{x:34,y:32,r:1.9},{x:50,y:18,r:1.4},{x:5,y:48,r:2.2},{x:60,y:36,r:1.6}];for(const k of d){x.beginPath();x.arc(k.x,k.y,k.r,0,Math.PI*2);x.fill();}return c.toDataURL(); }
 export function createChestSprite() { const c = document.createElement('canvas');c.width=64;c.height=64;const x=c.getContext('2d');x.fillStyle = '#8B4513';x.fillRect(12,20,40,30);x.fillStyle = '#A0522D';x.fillRect(12,20,40,10);x.fillStyle = '#555';x.fillRect(12,30,40,4);x.fillRect(12,40,40,4);x.fillStyle = '#FFD700';x.fillRect(28,28,8,8);x.fillStyle = '#000';x.beginPath();x.arc(32,32,2,0,Math.PI*2);x.fill();x.fillStyle = 'rgba(255,255,255,0.2)';x.fillRect(14,22,36,2);return c.toDataURL(); }
+
+export function createMonster(type, tileX, tileY, floor, dropsKey = false) {
+    const floorMultiplier = 1 + (floor - 1) * 0.2;
+    let monster = {
+        type: type,
+        tileX: tileX,
+        tileY: tileY,
+        hp: 0,
+        maxHp: 0,
+        atk: 0,
+        spd: 1,
+        xp: 0,
+        dropsKey: dropsKey,
+        lastMoveTime: 0,
+        lastAttackTime: 0,
+        hitFrame: 0,
+        isAttacking: false,
+        attackAnimFrame: 0,
+        attackAnimDuration: 5,
+        attackDirectionX: 0,
+        attackDirectionY: 0,
+        moveSpeed: 1000, // Slower base speed
+        attackSpeed: 1500,
+        attackRange: 1.5,
+        aggroRange: 5,
+        lastKnownTargetPosition: null,
+        isFrozen: false,
+        frozenEndTime: 0,
+        abilityCooldowns: {},
+    };
+
+    switch (type) {
+        case 'duende':
+            monster.hp = monster.maxHp = Math.floor(20 * floorMultiplier);
+            monster.atk = Math.floor(5 * floorMultiplier);
+            monster.xp = 10;
+            break;
+        case 'lobo':
+            monster.hp = monster.maxHp = Math.floor(30 * floorMultiplier);
+            monster.atk = Math.floor(8 * floorMultiplier);
+            monster.spd = 1.5;
+            monster.xp = 15;
+            monster.moveSpeed = 700;
+            break;
+        case 'skeleton':
+            monster.hp = monster.maxHp = Math.floor(25 * floorMultiplier);
+            monster.atk = Math.floor(10 * floorMultiplier);
+            monster.xp = 20;
+            break;
+        case 'miniBoss':
+            monster.hp = monster.maxHp = Math.floor(100 * floorMultiplier);
+            monster.atk = Math.floor(20 * floorMultiplier);
+            monster.spd = 1.2;
+            monster.xp = 100;
+            monster.dropsKey = true;
+            monster.attackRange = 2;
+            monster.aggroRange = 8;
+            break;
+        case 'boss':
+            monster.hp = monster.maxHp = Math.floor(200 * floorMultiplier);
+            monster.atk = Math.floor(35 * floorMultiplier);
+            monster.spd = 0.8;
+            monster.xp = 500;
+            monster.attackRange = 1.5;
+            monster.aggroRange = 10;
+            break;
+        case 'finalBoss':
+             monster.hp = monster.maxHp = Math.floor(350 * (1 + (floor - 1) * 0.6));
+             monster.atk = Math.floor(70 * (1 + (floor - 1) * 0.4));
+             monster.spd = 0.7;
+             monster.xp = 5000;
+             monster.width = 2;
+             monster.height = 2;
+             monster.moveSpeed = 800;
+             monster.attackSpeed = 1000;
+             monster.attackRange = 1.5;
+             monster.aggroRange = 8;
+             break;
+        case 'spiderling':
+            monster.hp = monster.maxHp = Math.floor(15 * floorMultiplier);
+            monster.atk = Math.floor(10 * floorMultiplier);
+            monster.spd = 2;
+            monster.xp = 5;
+            monster.moveSpeed = 500;
+            break;
+        case 'minion':
+            monster.isMinion = true;
+            monster.hp = monster.maxHp = 50 + Math.floor(player.level * 2);
+            monster.atk = 10 + Math.floor(player.atk * 0.3);
+            monster.spd = player.spd * 0.8;
+            monster.xp = 0;
+            monster.moveSpeed = 500;
+            monster.attackSpeed = 1200;
+            monster.aggroRange = 10;
+            break;
+    }
+    return monster;
+}
+
 
 
 

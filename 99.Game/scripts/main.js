@@ -4,7 +4,7 @@
 
 // --- IMPORTS ---
 import { player, loadPlayerDataFromLocalStorage, savePlayerDataToLocalStorage } from './player.js';
-import { resetGame, setDifficultyAndStart, keys, gameOver, gameStarted, activateSkill } from './gameLogic.js';
+import { resetGame, setDifficultyAndStart, activateSkill, gameOver, gameStarted, keys } from './gameLogic.js';
 import { 
     toggleInventory, handleInventoryInput, isInventoryOpen,
     toggleSkillMenu, handleSkillInput, isSkillMenuOpen,

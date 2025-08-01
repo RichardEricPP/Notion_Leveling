@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CS Student Dungeon - Sync Theme</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&display=swap');
+
+        /* Custom styles and color palette from Sync Log */
+        body {
+            font-family: 'Rajdhani', sans-serif;
+            background-color: #0f172a; /* Main background */
+            color: #e2e8f0; /* Default text */
+            background-image: radial-gradient(circle at 10% 20%, rgba(56, 189, 248, 0.05) 0%, rgba(56, 189, 248, 0) 25%),
+                              radial-gradient(circle at 90% 80%, rgba(56, 189, 248, 0.05) 0%, rgba(56, 189, 248, 0) 25%);
+        }
+
+        .container-bg {
+            background-color: #1e293b; /* Primary container background */
+        }
+        
+        .container-bg-dark {
+            background-color: #0f172a;
+        }
+
+        .container-bg-light {
+             background-color: #334155; /* Lighter container for hover/details */
+        }
+
+        .accent-text {
+            color: #38bdf8; /* Main accent color */
+        }
+
+        .accent-border {
+            border: 1px solid rgba(56, 189, 248, 0.3);
+            box-shadow: 0 0 15px rgba(56, 189, 248, 0.2);
+        }
+        
+        .accent-gradient {
+            background: linear-gradient(90deg, #38bdf8 0%, #0ea5e9 100%);
+        }
+
+        .task-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(56, 189, 248, 0.2);
+        }
+
+        .floating {
+            animation: floating 3s ease-in-out infinite;
+        }
+
+        @keyframes floating {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+            100% { transform: translateY(0px); }
+        }
+
+        .pulse {
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(56, 189, 248, 0.4); }
+            70% { box-shadow: 0 0 0 10px rgba(56, 189, 248, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(56, 189, 248, 0); }
+        }
+
+        /* Custom scrollbar */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #1e293b; }
+        ::-webkit-scrollbar-thumb { background: #38bdf8; border-radius: 4px; }
+
+        /* Keeping original category badge colors for variety */
+        .category-badge { display: inline-block; padding: 0.25rem 0.5rem; border-radius: 9999px; font-size: 0.75rem; font-weight: 600; text-transform: uppercase; }
+        .coding-badge { background-color: rgba(59, 130, 246, 0.2); color: #3b82f6; }
+        .exercise-badge { background-color: rgba(16, 185, 129, 0.2); color: #10b981; }
+        .study-badge { background-color: rgba(139, 92, 246, 0.2); color: #8b5cf6; }
+        .project-badge { background-color: rgba(245, 158, 11, 0.2); color: #f59e0b; }
+        .exam-badge { background-color: rgba(236, 72, 153, 0.2); color: #ec4899; }
+    </style>
+</head>
+
+<body class="min-h-screen">
+    <div class="container mx-auto px-4 py-8">
+        <!-- Header with Player Stats -->
+        <header class="mb-8 accent-border rounded-lg p-6 container-bg relative overflow-hidden">
+            <div class="absolute inset-0 bg-gradient-to-r from-[#0f172a] to-[#1e293b] opacity-50"></div>
+            <div class="relative z-10 flex flex-col md:flex-row justify-between items-center">
+                <div class="flex items-center mb-4 md:mb-0">
+                    <div class="w-16 h-16 rounded-full container-bg-light flex items-center justify-center mr-4 pulse">
+                        <i class="fas fa-laptop-code accent-text text-2xl"></i>
+                    </div>
+                    <div>
+                        <h1 class="text-2xl font-bold text-slate-100">CS Student</h1>
+                        <div class="flex items-center">
+                            <span class="accent-text mr-2">Lv. <span id="player-level">5</span></span>
+                            <div class="w-32 h-2 bg-slate-900 rounded-full">
+                                <div id="exp-bar" class="accent-gradient h-full rounded-full" style="width: 45%"></div>
+                            </div>
+                            <span class="ml-2 text-sm text-slate-300"><span id="current-exp">450</span>/<span id="max-exp">1000</span> EXP</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="grid grid-cols-3 gap-4 text-center">
+                    <div>
+                        <div class="text-xs text-slate-400 opacity-80">ALGO</div>
+                        <div class="text-xl font-bold accent-text">87</div>
+                    </div>
+                    <div>
+                        <div class="text-xs text-slate-400 opacity-80">PHYS</div>
+                        <div class="text-xl font-bold accent-text">92</div>
+                    </div>
+                    <div>
+                        <div class="text-xs text-slate-400 opacity-80">GRADES</div>
+                        <div class="text-xl font-bold accent-text">3.8</div>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <!-- Left Column -->
+            <div class="lg:col-span-2">
+                <iframe src="tasks.html" class="w-full h-[500px] border-none rounded-lg container-bg accent-border mb-8"></iframe>
+                <div class="accent-border rounded-lg p-6 container-bg">
+                    <div class="flex justify-between items-center mb-6">
+                        <h2 class="text-xl font-bold text-slate-100 flex items-center">
+                            <i class="fas fa-link accent-text mr-2"></i> Quick Links
+                        </h2>
+                        <button id="add-website-btn" class="text-xs accent-gradient hover:opacity-90 text-white font-bold px-3 py-1 rounded-lg transition">
+                            <i class="fas fa-plus mr-1"></i> Add Website
+                        </button>
+                    </div>
+                    <div id="add-website-form" class="hidden p-4 container-bg-light rounded-lg mt-4">
+                        <input type="text" id="website-name" placeholder="Website Name" class="bg-slate-900 border accent-border text-slate-200 p-2 rounded mb-2 w-full">
+                        <input type="url" id="website-url" placeholder="Website URL" class="bg-slate-900 border accent-border text-slate-200 p-2 rounded mb-2 w-full">
+                        <input type="text" id="website-icon" placeholder="Icon URL (optional)" class="bg-slate-900 border accent-border text-slate-200 p-2 rounded mb-2 w-full">
+                        <div class="flex">
+                            <button id="save-website" class="accent-gradient hover:opacity-90 text-white font-bold px-4 py-2 rounded-lg mr-2">Save</button>
+                            <button id="cancel-website" class="container-bg-light hover:bg-slate-600 text-slate-200 font-bold px-4 py-2 rounded-lg">Cancel</button>
+                        </div>
+                    </div>
+                    <div id="quick-links" class="grid grid-cols-2 md:grid-cols-4 gap-4"></div>
+                </div>
+            </div>
+
+            <!-- Right Column -->
+            <div>
+                <div class="accent-border rounded-lg p-6 container-bg mb-6">
+                    <h2 class="text-xl font-bold text-slate-100 flex items-center mb-6"><i class="fas fa-dungeon accent-text mr-2"></i> Student Progress</h2>
+                    <div class="mb-6">
+                        <div class="flex justify-between mb-2"><span class="text-slate-200">Daily Completion</span><span class="accent-text font-bold" id="daily-percentage">0%</span></div>
+                        <div class="w-full h-3 bg-slate-900 rounded-full"><div id="progress-bar" class="h-3 rounded-full accent-gradient" style="width: 0%"></div></div>
+                    </div>
+                    <div class="space-y-4">
+                        <div class="flex items-center"><div class="w-10 h-10 rounded-full container-bg-light flex items-center justify-center mr-3"><i class="fas fa-fire accent-text"></i></div><div class="flex-grow"><div class="text-slate-100 font-medium">Current Streak</div><div class="text-xs text-slate-400">Consecutive days active</div></div><div class="text-xl font-bold accent-text" id="streak-count">0</div></div>
+                        <div class="flex items-center"><div class="w-10 h-10 rounded-full container-bg-light flex items-center justify-center mr-3"><i class="fas fa-trophy accent-text"></i></div><div class="flex-grow"><div class="text-slate-100 font-medium">Total Tasks</div><div class="text-xs text-slate-400">All-time completed</div></div><div class="text-xl font-bold accent-text" id="total-quests">0</div></div>
+                        <div class="flex items-center"><div class="w-10 h-10 rounded-full container-bg-light flex items-center justify-center mr-3"><i class="fas fa-gem accent-text"></i></div><div class="flex-grow"><div class="text-slate-100 font-medium">Next Reward</div><div class="text-xs text-slate-400">At <span id="next-reward-exp">1000</span> EXP</div></div><div class="text-xl font-bold accent-text"><i class="fas fa-chevron-right"></i></div></div>
+                    </div>
+                </div>
+                <div class="accent-border rounded-lg p-6 container-bg mb-6">
+                    <h2 class="text-xl font-bold text-slate-100 flex items-center mb-6"><i class="fas fa-chart-pie accent-text mr-2"></i> Category Breakdown</h2>
+                    <div class="grid grid-cols-2 gap-4 mb-4">
+                        <div class="container-bg-light rounded-lg p-3 text-center"><div class="text-sm text-slate-300 opacity-80 mb-1">Coding</div><div class="text-xl font-bold text-[#3b82f6]" id="coding-count">0</div></div>
+                        <div class="container-bg-light rounded-lg p-3 text-center"><div class="text-sm text-slate-300 opacity-80 mb-1">Exercise</div><div class="text-xl font-bold text-[#10b981]" id="exercise-count">0</div></div>
+                        <div class="container-bg-light rounded-lg p-3 text-center"><div class="text-sm text-slate-300 opacity-80 mb-1">Study</div><div class="text-xl font-bold text-[#8b5cf6]" id="study-count">0</div></div>
+                        <div class="container-bg-light rounded-lg p-3 text-center"><div class="text-sm text-slate-300 opacity-80 mb-1">Projects</div><div class="text-xl font-bold text-[#f59e0b]" id="project-count">0</div></div>
+                    </div>
+                    <div class="text-center"><div class="inline-block container-bg-light rounded-lg p-3"><div class="text-sm text-slate-300 opacity-80 mb-1">Exams</div><div class="text-xl font-bold text-[#ec4899]" id="exam-count">0</div></div></div>
+                </div>
+                <div class="accent-border rounded-lg p-6 container-bg">
+                    <h2 class="text-xl font-bold text-slate-100 flex items-center mb-6"><i class="fas fa-terminal accent-text mr-2"></i> System Messages</h2>
+                    <div id="system-messages" class="space-y-3 max-h-64 overflow-y-auto pr-2"></div>
+                    <div class="mt-4 text-center"><button id="clear-messages" class="text-xs text-slate-400 hover:text-white transition"><i class="fas fa-trash mr-1"></i> Clear Messages</button></div>
+                </div>
+            </div>
+        </div>
+        <!-- Floating Crystals -->
+        <div class="fixed bottom-0 left-0 w-full h-full flex justify-between items-end px-8 pointer-events-none z-0 opacity-20">
+            <div class="w-16 h-16 rounded-full bg-gradient-to-br from-[#38bdf8] to-transparent floating" style="animation-delay: 0s;"></div>
+            <div class="w-12 h-12 rounded-full bg-gradient-to-br from-[#0ea5e9] to-transparent floating" style="animation-delay: 1s; align-self: flex-start; margin-top: 20vh;"></div>
+            <div class="w-10 h-10 rounded-full bg-gradient-to-br from-[#38bdf8] to-transparent floating" style="animation-delay: 0.5s;"></div>
+        </div>
+    </div>
+
+    <script>
+        // Paste the original complex JavaScript here, it should work with the updated class names and structure.
+        // I will use the same JS from the user's provided code.
+        document.addEventListener('DOMContentLoaded', function () {
+            // --- DATA & STATE ---
+            let playerState = {
+                level: 1,
+                currentExp: 0,
+                streak: 0,
+                totalQuests: 0,
+                lastCompletionDate: null,
+                websites: [],
+                categoryCounts: { coding: 0, exercise: 0, study: 0, project: 0, exam: 0 }
+            };
+
+            const defaultWebsites = [
+                { id: 'd1', name: 'GitHub', url: 'https://github.com', icon: 'https://github.githubassets.com/favicons/favicon.png', description: 'Code hosting' },
+                { id: 'd2', name: 'LeetCode', url: 'https://leetcode.com', icon: 'https://leetcode.com/favicon.ico', description: 'Coding practice' },
+                { id: 'd3', name: 'Stack Overflow', url: 'https://stackoverflow.com', icon: 'https://stackoverflow.com/favicon.ico', description: 'Q&A' },
+                { id: 'd4', name: 'YouTube', url: 'https://www.youtube.com', icon: 'https://www.youtube.com/favicon.ico', description: 'Tutorials' }
+            ];
+
+            // --- DOM ELEMENTS ---
+            const elements = {
+                level: document.getElementById('player-level'),
+                currentExp: document.getElementById('current-exp'),
+                maxExp: document.getElementById('max-exp'),
+                expBar: document.getElementById('exp-bar'),
+                streakCount: document.getElementById('streak-count'),
+                totalQuests: document.getElementById('total-quests'),
+                nextRewardExp: document.getElementById('next-reward-exp'),
+                quickLinks: document.getElementById('quick-links'),
+                addWebsiteBtn: document.getElementById('add-website-btn'),
+                addWebsiteForm: document.getElementById('add-website-form'),
+                saveWebsiteBtn: document.getElementById('save-website'),
+                cancelWebsiteBtn: document.getElementById('cancel-website'),
+                websiteNameInput: document.getElementById('website-name'),
+                websiteUrlInput: document.getElementById('website-url'),
+                websiteIconInput: document.getElementById('website-icon'),
+                systemMessages: document.getElementById('system-messages'),
+                clearMessagesBtn: document.getElementById('clear-messages'),
+                codingCount: document.getElementById('coding-count'),
+                exerciseCount: document.getElementById('exercise-count'),
+                studyCount: document.getElementById('study-count'),
+                projectCount: document.getElementById('project-count'),
+                examCount: document.getElementById('exam-count'),
+            };
+
+            // --- INITIALIZATION ---
+            loadState();
+            checkStreak();
+            renderUI();
+            addSystemMessage("Welcome to your CS Student Dungeon. Complete tasks to level up your skills!");
+
+            // --- EVENT LISTENERS ---
+            elements.addWebsiteBtn.addEventListener('click', () => toggleWebsiteForm(true));
+            elements.cancelWebsiteBtn.addEventListener('click', () => toggleWebsiteForm(false));
+            elements.saveWebsiteBtn.addEventListener('click', handleAddWebsite);
+            elements.clearMessagesBtn.addEventListener('click', clearMessages);
+
+            window.addEventListener('message', function(event) {
+                if (event.data.type === 'taskCompleted') {
+                    const expGain = event.data.exp || 50;
+                    const category = event.data.category || 'coding';
+                    addExp(expGain);
+                    updateTotalQuests(playerState.totalQuests + 1);
+                    updateStreak();
+                    if(playerState.categoryCounts.hasOwnProperty(category)) {
+                        playerState.categoryCounts[category]++;
+                    }
+                    saveState();
+                    renderUI();
+                    addSystemMessage(`Task completed! +${expGain} EXP in ${category}.`, 'success');
+                }
+            });
+
+            // --- FUNCTIONS ---
+            function loadState() {
+                const savedState = JSON.parse(localStorage.getItem('csDungeonStateV2'));
+                if (savedState) {
+                    playerState = { ...playerState, ...savedState };
+                }
+            }
+
+            function saveState() {
+                localStorage.setItem('csDungeonStateV2', JSON.stringify(playerState));
+            }
+
+            function calculateMaxExp(level) {
+                return level * 200 + 800;
+            }
+
+            function renderUI() {
+                const maxExp = calculateMaxExp(playerState.level);
+                elements.level.textContent = playerState.level;
+                elements.currentExp.textContent = playerState.currentExp;
+                elements.maxExp.textContent = maxExp;
+                elements.expBar.style.width = `${(playerState.currentExp / maxExp) * 100}%`;
+                elements.streakCount.textContent = playerState.streak;
+                elements.totalQuests.textContent = playerState.totalQuests;
+                elements.nextRewardExp.textContent = maxExp;
+                
+                // Render category counts
+                for (const category in playerState.categoryCounts) {
+                    if (elements[`${category}Count`]) {
+                        elements[`${category}Count`].textContent = playerState.categoryCounts[category];
+                    }
+                }
+
+                renderWebsites();
+            }
+
+            function addExp(amount) {
+                let maxExp = calculateMaxExp(playerState.level);
+                playerState.currentExp += amount;
+
+                while (playerState.currentExp >= maxExp) {
+                    playerState.currentExp -= maxExp;
+                    playerState.level++;
+                    maxExp = calculateMaxExp(playerState.level);
+                    levelUp(playerState.level);
+                }
+            }
+            
+            function levelUp(newLevel) {
+                elements.level.classList.add('level-up-animation');
+                setTimeout(() => {
+                    elements.level.classList.remove('level-up-animation');
+                }, 1500);
+                addSystemMessage(`Congratulations! You reached Level ${newLevel}!`, 'success');
+            }
+
+            function updateStreak() {
+                const today = new Date().toDateString();
+                if (playerState.lastCompletionDate !== today) {
+                    playerState.streak++;
+                    playerState.lastCompletionDate = today;
+                    addSystemMessage(`Streak extended to ${playerState.streak} days!`);
+                }
+            }
+            
+            function checkStreak() {
+                if (!playerState.lastCompletionDate) return;
+                const lastDate = new Date(playerState.lastCompletionDate);
+                const today = new Date();
+                const yesterday = new Date();
+                yesterday.setDate(today.getDate() - 1);
+                if (lastDate.toDateString() !== today.toDateString() && lastDate.toDateString() !== yesterday.toDateString()) {
+                    addSystemMessage(`Streak of ${playerState.streak} broken! Complete a task to start anew.`, 'danger');
+                    playerState.streak = 0;
+                }
+            }
+
+            function updateTotalQuests(count) {
+                playerState.totalQuests = count;
+            }
+
+            function addSystemMessage(text, type = 'system') {
+                const message = document.createElement('div');
+                let borderColorClass = 'accent-border';
+                let titleColorClass = 'accent-text';
+                let title = 'SYSTEM:';
+
+                if (type === 'success') {
+                    borderColorClass = 'border-green-500';
+                    titleColorClass = 'text-green-400';
+                    title = 'SUCCESS:';
+                } else if (type === 'danger') {
+                    borderColorClass = 'border-red-500';
+                    titleColorClass = 'text-red-400';
+                    title = 'ALERT:';
+                }
+
+                message.className = `container-bg-dark rounded p-3 text-sm text-slate-300 border-l-4 ${borderColorClass} mb-2`;
+                message.innerHTML = `
+                    <div class="font-bold ${titleColorClass}">${title}</div>
+                    <div>${text}</div>
+                `;
+                elements.systemMessages.appendChild(message);
+                elements.systemMessages.scrollTop = elements.systemMessages.scrollHeight;
+            }
+            
+            function clearMessages() {
+                elements.systemMessages.innerHTML = '';
+                addSystemMessage("Message log cleared.");
+            }
+
+            function toggleWebsiteForm(show) {
+                elements.addWebsiteForm.style.display = show ? 'block' : 'none';
+                if (!show) {
+                    elements.websiteNameInput.value = '';
+                    elements.websiteUrlInput.value = '';
+                    elements.websiteIconInput.value = '';
+                }
+            }
+
+            function handleAddWebsite() {
+                const name = elements.websiteNameInput.value.trim();
+                let url = elements.websiteUrlInput.value.trim();
+                const icon = elements.websiteIconInput.value.trim();
+
+                if (!name || !url) {
+                    addSystemMessage('Please enter both a name and URL.', 'danger');
+                    return;
+                }
+                if (!url.startsWith('http')) url = `https://${url}`;
+
+                playerState.websites.push({ id: Date.now(), name, url, icon, description: new URL(url).hostname });
+                saveState();
+                renderWebsites();
+                toggleWebsiteForm(false);
+                addSystemMessage(`Added new quick link: ${name}`, 'success');
+            }
+
+            function renderWebsites() {
+                elements.quickLinks.innerHTML = '';
+                const allLinks = [...defaultWebsites, ...playerState.websites];
+                allLinks.forEach(site => {
+                    const iconSrc = site.icon || `https://www.google.com/s2/favicons?domain=${site.url}&sz=64`;
+                    const linkEl = document.createElement('div');
+                    linkEl.className = 'container-bg-light p-4 rounded-lg task-item cursor-pointer flex flex-col items-center text-center';
+                    linkEl.onclick = () => window.open(site.url, '_blank');
+                    linkEl.innerHTML = `
+                        <img src="${iconSrc}" class="w-8 h-8 mb-2 rounded" onerror="this.src='https://www.google.com/s2/favicons?domain=google.com&sz=64'">
+                        <div class="font-bold text-slate-100 text-sm">${site.name}</div>
+                        <div class="text-xs text-slate-400">${site.description}</div>
+                    `;
+                    elements.quickLinks.appendChild(linkEl);
+                });
+            }
+        });
+    </script>
+</body>
+
+</html>

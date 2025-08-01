@@ -6,11 +6,11 @@ import { player, activeSetBonusName, updateStats } from './player.js';
 import { skills, gearList, setBonuses, equipmentSlotsOrder, equipmentSlotNames } from './data.js';
 import { monsters, chests, loadedImages, sprites } from './enemies.js';
 import { 
-    gameStarted, gameOver, keys, lastGameScore, lastEnemiesDefeated, finalOutcomeMessage, 
-    finalOutcomeMessageLine2, projectiles, damageTexts, criticalHitEffects, warMaceShockwave, 
-    screenShake, map, mapWidth, mapHeight, tileSize, stairLocation, skillCooldowns, currentFloor, revealedMap,
-    // Se importarán funciones de lógica para ser llamadas desde los manejadores de eventos
-    useItem, learnSkill, equipItem, equipSkill, activateSkill 
+    currentFloor, maxFloors, map, stairLocation, selectedDifficulty, 
+    gameStarted, gameOver, lastGameScore, lastEnemiesDefeated, 
+    finalOutcomeMessage, finalOutcomeMessageLine2, keys, screenShake, 
+    revealedMap, projectiles, damageTexts, criticalHitEffects, warMaceShockwave, skillCooldowns, mapWidth, mapHeight, tileSize,
+    useItem, learnSkill, equipItem, equipSkill, activateSkill
 } from './gameLogic.js';
 
 
@@ -20,6 +20,8 @@ import {
 export let isInventoryOpen = false;
 export let isSkillMenuOpen = false;
 export let isEquipmentOpen = false; 
+export let offsetX = 0; // Export offsetX
+export let offsetY = 0; // Export offsetY
 let selectedIndex = 0;
 let selectedSkillIndex = 0;
 let selectedEquipmentSlotIndex = 0; 
@@ -59,10 +61,18 @@ function drawPlayer(x, y) {
             lunge = player.attackLungeDistance * ((1 - progress) / 0.5);
         }
 
-        if (player.facingDirection === 'right') drawX += lunge;
-        else if (player.facingDirection === 'left') drawX -= lunge;
-        else if (player.facingDirection === 'up') drawY -= lunge;
-        else if (player.facingDirection === 'down') drawY += lunge;
+        if (player.isAttackingPerpendicularly) {
+            if (player.facingDirection === 'right' || player.facingDirection === 'left') {
+                drawY += lunge;
+            } else {
+                drawX += lunge;
+            }
+        } else {
+            if (player.facingDirection === 'right') drawX += lunge;
+            else if (player.facingDirection === 'left') drawX -= lunge;
+            else if (player.facingDirection === 'up') drawY -= lunge;
+            else if (player.facingDirection === 'down') drawY += lunge;
+        }
     }
 
     if (loadedImages.player && loadedImages.player.complete) {
@@ -131,7 +141,7 @@ function drawMonster(m, screenX, screenY) {
     let drawX = screenX;
     let drawY = screenY;
 
-    if (m.isAttackingPlayer) {
+    if (m.isAttacking) {
         const progress = m.attackAnimFrame / m.attackAnimDuration;
         let lunge = 0;
         if (progress < 0.5) {
@@ -275,6 +285,16 @@ function drawProjectiles(offsetX, offsetY) {
                 ctx.arc(sparkX, sparkY, sparkSize, 0, Math.PI * 2);
                 ctx.fill();
             }
+        } else if (proj.type === 'ice_ray') {
+            ctx.fillStyle = 'rgba(173, 216, 230, 0.8)'; // Light blue
+            ctx.fillRect(-10, -2, 20, 4);
+            const glow = ctx.createRadialGradient(0, 0, 2, 0, 0, 15);
+            glow.addColorStop(0, 'rgba(173, 216, 230, 0.8)');
+            glow.addColorStop(1, 'rgba(173, 216, 230, 0)');
+            ctx.fillStyle = glow;
+            ctx.beginPath();
+            ctx.arc(0, 0, 15, 0, Math.PI * 2);
+            ctx.fill();
         } else if (proj.type === 'blade') { // Drawing for 'blade' projectiles
             // Draw the blade (gold)
             ctx.fillStyle = '#FFD700'; // Gold color
@@ -360,8 +380,8 @@ function drawWarMaceShockwave(offsetX, offsetY) {
 }
 
 export function drawMap() {
-    const offsetX = Math.max(0, Math.min(player.tileX * tileSize - gameCanvas.width / 2 + tileSize / 2, mapWidth * tileSize - gameCanvas.width));
-    const offsetY = Math.max(0, Math.min(player.tileY * tileSize - gameCanvas.height / 2 + tileSize / 2, mapHeight * tileSize - gameCanvas.height));
+    offsetX = Math.max(0, Math.min(player.tileX * tileSize - gameCanvas.width / 2 + tileSize / 2, mapWidth * tileSize - gameCanvas.width));
+    offsetY = Math.max(0, Math.min(player.tileY * tileSize - gameCanvas.height / 2 + tileSize / 2, mapHeight * tileSize - gameCanvas.height));
     const startX = Math.floor(offsetX / tileSize);
     const endX = Math.min(mapWidth - 1, Math.ceil((offsetX + gameCanvas.width) / tileSize));
     const startY = Math.floor(offsetY / tileSize);
@@ -506,11 +526,23 @@ function drawHUD() {
         
         if (equippedSkill) {
             const cooldownRemaining = Math.max(0, (skillCooldowns[equippedSkill.name] - currentTime));
+            let durationEndTime = 0;
+            switch(equippedSkill.name) {
+                case 'Sigilo': durationEndTime = player.stealthEndTime; break;
+                case 'Invencible': durationEndTime = player.invincibleEndTime; break;
+                case 'Velocidad': durationEndTime = player.speedBoostEndTime; break;
+                case 'Suerte': durationEndTime = player.luckBoostEndTime; break;
+            }
+            const durationRemaining = Math.max(0, (durationEndTime - currentTime));
+
             if (equippedSkill.type === 'passive') { 
                 skillText += " (Pasiva)";
                 textColor = '#00008B'; 
+            } else if (durationRemaining > 0) {
+                skillText += ` (${(durationRemaining/1000).toFixed(1)}s)`;
+                textColor = '#008000'; // Green for active duration
             } else if (player.skillUsageThisFloor[equippedSkill.name]) { 
-                skillText += " (Usado)";
+                skillText += " (Recargando)";
                 textColor = '#909090'; 
             } else if (cooldownRemaining > 0) { 
                 skillText += ` (${(cooldownRemaining/1000).toFixed(1)}s)`;
@@ -638,10 +670,7 @@ function updateSkillDisplay() {
 
         if (player.permanentlyLearnedSkills.includes(skill.name)) {
             statusClass = 'unlocked'; 
-            statusText = isEquippedInSlot ? ' (Activa)' : ' (Desbloqueada)';
-            if (skill.cooldown !== 0 && player.skillUsageThisFloor[skill.name]) { 
-                li.classList.add('skill-used');
-            }
+            statusText = isEquippedInSlot ? ' (Equipada)' : ' (Desbloqueada)';
         } else if (player.skillPoints >= skill.cost && (!skill.prereq || player.permanentlyLearnedSkills.includes(skill.prereq))) {
             statusClass = 'available';
             statusText = ' (Desbloquear)';
@@ -893,3 +922,16 @@ export function showDifficultyScreen() {
     minimapCanvas.style.display = 'none';
     equipmentMenu.style.display = 'none';
 }
+
+// New: Mouse tracking
+let mouseX = 0;
+let mouseY = 0;
+
+gameCanvas.addEventListener('mousemove', (e) => {
+    const rect = gameCanvas.getBoundingClientRect();
+    mouseX = e.clientX - rect.left;
+    mouseY = e.clientY - rect.top;
+});
+
+// Export mouseX and mouseY for gameLogic to use
+export { mouseX, mouseY };

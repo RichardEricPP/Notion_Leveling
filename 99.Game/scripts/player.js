@@ -40,10 +40,10 @@ export let player = {
     doorOpened: false, 
     lastHitTime: 0,
     invulnerabilityTime: 500,
-    isAttacking: false, 
-    attackAnimFrame: 0, 
-    attackAnimDuration: 7, 
-    attackLungeDistance: 12.5, // 50 / 4 (tileSize / 4)
+    isAttacking: false,
+    attackAnimFrame: 0,
+    attackAnimDuration: 8, // Duración de la animación de ataque en frames
+    attackLungeDistance: 10, // Distancia de la estocada durante el ataque
     skillUsageThisFloor: {},
     enemiesDefeatedThisRun: 0,
     isSlowed: false,
