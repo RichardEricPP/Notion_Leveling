@@ -494,11 +494,13 @@ function drawHUD() {
         if (equippedSkill) {
             const cooldownRemaining = Math.max(0, (skillCooldowns[equippedSkill.name] - currentTime));
             let durationEndTime = 0;
+            let minion = monsters.find(m => m.isMinion);
             switch(equippedSkill.name) {
                 case 'Sigilo': durationEndTime = player.stealthEndTime; break;
                 case 'Invencible': durationEndTime = player.invincibleEndTime; break;
                 case 'Velocidad': durationEndTime = player.speedBoostEndTime; break;
                 case 'Suerte': durationEndTime = player.luckBoostEndTime; break;
+                case 'Invocar': if (minion) durationEndTime = minion.expirationTime; break;
             }
             const durationRemaining = Math.max(0, (durationEndTime - currentTime));
 

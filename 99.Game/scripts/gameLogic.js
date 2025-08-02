@@ -299,36 +299,63 @@ function updateMonsters(currentTime) {
         }
 
         const bossCenter = (m.type === 'finalBoss') ? { x: m.tileX + 0.5, y: m.tileY + 0.5 } : { x: m.tileX, y: m.tileY };
-        const distanceToPlayer = getDistance(bossCenter.x, bossCenter.y, player.tileX, player.tileY);
-        const canSeePlayer = hasLineOfSight(m, player) && !player.isStealthed;
+        let target = player; // Default target is player
+        let distanceToTarget = getDistance(bossCenter.x, bossCenter.y, player.tileX, player.tileY);
+        let canSeeTarget = hasLineOfSight(m, player) && !player.isStealthed;
+
+        if (m.isMinion) {
+            // Minions target other monsters
+            let nearestEnemy = null;
+            let minDistanceToEnemy = Infinity;
+            monsters.forEach(enemy => {
+                if (!enemy.isMinion && enemy.hp > 0) { // Target non-minion monsters that are alive
+                    const dist = getDistance(m.tileX, m.tileY, enemy.tileX, enemy.tileY);
+                    if (dist < minDistanceToEnemy) {
+                        minDistanceToEnemy = dist;
+                        nearestEnemy = enemy;
+                    }
+                }
+            });
+
+            if (nearestEnemy) {
+                target = nearestEnemy;
+                distanceToTarget = getDistance(m.tileX, m.tileY, target.tileX, target.tileY);
+                canSeeTarget = hasLineOfSight(m, nearestEnemy);
+            } else {
+                // If no enemies, minions can just patrol or stay put
+                m.state = 'PATROL';
+                m.lastActionTime = currentTime; // Update last action time to prevent constant attempts
+                return; // Skip further processing for this minion if no target
+            }
+        }
 
         // State transitions
         switch (m.state) {
             case 'PATROL':
-                if (canSeePlayer && distanceToPlayer < m.aggroRange) {
+                if (canSeeTarget && distanceToTarget < m.aggroRange) {
                     m.state = 'CHASE';
-                    m.lastKnownPlayerPosition = { x: player.tileX, y: player.tileY };
+                    m.lastKnownPlayerPosition = { x: target.tileX, y: target.tileY }; // Use target's position
                 }
                 break;
             case 'CHASE':
-                if (!canSeePlayer) {
+                if (!canSeeTarget) {
                     m.state = 'SEARCH';
-                } else if (distanceToPlayer <= m.attackRange) {
+                } else if (distanceToTarget <= m.attackRange) {
                     m.state = 'ATTACK';
                     m.lastActionTime = 0; // Reset action timer for immediate attack
                 } else {
-                    m.lastKnownPlayerPosition = { x: player.tileX, y: player.tileY };
+                    m.lastKnownPlayerPosition = { x: target.tileX, y: target.tileY }; // Use target's position
                 }
-                break; // Added missing break to prevent fallthrough
+                break;
             case 'ATTACK':
-                if (!canSeePlayer) {
-                    m.state = 'SEARCH'; // Lose target if player becomes stealthed
-                } else if (distanceToPlayer > m.attackRange) {
+                if (!canSeeTarget) {
+                    m.state = 'SEARCH';
+                } else if (distanceToTarget > m.attackRange) {
                     m.state = 'CHASE';
                 }
                 break;
             case 'SEARCH':
-                if (canSeePlayer) {
+                if (canSeeTarget) {
                     m.state = 'CHASE';
                 } else if (m.tileX === m.lastKnownPlayerPosition?.x && m.tileY === m.lastKnownPlayerPosition?.y) {
                     m.state = 'PATROL';
@@ -343,9 +370,9 @@ function updateMonsters(currentTime) {
 
         // --- Final Boss Special Abilities ---
         if (m.type === 'finalBoss' && (m.state === 'ATTACK' || m.state === 'CHASE')) {
-            if (currentTime - (m.abilityCooldowns.webShot || 0) > 3500 && distanceToPlayer > 2 && canSeePlayer) {
-                const dx = player.tileX - bossCenter.x;
-                const dy = player.tileY - bossCenter.y;
+            if (currentTime - (m.abilityCooldowns.webShot || 0) > 3500 && distanceToTarget > 2 && canSeeTarget) {
+                const dx = target.tileX - bossCenter.x;
+                const dy = target.tileY - bossCenter.y;
                 projectiles.push(new Projectile(bossCenter.x, bossCenter.y, dx, dy, 'web', 'monster', m.atk * 0.5, false, 5));
                 ui.showMessage("¡La Araña Jefe lanza una telaraña!");
                 m.abilityCooldowns.webShot = currentTime;
@@ -370,18 +397,27 @@ function updateMonsters(currentTime) {
 
         // --- Attack Action ---
         if (!actionTaken && m.state === 'ATTACK') {
-            if (distanceToPlayer <= m.attackRange) { // Check if player is still in range
-                if (currentTime - player.lastHitTime > (player.invulnerabilityTime || 0)) {
-                    takeDamage(player, m.atk, false, 'monster');
-                    player.lastHitTime = currentTime;
-                    m.isAttackingPlayer = true;
+            if (distanceToTarget <= m.attackRange) { // Check if target is still in range
+                if (target === player) { // Only apply invulnerability check if target is player
+                    if (currentTime - player.lastHitTime > (player.invulnerabilityTime || 0)) {
+                        takeDamage(target, m.atk, false, 'monster');
+                        player.lastHitTime = currentTime;
+                        m.isAttackingPlayer = true;
+                        m.attackAnimFrame = 0;
+                        m.attackDirectionX = Math.sign(target.tileX - m.tileX);
+                        m.attackDirectionY = Math.sign(target.tileY - m.tileY);
+                        actionTaken = true;
+                    }
+                } else { // If target is a monster/minion
+                    takeDamage(target, m.atk, false, m.isMinion ? 'minion' : 'monster'); // Attacker type is minion or monster
+                    m.isAttackingPlayer = true; // Reuse animation flag
                     m.attackAnimFrame = 0;
-                    m.attackDirectionX = Math.sign(player.tileX - m.tileX);
-                    m.attackDirectionY = Math.sign(player.tileY - m.tileY);
+                    m.attackDirectionX = Math.sign(target.tileX - m.tileX);
+                    m.attackDirectionY = Math.sign(target.tileY - m.tileY);
                     actionTaken = true;
                 }
             }
-        } 
+        }
         // --- Movement Action ---
         else if (!actionTaken && (m.state === 'CHASE' || m.state === 'SEARCH' || m.state === 'PATROL')) {
             let moved = false;
@@ -397,7 +433,7 @@ function updateMonsters(currentTime) {
                     break;
                 case 'CHASE':
                 case 'SEARCH':
-                    let targetPos = (m.state === 'CHASE') ? findOptimalAttackPosition(m, player) : m.lastKnownPlayerPosition;
+                    let targetPos = (m.state === 'CHASE') ? findOptimalAttackPosition(m, target) : m.lastKnownPlayerPosition; // Use 'target'
                     if (!targetPos) targetPos = m.lastKnownPlayerPosition;
                     if (!targetPos) break;
 
@@ -580,6 +616,7 @@ function findOptimalAttackPosition(monster, target) {
 
 function createMonster(type, x, y, floor) {
     let monster = {
+        id: Date.now() + Math.random(), // ID único para el monstruo
         tileX: x, tileY: y, type: type, isMinion: false,
         hp: 0, maxHp: 0, atk: 0, def: 0, spd: 0, xp: 0,
         moveSpeed: 1000, attackSpeed: 1000, aggroRange: 5, attackRange: 1.5,
@@ -884,6 +921,11 @@ function getMonsterAt(x, y) {
 }
 
 function takeDamage(target, damage, isCritical, attackerType = 'player') {
+    // Minions cannot be damaged by the player
+    if (target.isMinion && attackerType === 'player') {
+        return;
+    }
+
     let defense = target.def || 0;
     if (target.isWeakened && Date.now() < target.weaknessEndTime) {
         defense *= 0.75; // Reduce defense by 25%
@@ -1017,12 +1059,26 @@ export function activateSkill(skillName) {
             const spawnY = player.tileY;
             if (isPassable(spawnX, spawnY, false, null)) {
                 const minion = createMonster('minion', spawnX, spawnY, currentFloor);
-                minion.hp = player.maxHp * 0.75;
+                minion.maxHp = player.maxHp * 0.75;
+                minion.hp = minion.maxHp;
                 minion.atk = player.atk * 0.75;
+                minion.def = player.def * 0.75;
+                minion.spd = player.spd * 0.75;
                 minion.state = 'CHASE';
+                minion.isMinion = true;
+                minion.expirationTime = Date.now() + 15000; // Asignar tiempo de expiración
                 minion.lastKnownPlayerPosition = { x: player.tileX, y: player.tileY };
                 monsters.push(minion);
                 ui.showMessage("¡Súbdito invocado!");
+
+                // Eliminar el súbdito después de 15 segundos
+                setTimeout(() => {
+                    const index = monsters.findIndex(m => m.id === minion.id);
+                    if (index !== -1) {
+                        monsters.splice(index, 1);
+                    }
+                }, 15000);
+
                 skillUsed = true;
             } else {
                 ui.showMessage("No hay espacio para invocar.");
