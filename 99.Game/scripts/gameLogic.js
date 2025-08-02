@@ -509,8 +509,10 @@ async function generateFloor() {
         for (let i = 0; i < 2 + currentFloor; i++) placeMonster('lobo');
         for (let i = 0; i < 3 + Math.floor((currentFloor - 1) * 1.5); i++) placeMonster('skeleton');
         if (rooms.length > 1) {
-            const miniBossRoom = rooms[Math.floor(rooms.length / 2)];
-            placeMonster('miniBoss', true);
+            // Place the main boss (Golem), which drops the key
+            placeMonster('boss', true);
+            // Place the mini-boss (White Wolf) as well
+            placeMonster('miniBoss', false);
         }
         chests.length = 0;
         spawnChests(monsterSpawnLocations);
@@ -605,6 +607,15 @@ function createMonster(type, x, y, floor) {
             monster.atk = Math.floor((15 + floor * 5) * atkMultiplier * floorMultiplier);
             monster.moveSpeed = 700;
             monster.attackSpeed = 900;
+            break;
+        case 'boss':
+            monster.maxHp = Math.floor((200 + floor * 20) * hpMultiplier * floorMultiplier);
+            monster.atk = Math.floor((35 + floor * 8) * atkMultiplier * floorMultiplier);
+            monster.moveSpeed = 800;
+            monster.attackSpeed = 1100;
+            monster.aggroRange = 10;
+            monster.attackRange = 1.5;
+            monster.xp = 500;
             break;
         case 'finalBoss':
             monster.width = 2;
