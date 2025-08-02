@@ -52,9 +52,7 @@ export let player = {
     slowEndTime: 0,
     potionsBoughtTotal: 0,
     isStealthed: false,
-    stealthEndTime: 0,
-    stealthActive: false, 
-    stealthStatMultiplier: 1.0, 
+    stealthEndTime: 0, 
     nextHitCritical: false,
     isInvincible: false,
     invincibleEndTime: 0,
@@ -255,6 +253,11 @@ export function updateStats() {
     player.maxHp = 100 + (player.level - 1) * 20;
     player.criticalChanceBonus = 0.05; // Reset critical chance to base
 
+    const currentTime = Date.now();
+    if (player.luckBoostEndTime && currentTime < player.luckBoostEndTime) {
+        player.criticalChanceBonus += 0.25;
+    }
+
     // Preserve passive skill states
     const currentFuryActive = player.furyActive;
     const currentSoulExtractionActive = player.soulExtractionActive;
@@ -286,17 +289,11 @@ export function updateStats() {
     if (currentSetBonuses.maxHp_percent) player.maxHp *= (1 + currentSetBonuses.maxHp_percent);
     if (currentSetBonuses.spd_percent) player.spd *= (1 + currentSetBonuses.spd_percent);
 
-    const currentTime = Date.now();
     if (player.isSpeedBoosted && currentTime < player.speedBoostEndTime) {
-        player.spd *= 1.5; 
+        player.spd *= 1.25; 
     }
 
     player.hp = Math.min(player.hp, player.maxHp);
-    if (player.stealthActive && currentTime < player.stealthEndTime) {
-        player.atk = Math.floor(player.atk * player.stealthStatMultiplier);
-        player.def = Math.floor(player.def * player.stealthStatMultiplier);
-        player.spd = player.spd * player.stealthStatMultiplier;
-    }
     if (player.isSlowed && currentTime < player.slowEndTime) {
         player.spd *= 0.5;
     }

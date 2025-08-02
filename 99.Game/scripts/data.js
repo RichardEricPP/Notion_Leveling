@@ -43,18 +43,18 @@ export const gearList = [
 ];
 
 export const skills = [
-    { name: 'Sigilo', type: 'active', effect: 'Te vuelves uno con las sombras, imperceptible para los monstruos durante 10 segundos.', cooldown: 15000 },
-    { name: 'Golpe Crítico', type: 'active', effect: 'El siguiente golpe que asestes será un 100% más devastador.', cooldown: 5000 },
-    { name: 'Teletransportación', type: 'active', effect: 'Desplázate instantáneamente a un punto seguro del mapa sin enemigos.', cooldown: 10000 },
-    { name: 'Invocar', type: 'active', effect: 'Manifiesta un súbdito leal con el 75% de tus estadísticas.', cooldown: 20000 },
-    { name: 'Regeneración', type: 'active', effect: 'Restaura el 75% de tu salud máxima al instante.', cooldown: 10000 },
-    { name: 'Velocidad', type: 'active', effect: 'Incrementa tu velocidad de movimiento en un 25% durante 10 segundos.', cooldown: 8000 },
-    { name: 'Invencible', type: 'active', effect: 'Te vuelves inmune a todo daño durante 4 segundos.', cooldown: 25000 },
-    { name: 'Rayo de Hielo', type: 'active', effect: 'Congela a todos los enemigos cercanos durante 5 segundos.', cooldown: 12000 },
-    { name: 'Suerte', type: 'active', effect: 'Aumenta tu probabilidad de asestar un golpe crítico en un 25% durante 10 segundos.', cooldown: 15000 },
-    { name: 'Debilidad', type: 'active', effect: 'Reduce la resistencia de los enemigos cercanos en un 25% durante 8 segundos.', cooldown: 10000 },
-    { name: 'Tormenta de Cuchillas', type: 'active', effect: 'Lanzas cuchillos en todas las direcciones. Daño: 50% del ataque base por cuchillo.', cooldown: 0 }, 
-    { name: 'Segundo Aliento', type: 'passive', effect: 'Una vez por partida, si mueres, revives automáticamente con 25% de salud.', cooldown: 0 } 
+    { name: 'Sigilo', type: 'active', effect: 'Te vuelves uno con las sombras, imperceptible para los monstruos durante 10 segundos.' },
+    { name: 'Golpe Crítico', type: 'active', effect: 'El siguiente golpe que asestes será un 100% más devastador.' },
+    { name: 'Teletransportación', type: 'active', effect: 'Desplázate instantáneamente a un punto seguro del mapa sin enemigos.' },
+    { name: 'Invocar', type: 'active', effect: 'Manifiesta un súbdito leal con el 75% de tus estadísticas.' },
+    { name: 'Regeneración', type: 'active', effect: 'Restaura el 75% de tu salud máxima al instante.' },
+    { name: 'Velocidad', type: 'active', effect: 'Incrementa tu velocidad de movimiento en un 25% durante 10 segundos.' },
+    { name: 'Invencible', type: 'active', effect: 'Te vuelves inmune a todo daño durante 4 segundos.' },
+    { name: 'Rayo de Hielo', type: 'active', effect: 'Congela a todos los enemigos cercanos durante 5 segundos.' },
+    { name: 'Suerte', type: 'active', effect: 'Aumenta tu probabilidad de asestar un golpe crítico en un 25% durante 10 segundos.' },
+    { name: 'Debilidad', type: 'active', effect: 'Reduce la resistencia de los enemigos cercanos en un 25% durante 8 segundos.' },
+    { name: 'Tormenta de Cuchillas', type: 'active', effect: 'Lanzas cuchillos en todas las direcciones. Daño: 50% del ataque base por cuchillo.' }, 
+    { name: 'Segundo Aliento', type: 'passive', effect: 'Una vez por partida, si mueres, revives automáticamente con 25% de salud.' } 
 ];
 
 

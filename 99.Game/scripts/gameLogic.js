@@ -229,8 +229,8 @@ function updateStatusEffects(currentTime) {
         player.isSlowed = false;
         updateStats();
     }
-    if (player.stealthActive && currentTime > player.stealthEndTime) {
-        player.stealthActive = false;
+    if (player.isStealthed && currentTime > player.stealthEndTime) {
+        player.isStealthed = false;
         updateStats();
     }
     if (player.isInvincible && currentTime > player.invincibleEndTime) {
@@ -295,7 +295,7 @@ function updateMonsters(currentTime) {
 
         const bossCenter = (m.type === 'finalBoss') ? { x: m.tileX + 0.5, y: m.tileY + 0.5 } : { x: m.tileX, y: m.tileY };
         const distanceToPlayer = getDistance(bossCenter.x, bossCenter.y, player.tileX, player.tileY);
-        const canSeePlayer = hasLineOfSight(m, player);
+        const canSeePlayer = hasLineOfSight(m, player) && !player.isStealthed;
 
         // State transitions
         switch (m.state) {
@@ -306,19 +306,28 @@ function updateMonsters(currentTime) {
                 }
                 break;
             case 'CHASE':
-                if (!canSeePlayer) m.state = 'SEARCH';
-                else if (distanceToPlayer <= m.attackRange) {
+                if (!canSeePlayer) {
+                    m.state = 'SEARCH';
+                } else if (distanceToPlayer <= m.attackRange) {
                     m.state = 'ATTACK';
                     m.lastActionTime = 0; // Reset action timer for immediate attack
                 } else {
                     m.lastKnownPlayerPosition = { x: player.tileX, y: player.tileY };
                 }
+                break; // Added missing break to prevent fallthrough
             case 'ATTACK':
-                if (distanceToPlayer > m.attackRange) m.state = 'CHASE';
+                if (!canSeePlayer) {
+                    m.state = 'SEARCH'; // Lose target if player becomes stealthed
+                } else if (distanceToPlayer > m.attackRange) {
+                    m.state = 'CHASE';
+                }
                 break;
             case 'SEARCH':
-                if (canSeePlayer) m.state = 'CHASE';
-                else if (m.tileX === m.lastKnownPlayerPosition?.x && m.tileY === m.lastKnownPlayerPosition?.y) m.state = 'PATROL';
+                if (canSeePlayer) {
+                    m.state = 'CHASE';
+                } else if (m.tileX === m.lastKnownPlayerPosition?.x && m.tileY === m.lastKnownPlayerPosition?.y) {
+                    m.state = 'PATROL';
+                }
                 break;
         }
 
@@ -870,8 +879,17 @@ function getMonsterAt(x, y) {
 }
 
 function takeDamage(target, damage, isCritical, attackerType = 'player') {
-    const defenseReduction = Math.min(0.75, (target.def || 0) * 0.03);
+    let defense = target.def || 0;
+    if (target.isWeakened && Date.now() < target.weaknessEndTime) {
+        defense *= 0.75; // Reduce defense by 25%
+    }
+
+    const defenseReduction = Math.min(0.75, defense * 0.03);
     let actualDamage = Math.max(1, Math.floor(damage * (1 - defenseReduction)));
+
+    if (isCritical) {
+        actualDamage *= 2; // Double damage for critical hits
+    }
 
     if (target === player && player.hasMiniShield && player.miniShieldHP > 0) {
         const damageAbsorbed = Math.min(player.miniShieldHP, actualDamage);
@@ -983,6 +1001,8 @@ export function activateSkill(skillName) {
             const spawnY = player.tileY;
             if (isPassable(spawnX, spawnY, false, null)) {
                 const minion = createMonster('minion', spawnX, spawnY, currentFloor);
+                minion.hp = player.maxHp * 0.75;
+                minion.atk = player.atk * 0.75;
                 minion.state = 'CHASE';
                 minion.lastKnownPlayerPosition = { x: player.tileX, y: player.tileY };
                 monsters.push(minion);

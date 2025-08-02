@@ -88,8 +88,8 @@ function drawPlayer(x, y) {
         ctx.fillStyle = 'rgba(255, 215, 0, 0.3)'; 
         ctx.fillRect(drawX, drawY, tileSize, tileSize);
     }
-    if (player.stealthActive && currentTime < player.stealthEndTime) { 
-        ctx.fillStyle = 'rgba(0, 0, 0, 0.3)'; 
+    if (player.isStealthed && currentTime < player.stealthEndTime) { 
+        ctx.fillStyle = 'rgba(128, 128, 128, 0.5)'; // Efecto de invisibilidad
         ctx.fillRect(drawX, drawY, tileSize, tileSize);
     }
 
