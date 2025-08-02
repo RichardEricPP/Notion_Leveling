@@ -745,8 +745,12 @@ function performAttack() {
 
     if (projectileType) {
         let dx = player.attackDirectionX, dy = player.attackDirectionY;
-        let isCriticalProjectile = Math.random() < (0.05 + player.criticalChanceBonus);
-        projectiles.push(new Projectile(player.tileX, player.tileY, dx, dy, projectileType, 'player', player.atk, isCriticalProjectile, projectileRange));
+        let isCritical = Math.random() < (0.05 + player.criticalChanceBonus);
+        if (player.nextAttackIsCritical) {
+            isCritical = true;
+            player.nextAttackIsCritical = false;
+        }
+        projectiles.push(new Projectile(player.tileX, player.tileY, dx, dy, projectileType, 'player', player.atk, isCritical, projectileRange));
     } else {
         let targetTiles = [];
         if (player.facingDirection === 'right') targetTiles.push({ x: player.tileX + 1, y: player.tileY });
@@ -780,6 +784,10 @@ function performAttack() {
 
         monstersHit.forEach(monsterToAttack => {
             let isCritical = Math.random() < (0.05 + player.criticalChanceBonus);
+            if (player.nextAttackIsCritical) {
+                isCritical = true;
+                player.nextAttackIsCritical = false;
+            }
             takeDamage(monsterToAttack, player.atk, isCritical, 'player');
 
             if (equippedWeapon) {
@@ -932,20 +940,125 @@ export function activateSkill(skillName) {
     const skill = skills.find(s => s.name === skillName);
     if (!skill || skill.type === 'passive') return;
 
-    if (player.skillUsageThisFloor[skillName] || (skillCooldowns[skillName] && skillCooldowns[skillName] > Date.now())) {
-        ui.showMessage("Habilidad no disponible.");
+    const currentTime = Date.now();
+    if (skillCooldowns[skillName] && skillCooldowns[skillName] > currentTime) {
+        // La habilidad está en enfriamiento, no se hace nada y no se muestra mensaje.
         return;
     }
 
-    const currentTime = Date.now();
+    let skillUsed = false;
     switch (skillName) {
-        // Active skill logic here
+        case 'Sigilo':
+            player.isStealthed = true;
+            player.stealthEndTime = currentTime + 10000;
+            updateStats();
+            ui.showMessage("¡Sigilo activado!");
+            skillUsed = true;
+            break;
+        case 'Golpe Crítico':
+            player.nextAttackIsCritical = true;
+            ui.showMessage("¡El próximo ataque será crítico!");
+            skillUsed = true;
+            break;
+        case 'Teletransportación':
+            let safe = false;
+            let attempts = 0;
+            while (!safe && attempts < 100) {
+                let tx = Math.floor(Math.random() * mapWidth);
+                let ty = Math.floor(Math.random() * mapHeight);
+                if (isPassable(tx, ty) && !getMonsterAt(tx, ty)) {
+                    player.tileX = tx;
+                    player.tileY = ty;
+                    safe = true;
+                    ui.showMessage("¡Teletransportación!");
+                    revealMapAroundPlayer();
+                }
+                attempts++;
+            }
+            if (safe) skillUsed = true;
+            break;
+        case 'Invocar':
+            const spawnX = player.tileX - 1;
+            const spawnY = player.tileY;
+            if (isPassable(spawnX, spawnY, false, null)) {
+                const minion = createMonster('minion', spawnX, spawnY, currentFloor);
+                minion.state = 'CHASE';
+                minion.lastKnownPlayerPosition = { x: player.tileX, y: player.tileY };
+                monsters.push(minion);
+                ui.showMessage("¡Súbdito invocado!");
+                skillUsed = true;
+            } else {
+                ui.showMessage("No hay espacio para invocar.");
+            }
+            break;
+        case 'Regeneración':
+            const healAmount = player.maxHp * 0.75;
+            const oldHp = player.hp;
+            player.hp = Math.min(player.maxHp, player.hp + healAmount);
+            const actualHealed = player.hp - oldHp;
+            damageTexts.push({ text: `+${Math.floor(actualHealed)}`, x: player.tileX, y: player.tileY, life: 60, color: '#4CAF50', size: 20, velY: -0.01 });
+            ui.showMessage("¡Salud restaurada!");
+            skillUsed = true;
+            break;
+        case 'Velocidad':
+            player.isSpeedBoosted = true;
+            player.speedBoostEndTime = currentTime + 10000;
+            updateStats();
+            ui.showMessage("¡Velocidad aumentada!");
+            skillUsed = true;
+            break;
+        case 'Invencible':
+            player.isInvincible = true;
+            player.invincibleEndTime = currentTime + 4000;
+            ui.showMessage("¡Invencible!");
+            skillUsed = true;
+            break;
+        case 'Rayo de Hielo':
+            monsters.forEach(m => {
+                if (getDistance(player.tileX, player.tileY, m.tileX, m.tileY) < 5) {
+                    m.isFrozen = true;
+                    m.frozenEndTime = currentTime + 5000;
+                }
+            });
+            ui.showMessage("¡Enemigos congelados!");
+            skillUsed = true;
+            break;
+        case 'Suerte':
+            player.luckBoostEndTime = currentTime + 10000;
+            updateStats();
+            ui.showMessage("¡Suerte aumentada!");
+            skillUsed = true;
+            break;
+        case 'Debilidad':
+            monsters.forEach(m => {
+                if (getDistance(player.tileX, player.tileY, m.tileX, m.tileY) < 6) {
+                    m.isWeakened = true;
+                    m.weaknessEndTime = currentTime + 8000;
+                }
+            });
+            ui.showMessage("¡Enemigos debilitados!");
+            skillUsed = true;
+            break;
+        case 'Tormenta de Cuchillas':
+            const bladeDirections = [
+                {dx: 1, dy: 0}, {dx: -1, dy: 0}, {dx: 0, dy: 1}, {dx: 0, dy: -1},
+                {dx: 1, dy: 1}, {dx: 1, dy: -1}, {dx: -1, dy: 1}, {dx: -1, dy: -1}
+            ];
+            bladeDirections.forEach(dir => {
+                projectiles.push(new Projectile(
+                    player.tileX, player.tileY, dir.dx, dir.dy, 'blade', 'player',
+                    player.atk * 0.5, false, 4
+                ));
+            });
+            skillUsed = true;
+            break;
     }
 
-    if (skill.cooldown > 0) {
-        skillCooldowns[skill.name] = currentTime + skill.cooldown;
+    if (skillUsed) {
+        if (skill.cooldown > 0) {
+            skillCooldowns[skill.name] = currentTime + skill.cooldown;
+        }
     }
-    player.skillUsageThisFloor[skill.name] = true;
 }
 
 export function useItem(item) {

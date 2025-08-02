@@ -508,9 +508,6 @@ function drawHUD() {
             } else if (durationRemaining > 0) {
                 skillText += ` (${(durationRemaining/1000).toFixed(1)}s)`;
                 textColor = '#008000'; // Green for active duration
-            } else if (player.skillUsageThisFloor[equippedSkill.name]) { 
-                skillText += " (Recargando)";
-                textColor = '#909090'; 
             } else if (cooldownRemaining > 0) { 
                 skillText += ` (${(cooldownRemaining/1000).toFixed(1)}s)`;
                 textColor = '#666'; 
