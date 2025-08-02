@@ -905,10 +905,21 @@ function takeDamage(target, damage, isCritical, attackerType = 'player') {
 
     if (actualDamage > 0) target.hp -= actualDamage;
 
-    damageTexts.push({ text: Math.floor(actualDamage).toString(), x: target.tileX, y: target.tileY, life: 30, color: isCritical ? '#ff0000' : '#ffffff', size: isCritical ? 24 : 18, velY: -0.01 });
+    const damageColor = (target === player || isCritical) ? '#ff0000' : '#ffffff';
+    damageTexts.push({ text: Math.floor(actualDamage).toString(), x: target.tileX, y: target.tileY, life: 30, color: damageColor, size: isCritical ? 24 : 18, velY: -0.01 });
 
     if (isCritical && attackerType === 'player') {
         criticalHitEffects.push({ x: target.tileX, y: target.tileY, life: 15, size: 50 });
+        // Add "CRÍTICO!" text effect
+        damageTexts.push({ 
+            text: 'CRÍTICO!', 
+            x: target.tileX, 
+            y: target.tileY - 0.5, // Position it slightly above the damage number
+            life: 40, 
+            color: '#ff0000', // Red color
+            size: 28, 
+            velY: -0.015 
+        });
     }
     
     if (target === player) {
