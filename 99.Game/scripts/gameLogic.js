@@ -424,6 +424,7 @@ async function generateFloor() {
     map = Array(mapHeight).fill(0).map(() => Array(mapWidth).fill(0));
     stairLocation = { x: -1, y: -1, active: false, type: 4 };
     Object.keys(player.skillUsageThisFloor).forEach(key => delete player.skillUsageThisFloor[key]);
+    Object.keys(skillCooldowns).forEach(key => skillCooldowns[key] = 0);
     monsters.length = 0;
     revealedMap = Array(mapHeight).fill(0).map(() => Array(mapWidth).fill(false));
 
@@ -940,12 +941,12 @@ export function activateSkill(skillName) {
     const skill = skills.find(s => s.name === skillName);
     if (!skill || skill.type === 'passive') return;
 
-    const currentTime = Date.now();
-    if (skillCooldowns[skillName] && skillCooldowns[skillName] > currentTime) {
-        // La habilidad está en enfriamiento, no se hace nada y no se muestra mensaje.
+    if (player.skillUsageThisFloor[skillName]) {
+        ui.showMessage("Ya has usado esta habilidad en este piso.");
         return;
     }
 
+    const currentTime = Date.now();
     let skillUsed = false;
     switch (skillName) {
         case 'Sigilo':
@@ -1055,9 +1056,7 @@ export function activateSkill(skillName) {
     }
 
     if (skillUsed) {
-        if (skill.cooldown > 0) {
-            skillCooldowns[skill.name] = currentTime + skill.cooldown;
-        }
+        player.skillUsageThisFloor[skill.name] = true;
     }
 }
 

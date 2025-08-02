@@ -508,9 +508,9 @@ function drawHUD() {
             } else if (durationRemaining > 0) {
                 skillText += ` (${(durationRemaining/1000).toFixed(1)}s)`;
                 textColor = '#008000'; // Green for active duration
-            } else if (cooldownRemaining > 0) { 
-                skillText += ` (${(cooldownRemaining/1000).toFixed(1)}s)`;
-                textColor = '#666'; 
+            } else if (player.skillUsageThisFloor[equippedSkill.name]) {
+                skillText += " (Usada)";
+                textColor = '#909090';
             } else { 
                 skillText += ` [${index + 1}]`; 
                 textColor = '#008000'; 
