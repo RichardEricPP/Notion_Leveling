@@ -43,7 +43,7 @@ export const gearList = [
 ];
 
 export const skills = [
-    { name: 'Sigilo', type: 'active', effect: 'Te vuelves uno con las sombras, imperceptible para los monstruos durante 10 segundos.' },
+    { name: 'Sigilo', type: 'active', effect: 'Durante 7s, eres imperceptible y tu velocidad de ataque es de 0.85 por segundo.' },
     { name: 'Golpe Crítico', type: 'active', effect: 'El siguiente golpe que asestes será un 100% más devastador.' },
     { name: 'Teletransportación', type: 'active', effect: 'Desplázate instantáneamente a un punto seguro del mapa sin enemigos.' },
     { name: 'Invocar', type: 'active', effect: 'Manifiesta un súbdito leal con el 75% de tus estadísticas.' },

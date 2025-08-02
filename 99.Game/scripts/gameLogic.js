@@ -217,7 +217,12 @@ function handlePlayerInput(timestamp) {
         else if (keys.ArrowDown || keys.KeyS) { tryMove(0, 1); moved = true; }
         if (moved) lastMoveTime = timestamp;
     }
-    const attackInterval = player.equipped.weapon?.attackSpeed || 400;
+
+    let attackInterval = player.equipped.weapon?.attackSpeed || 400;
+    if (player.isStealthed && Date.now() < player.stealthEndTime) {
+        attackInterval = 850; // 0.85 attacks per second
+    }
+
     if (keys.Space && timestamp - lastAttackTime > attackInterval) {
         performAttack();
         lastAttackTime = timestamp;
@@ -969,7 +974,7 @@ export function activateSkill(skillName) {
     switch (skillName) {
         case 'Sigilo':
             player.isStealthed = true;
-            player.stealthEndTime = currentTime + 10000;
+            player.stealthEndTime = currentTime + 7000;
             updateStats();
             ui.showMessage("¡Sigilo activado!");
             skillUsed = true;
