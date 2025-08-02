@@ -1124,17 +1124,44 @@ export function equipSkill(slotType, direction) {
 
     const currentSkillName = player.equipped[slotType];
     let currentIndex = skillOptions.indexOf(currentSkillName);
-    if (currentIndex === -1) currentIndex = 0; // Default to 'None' if not found
+    if (currentIndex === -1) currentIndex = 0; // Default to 'None'
 
-    let newIndex;
-    if (direction === 'right') {
-        newIndex = (currentIndex + 1) % skillOptions.length;
-    } else { // left
-        newIndex = (currentIndex - 1 + skillOptions.length) % skillOptions.length;
-    }
+    let newIndex = currentIndex;
+    let attempts = 0;
 
-    player.equipped[slotType] = skillOptions[newIndex];
+    do {
+        if (direction === 'right') {
+            newIndex = (newIndex + 1) % skillOptions.length;
+        } else { // left
+            newIndex = (newIndex - 1 + skillOptions.length) % skillOptions.length;
+        }
 
+        const newSkillName = skillOptions[newIndex];
+
+        // Check if the new skill is already equipped in another slot
+        let isAlreadyEquipped = false;
+        if (newSkillName !== null) {
+            for (const slot in player.equipped) {
+                if (slot.startsWith('habilidad') && slot !== slotType) {
+                    if (player.equipped[slot] === newSkillName) {
+                        isAlreadyEquipped = true;
+                        break;
+                    }
+                }
+            }
+        }
+
+        if (!isAlreadyEquipped) {
+            player.equipped[slotType] = newSkillName;
+            updateStats();
+            return; // Exit after finding a valid skill
+        }
+
+        attempts++;
+    } while (attempts < skillOptions.length);
+
+    // If loop finishes, it means no valid skill was found.
+    // The equipment remains unchanged.
     updateStats();
 }
 
