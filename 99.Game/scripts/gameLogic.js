@@ -1091,13 +1091,50 @@ export function learnSkill(skill) {
 }
 
 export function equipItem(slotType, direction, specificItem = null) {
-    // Logic to equip items
+    const availableItems = player.inventory.filter(i => i.type === slotType);
+    
+    // Allow unequipping by adding a null option
+    const itemOptions = [null, ...availableItems];
+    
+    const currentItem = player.equipped[slotType];
+    let currentIndex = itemOptions.findIndex(i => i && currentItem && i.name === currentItem.name);
+    if (currentIndex === -1) currentIndex = 0; // Default to null if not found
+
+    let newIndex;
+    if (direction === 'right') {
+        newIndex = (currentIndex + 1) % itemOptions.length;
+    } else { // left
+        newIndex = (currentIndex - 1 + itemOptions.length) % itemOptions.length;
+    }
+    
+    player.equipped[slotType] = itemOptions[newIndex];
+    
     updateStats();
-    loadSprites();
+    loadSprites(); // This will internally call createPlayerSprite
 }
 
 export function equipSkill(slotType, direction) {
-    // Logic to equip skills
+    const availableSkills = player.permanentlyLearnedSkills.filter(skillName => {
+        const skill = skills.find(s => s.name === skillName);
+        return skill && skill.type !== 'passive';
+    });
+
+    // Add 'None' option to be able to unequip
+    const skillOptions = [null, ...availableSkills];
+
+    const currentSkillName = player.equipped[slotType];
+    let currentIndex = skillOptions.indexOf(currentSkillName);
+    if (currentIndex === -1) currentIndex = 0; // Default to 'None' if not found
+
+    let newIndex;
+    if (direction === 'right') {
+        newIndex = (currentIndex + 1) % skillOptions.length;
+    } else { // left
+        newIndex = (currentIndex - 1 + skillOptions.length) % skillOptions.length;
+    }
+
+    player.equipped[slotType] = skillOptions[newIndex];
+
     updateStats();
 }
 
