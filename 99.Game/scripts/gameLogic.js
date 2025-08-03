@@ -321,13 +321,13 @@ function updateMonsters(currentTime) {
             target = nearestValidTarget;
             distanceToTarget = minDistanceToValidTarget;
             canSeeTarget = hasLineOfSight(m, target) && (target.isMinion || !player.isStealthed); // Minions are always visible
-        } else { // If it's a minion, its target selection logic is already handled (targetting non-minion monsters)
+        } else { // If it's a minion, its target is the nearest enemy in aggro range, or the player.
             let nearestEnemy = null;
             let minDistanceToEnemy = Infinity;
             monsters.forEach(enemy => {
-                if (!enemy.isMinion && enemy.hp > 0) { // Target non-minion monsters that are alive
+                if (!enemy.isMinion && enemy.hp > 0) {
                     const dist = getDistance(m.tileX, m.tileY, enemy.tileX, enemy.tileY);
-                    if (dist < minDistanceToEnemy) {
+                    if (dist < m.aggroRange && dist < minDistanceToEnemy) {
                         minDistanceToEnemy = dist;
                         nearestEnemy = enemy;
                     }
@@ -336,12 +336,12 @@ function updateMonsters(currentTime) {
 
             if (nearestEnemy) {
                 target = nearestEnemy;
-                distanceToTarget = getDistance(m.tileX, m.tileY, target.tileX, target.tileY);
+                distanceToTarget = minDistanceToEnemy;
                 canSeeTarget = hasLineOfSight(m, nearestEnemy);
             } else {
-                m.state = 'PATROL';
-                m.lastActionTime = currentTime;
-                return;
+                target = player;
+                distanceToTarget = getDistance(m.tileX, m.tileY, player.tileX, player.tileY);
+                canSeeTarget = true;
             }
         }
 
@@ -414,7 +414,10 @@ function updateMonsters(currentTime) {
         // --- Attack Action ---
         if (!actionTaken && m.state === 'ATTACK') {
             if (distanceToTarget <= m.attackRange) { // Check if target is still in range
-                if (target === player) { // Only apply invulnerability check if target is player
+                if (m.isMinion && target === player) {
+                    // Minion is close to the player but should not attack.
+                    actionTaken = true; // Mark action as taken to prevent movement.
+                } else if (target === player) { // Only apply invulnerability check if target is player
                     if (currentTime - player.lastHitTime > (player.invulnerabilityTime || 0)) {
                         takeDamage(target, m.atk, false, 'monster');
                         player.lastHitTime = currentTime;
@@ -653,6 +656,13 @@ function createMonster(type, x, y, floor) {
     const floorMultiplier = 1 + (floor - 1) * 0.25;
 
     switch (type) {
+        case 'minion':
+            monster.moveSpeed = 400;
+            monster.attackSpeed = 1000;
+            monster.aggroRange = 8;
+            monster.attackRange = 1.5;
+            monster.xp = 0;
+            break;
         case 'duende':
             monster.maxHp = Math.floor((20 + floor * 4) * hpMultiplier * floorMultiplier);
             monster.atk = Math.floor((5 + floor * 2) * atkMultiplier * floorMultiplier);
@@ -1079,11 +1089,9 @@ export function activateSkill(skillName) {
                 minion.hp = minion.maxHp;
                 minion.atk = player.atk * 0.75;
                 minion.def = player.def * 0.75;
-                minion.spd = player.spd * 0.75;
-                minion.state = 'CHASE';
+                minion.spd = player.spd;
                 minion.isMinion = true;
                 minion.expirationTime = Date.now() + 15000; // Asignar tiempo de expiración
-                minion.lastKnownPlayerPosition = { x: player.tileX, y: player.tileY };
                 monsters.push(minion);
                 ui.showMessage("¡Súbdito invocado!");
 
