@@ -303,8 +303,25 @@ function updateMonsters(currentTime) {
         let distanceToTarget = getDistance(bossCenter.x, bossCenter.y, player.tileX, player.tileY);
         let canSeeTarget = hasLineOfSight(m, player) && !player.isStealthed;
 
-        if (m.isMinion) {
-            // Minions target other monsters
+        // Target selection for all monsters (including non-minions)
+        if (!m.isMinion) { // Only non-minion monsters should consider minions as targets
+            let nearestValidTarget = player; // Start with player as default
+            let minDistanceToValidTarget = getDistance(m.tileX, m.tileY, player.tileX, player.tileY);
+
+            // Check for minions as potential targets
+            monsters.forEach(ally => {
+                if (ally.isMinion && ally.hp > 0) { // Consider alive minions
+                    const dist = getDistance(m.tileX, m.tileY, ally.tileX, ally.tileY);
+                    if (dist < minDistanceToValidTarget) {
+                        minDistanceToValidTarget = dist;
+                        nearestValidTarget = ally;
+                    }
+                }
+            });
+            target = nearestValidTarget;
+            distanceToTarget = minDistanceToValidTarget;
+            canSeeTarget = hasLineOfSight(m, target) && (target.isMinion || !player.isStealthed); // Minions are always visible
+        } else { // If it's a minion, its target selection logic is already handled (targetting non-minion monsters)
             let nearestEnemy = null;
             let minDistanceToEnemy = Infinity;
             monsters.forEach(enemy => {
@@ -322,10 +339,9 @@ function updateMonsters(currentTime) {
                 distanceToTarget = getDistance(m.tileX, m.tileY, target.tileX, target.tileY);
                 canSeeTarget = hasLineOfSight(m, nearestEnemy);
             } else {
-                // If no enemies, minions can just patrol or stay put
                 m.state = 'PATROL';
-                m.lastActionTime = currentTime; // Update last action time to prevent constant attempts
-                return; // Skip further processing for this minion if no target
+                m.lastActionTime = currentTime;
+                return;
             }
         }
 
