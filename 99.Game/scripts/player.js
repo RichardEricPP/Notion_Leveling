@@ -290,7 +290,7 @@ export function updateStats() {
     if (currentSetBonuses.spd_percent) player.spd *= (1 + currentSetBonuses.spd_percent);
 
     if (player.isSpeedBoosted && currentTime < player.speedBoostEndTime) {
-        player.spd *= 1.25; 
+        player.spd *= 1.5; 
     }
 
     player.hp = Math.min(player.hp, player.maxHp);
