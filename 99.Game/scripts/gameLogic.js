@@ -418,7 +418,7 @@ function updateMonsters(currentTime) {
                     // Minion is close to the player but should not attack.
                     actionTaken = true; // Mark action as taken to prevent movement.
                 } else if (target === player) { // Only apply invulnerability check if target is player
-                    if (currentTime - player.lastHitTime > (player.invulnerabilityTime || 0)) {
+                    if (!player.isInvincible && currentTime - player.lastHitTime > (player.invulnerabilityTime || 0)) {
                         takeDamage(target, m.atk, false, 'monster');
                         player.lastHitTime = currentTime;
                         m.isAttackingPlayer = true;
@@ -1126,7 +1126,7 @@ export function activateSkill(skillName) {
             break;
         case 'Invencible':
             player.isInvincible = true;
-            player.invincibleEndTime = currentTime + 4000;
+            player.invincibleEndTime = currentTime + 3500;
             ui.showMessage("¡Invencible!");
             skillUsed = true;
             break;

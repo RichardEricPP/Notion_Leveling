@@ -49,7 +49,7 @@ export const skills = [
     { name: 'Invocar', type: 'active', effect: 'Manifiesta un súbdito leal con el 75% de tus estadísticas.' },
     { name: 'Regeneración', type: 'active', effect: 'Restaura el 75% de tu salud máxima al instante.' },
     { name: 'Velocidad', type: 'active', effect: 'Incrementa tu velocidad de movimiento en un 50% durante 10 segundos.' },
-    { name: 'Invencible', type: 'active', effect: 'Te vuelves inmune a todo daño durante 4 segundos.' },
+    { name: 'Invencible', type: 'active', effect: 'Te vuelves inmune a todo daño durante 3.5 segundos.' },
     { name: 'Rayo de Hielo', type: 'active', effect: 'Congela a todos los enemigos cercanos durante 5 segundos.' },
     { name: 'Suerte', type: 'active', effect: 'Aumenta tu probabilidad de asestar un golpe crítico en un 25% durante 10 segundos.' },
     { name: 'Debilidad', type: 'active', effect: 'Reduce la resistencia de los enemigos cercanos en un 25% durante 8 segundos.' },
