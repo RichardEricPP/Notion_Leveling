@@ -136,7 +136,7 @@ export async function setDifficultyAndStart(difficulty, startFloor = 1, baseLeve
         luckBoostEndTime: 0,
         baseSpd: 4, baseAtk: 5, baseDef: 5,
         criticalChanceBonus: 0.05,
-        invulnerabilityTime: 500,
+        invulnerabilityTime: 50,
         darkRayEnemiesDefeated: 0,
         hitsSinceLastSoulExtraction: 0,
         _furyEffectApplied: false,
@@ -1163,7 +1163,7 @@ export function activateSkill(skillName) {
             ];
             bladeDirections.forEach(dir => {
                 projectiles.push(new Projectile(
-                    player.tileX, player.tileY, dir.dx, dir.dy, 'blade', 'player',
+                    player.tileX + 0.5, player.tileY + 0.5, dir.dx, dir.dy, 'blade', 'player',
                     player.atk * 0.5, false, 4
                 ));
             });
