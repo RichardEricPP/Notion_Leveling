@@ -9,7 +9,7 @@ import {
     currentFloor, maxFloors, map, stairLocation, selectedDifficulty, 
     gameStarted, gameOver, lastGameScore, lastEnemiesDefeated, 
     finalOutcomeMessage, finalOutcomeMessageLine2, keys, screenShake, 
-    revealedMap, projectiles, damageTexts, criticalHitEffects, warMaceShockwave, skillCooldowns, mapWidth, mapHeight, tileSize,
+    revealedMap, projectiles, damageTexts, criticalHitEffects, warMaceShockwave, skillCooldowns, mapWidth, mapHeight, tileSize, iceRayEffects,
     useItem, learnSkill, equipItem, equipSkill, activateSkill
 } from './gameLogic.js';
 
@@ -340,6 +340,25 @@ function drawWarMaceShockwave(offsetX, offsetY) {
     ctx.restore();
 }
 
+function drawIceRayEffects(offsetX, offsetY) {
+    iceRayEffects.forEach(effect => {
+        if (!effect) return;
+        effect.life--;
+        const playerScreenX = effect.x * tileSize - offsetX;
+        const playerScreenY = effect.y * tileSize - offsetY;
+        const radius = (1 - effect.life / 30) * tileSize * effect.radius;
+        const alpha = effect.life / 30;
+
+        ctx.save();
+        ctx.strokeStyle = `rgba(173, 216, 230, ${alpha})`;
+        ctx.lineWidth = 3 * alpha;
+        ctx.beginPath();
+        ctx.arc(playerScreenX + tileSize / 2, playerScreenY + tileSize / 2, radius, 0, Math.PI * 2);
+        ctx.stroke();
+        ctx.restore();
+    });
+}
+
 export function drawMap() {
     offsetX = Math.max(0, Math.min(player.tileX * tileSize - gameCanvas.width / 2 + tileSize / 2, mapWidth * tileSize - gameCanvas.width));
     offsetY = Math.max(0, Math.min(player.tileY * tileSize - gameCanvas.height / 2 + tileSize / 2, mapHeight * tileSize - gameCanvas.height));
@@ -385,6 +404,7 @@ export function drawMap() {
     drawCriticalHitEffects(offsetX, offsetY); 
     drawDamageTexts(offsetX, offsetY); 
     drawWarMaceShockwave(offsetX, offsetY); 
+    drawIceRayEffects(offsetX, offsetY);
 
     ctx.restore(); 
     drawHUD(); 

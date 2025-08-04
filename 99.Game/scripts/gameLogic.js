@@ -35,6 +35,7 @@ export let revealedMap;
 export let projectiles = [];
 export let damageTexts = [];
 export let criticalHitEffects = [];
+export let iceRayEffects = [];
 export let warMaceShockwave = null;
 export let skillCooldowns = {};
 export const fixedProjectileSpeed = 0.15;
@@ -1131,6 +1132,7 @@ export function activateSkill(skillName) {
             skillUsed = true;
             break;
         case 'Rayo de Hielo':
+            iceRayEffects.push({ x: player.tileX, y: player.tileY, radius: 5, life: 30 });
             monsters.forEach(m => {
                 if (getDistance(player.tileX, player.tileY, m.tileX, m.tileY) < 5) {
                     m.isFrozen = true;
