@@ -52,7 +52,7 @@ export const skills = [
     { name: 'Invencible', type: 'active', effect: 'Te vuelves inmune a todo daño durante 3.5 segundos.' },
     { name: 'Rayo de Hielo', type: 'active', effect: 'Congela a todos los enemigos cercanos durante 5 segundos.' },
     { name: 'Suerte', type: 'active', effect: 'Aumenta tu probabilidad de asestar un golpe crítico en un 25% durante 10 segundos.' },
-    { name: 'Debilidad', type: 'active', effect: 'Reduce la resistencia de los enemigos cercanos en un 25% durante 8 segundos.' },
+    { name: 'Debilidad', type: 'active', effect: 'Reduce la resistencia de los enemigos cercanos en un 20% durante 8 segundos.' },
     { name: 'Tormenta de Cuchillas', type: 'active', effect: 'Lanzas cuchillos en todas las direcciones. Daño: 50% del ataque base por cuchillo.' }, 
     { name: 'Segundo Aliento', type: 'passive', effect: 'Una vez por partida, si mueres, revives automáticamente con 25% de salud.' } 
 ];

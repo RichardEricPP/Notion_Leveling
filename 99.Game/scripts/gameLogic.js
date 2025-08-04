@@ -954,16 +954,20 @@ function takeDamage(target, damage, isCritical, attackerType = 'player') {
     }
 
     let defense = target.def || 0;
-    if (target.isWeakened && Date.now() < target.weaknessEndTime) {
-        defense *= 0.75; // Reduce defense by 25%
-    }
-
+    
     const defenseReduction = Math.min(0.75, defense * 0.03);
-    let actualDamage = Math.max(1, Math.floor(damage * (1 - defenseReduction)));
+    let actualDamage = damage * (1 - defenseReduction);
 
     if (isCritical) {
         actualDamage *= 2; // Double damage for critical hits
     }
+
+    if (target.isWeakened && Date.now() < target.weaknessEndTime) {
+        actualDamage *= 1.20; // Apply 20% damage increase
+    }
+
+    actualDamage = Math.max(1, Math.floor(actualDamage));
+
 
     if (target === player && player.hasMiniShield && player.miniShieldHP > 0) {
         const damageAbsorbed = Math.min(player.miniShieldHP, actualDamage);
