@@ -512,30 +512,32 @@ function drawHUD() {
         let textColor = '#666'; 
         
         if (equippedSkill) {
-            const cooldownRemaining = Math.max(0, (skillCooldowns[equippedSkill.name] - currentTime));
-            let durationEndTime = 0;
-            let minion = monsters.find(m => m.isMinion);
-            switch(equippedSkill.name) {
-                case 'Sigilo': durationEndTime = player.stealthEndTime; break;
-                case 'Invencible': durationEndTime = player.invincibleEndTime; break;
-                case 'Velocidad': durationEndTime = player.speedBoostEndTime; break;
-                case 'Suerte': durationEndTime = player.luckBoostEndTime; break;
-                case 'Invocar': if (minion) durationEndTime = minion.expirationTime; break;
-            }
-            const durationRemaining = Math.max(0, (durationEndTime - currentTime));
+            if (equippedSkill.name === 'Segundo Aliento') {
+                skillText += player.secondWindUsedThisRun ? ' (Usada)' : ' (Equipada)';
+                textColor = player.secondWindUsedThisRun ? '#909090' : '#00008B';
+            } else {
+                const cooldownRemaining = Math.max(0, (skillCooldowns[equippedSkill.name] - currentTime));
+                let durationEndTime = 0;
+                let minion = monsters.find(m => m.isMinion);
+                switch(equippedSkill.name) {
+                    case 'Sigilo': durationEndTime = player.stealthEndTime; break;
+                    case 'Invencible': durationEndTime = player.invincibleEndTime; break;
+                    case 'Velocidad': durationEndTime = player.speedBoostEndTime; break;
+                    case 'Suerte': durationEndTime = player.luckBoostEndTime; break;
+                    case 'Invocar': if (minion) durationEndTime = minion.expirationTime; break;
+                }
+                const durationRemaining = Math.max(0, (durationEndTime - currentTime));
 
-            if (equippedSkill.type === 'passive') { 
-                skillText += " (Pasiva)";
-                textColor = '#00008B'; 
-            } else if (durationRemaining > 0) {
-                skillText += ` (${(durationRemaining/1000).toFixed(1)}s)`;
-                textColor = '#008000'; // Green for active duration
-            } else if (player.skillUsageThisFloor[equippedSkill.name]) {
-                skillText += " (Usada)";
-                textColor = '#909090';
-            } else { 
-                skillText += ` [${index + 1}]`; 
-                textColor = '#008000'; 
+                if (durationRemaining > 0) {
+                    skillText += ` (${(durationRemaining/1000).toFixed(1)}s)`;
+                    textColor = '#008000'; // Green for active duration
+                } else if (player.skillUsageThisFloor[equippedSkill.name]) {
+                    skillText += " (Usada)";
+                    textColor = '#909090';
+                } else { 
+                    skillText += ` [${index + 1}]`; 
+                    textColor = '#008000'; 
+                }
             }
         }
         ctx.fillStyle = textColor;
