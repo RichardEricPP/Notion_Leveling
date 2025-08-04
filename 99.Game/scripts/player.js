@@ -313,7 +313,7 @@ export function checkLevelUp() {
         player.level++; 
         player.skillPoints++;
         showMessage(`¡Subiste al Nivel ${player.level}!`);
-        player.hp = player.maxHp; 
+        player.hp = Math.min(player.maxHp, player.hp + player.maxHp * 0.10); 
     }
     updateStats(); 
 }
