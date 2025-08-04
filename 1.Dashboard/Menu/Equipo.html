@@ -1,0 +1,1048 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Creador de Personajes RPG</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Custom styles for character layers */
+        .character-layer {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: contain; /* Ensure images fit within their container */
+            transition: opacity 0.3s ease-in-out;
+        }
+
+        /* Hide message box by default */
+        #messageBox {
+            display: none;
+        }
+
+        /* Style for selected item button */
+        .item-button.selected {
+            border: 3px solid #60a5fa; /* Blue-400 */
+            box-shadow: 0 0 15px rgba(96, 165, 250, 0.6); /* Glow effect */
+        }
+
+        /* Card Flip Effect (applies to both skills and equipment) */
+        .card-container {
+            perspective: 1000px; /* Establishes the 3D context */
+            width: 100px; /* Fixed width for the card */
+            height: 120px; /* Fixed height for the card */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative; /* Needed for absolute positioning of inner elements */
+            background-color: #374151; /* gray-700 */
+            border-radius: 0.75rem; /* rounded-xl */
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06); /* shadow-md */
+            transition: transform 0.2s ease-in-out;
+            cursor: pointer;
+            padding: 0; /* Remove default button padding */
+        }
+
+        .card-container:hover {
+            transform: scale(1.05); /* hover:scale-105 */
+        }
+
+        .card-inner {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            text-align: center;
+            transition: transform 0.6s;
+            transform-style: preserve-3d;
+            border-radius: 0.75rem;
+        }
+
+        /* Class to trigger flip */
+        .card-container.flipped .card-inner {
+            transform: rotateY(180deg);
+        }
+
+        .card-front, .card-back {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            -webkit-backface-visibility: hidden; /* Safari */
+            backface-visibility: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 0.5rem;
+            border-radius: 0.75rem;
+            background-color: #374151; /* Match button background */
+        }
+
+        .card-back {
+            transform: rotateY(180deg);
+            background-color: #4b5563; /* Slightly different background for back */
+            color: #d1d5db; /* Light gray text */
+            font-size: 0.75rem; /* text-xs */
+            overflow: hidden; /* Hide overflow text */
+            text-overflow: ellipsis; /* Add ellipsis for long text */
+        }
+
+        /* Adjustments for item-button selected style for cards */
+        .item-button.selected .card-front,
+        .item-button.selected .card-back {
+            border: 3px solid #60a5fa; /* Blue-400 */
+            box-shadow: 0 0 15px rgba(96, 165, 250, 0.6); /* Glow effect */
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-gray-800 to-gray-900 text-white font-sans flex flex-col items-center justify-center min-h-screen p-4">
+
+    <div class="container mx-auto bg-gray-700 p-8 rounded-2xl shadow-2xl max-w-6xl w-full border border-gray-600">
+        <h1 class="text-4xl font-extrabold text-center mb-10 text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-cyan-600">
+            Crea Tu Héroe
+        </h1>
+
+        <div class="flex flex-col md:flex-row justify-center items-start gap-8 mb-10">
+
+            <!-- Left Equipped Items Column -->
+            <div class="flex flex-col gap-6 p-4 bg-gray-800 rounded-2xl shadow-inner border border-gray-600 w-full md:w-1/4 items-center">
+                <div class="flex flex-col items-center">
+                    <span class="text-sm text-blue-200 mb-1">Casco</span>
+                    <img id="equippedHelmetIcon" src="https://images4.imagebam.com/39/36/7b/ME13I00A_o.png" alt="" class="w-24 h-24 rounded-lg object-contain">
+                </div>
+                <div class="flex flex-col items-center">
+                    <span class="text-sm text-blue-200 mb-1">Armadura</span>
+                    <img id="equippedArmorIcon" src="https://images4.imagebam.com/39/36/7b/ME13I00A_o.png" alt="" class="w-24 h-24 rounded-lg object-contain">
+                </div>
+                <div class="flex flex-col items-center">
+                    <span class="text-sm text-blue-200 mb-1">Guantes</span>
+                    <img id="equippedGlovesIcon" src="https://images4.imagebam.com/39/36/7b/ME13I00A_o.png" alt="" class="w-24 h-24 rounded-lg object-contain">
+                </div>
+            </div>
+
+            <!-- Character Display Area (Middle) -->
+            <div class="flex flex-col items-center w-full md:w-1/2">
+                <div class="bg-gray-800 p-6 rounded-2xl flex items-center justify-center relative shadow-inner border border-gray-600 overflow-hidden w-full max-w-sm" style="min-height: 400px;">
+                    <!-- Base Character Image -->
+                    <img id="characterBase" src="https://images4.imagebam.com/48/06/a5/ME13HPUO_o.png" alt="" class="character-layer z-10">
+                    <!-- Removed all equipped item layers from here -->
+                </div>
+                <!-- Reset Button -->
+                <button id="resetButton" class="mt-6 w-full max-w-sm bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-6 rounded-xl shadow-lg transition duration-300 ease-in-out transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-opacity-75">
+                    Reiniciar Personaje
+                </button>
+            </div>
+
+            <!-- Right Equipped Items Column -->
+            <div class="flex flex-col gap-6 p-4 bg-gray-800 rounded-2xl shadow-inner border border-gray-600 w-full md:w-1/4 items-center">
+                <div class="flex flex-col items-center">
+                    <span class="text-sm text-blue-200 mb-1">Botas</span>
+                    <img id="equippedBootsIcon" src="https://images4.imagebam.com/39/36/7b/ME13I00A_o.png" alt="" class="w-24 h-24 rounded-lg object-contain">
+                </div>
+                <div class="flex flex-col items-center">
+                    <span class="text-sm text-blue-200 mb-1">Arma</span>
+                    <img id="equippedWeaponIcon" src="https://images4.imagebam.com/39/36/7b/ME13I00A_o.png" alt="" class="w-24 h-24 rounded-lg object-contain">
+                </div>
+            </div>
+        </div>
+
+        <!-- Equipped Skills Display (Below Character, above Inventory) -->
+        <div class="bg-gray-800 p-4 rounded-2xl shadow-inner border border-gray-600 mb-8 flex flex-col items-center">
+            <span class="text-lg font-semibold text-blue-200 mb-2">Habilidades Seleccionadas</span>
+            <div id="equippedSkillsIcons" class="flex flex-wrap justify-center gap-4">
+                <!-- Skill icons will be rendered here by JS -->
+            </div>
+        </div>
+
+        <!-- Inventory/Equipment Controls (Below Character) -->
+        <div class="bg-gray-800 p-6 rounded-2xl shadow-inner border border-gray-600">
+            <h2 class="text-2xl font-bold mb-6 text-blue-300 text-center">Inventario</h2>
+
+            <!-- Changed to flex-col for vertical stacking of categories -->
+            <div class="flex flex-col gap-8">
+                <!-- Helmet Section -->
+                <div class="bg-gray-700 p-6 rounded-2xl shadow-inner border border-gray-600 w-full">
+                    <h3 class="text-xl font-semibold mb-4 text-blue-300">Cascos</h3>
+                    <div id="helmet-buttons" class="grid grid-cols-4 gap-4">
+                        <button class="item-button card-container" data-slot="helmet" data-item="none">
+                            <div class="card-inner">
+                                <div class="card-front">
+                                    <img src="https://images4.imagebam.com/39/36/7b/ME13I00A_o.png" alt="" class="w-20 h-20 mb-2 rounded-lg object-contain">
+                                    <span class="text-sm text-center">Ninguno</span>
+                                </div>
+                                <div class="card-back">
+                                    <p class="text-xs text-center p-1"></p>
+                                </div>
+                            </div>
+                        </button>
+                        <button class="item-button card-container" data-slot="helmet" data-item="iron_helmet">
+                            <div class="card-inner">
+                                <div class="card-front">
+                                    <img src="https://images4.imagebam.com/de/34/f4/ME13HPW6_o.png" alt="" class="w-20 h-20 mb-2 rounded-lg object-contain">
+                                    <span class="text-sm text-center">Casco de Hierro</span>
+                                </div>
+                                <div class="card-back">
+                                    <p class="text-xs text-center p-1">+3 Defensa</p>
+                                </div>
+                            </div>
+                        </button>
+                        <button class="item-button card-container" data-slot="helmet" data-item="knight_helmet">
+                            <div class="card-inner">
+                                <div class="card-front">
+                                    <img src="https://images4.imagebam.com/6a/d9/a9/ME13I0DH_o.png" alt="" class="w-20 h-20 mb-2 rounded-lg object-contain">
+                                    <span class="text-sm text-center">Casco de Caballero</span>
+                                </div>
+                                <div class="card-back">
+                                    <p class="text-xs text-center p-1">+5 Defensa, +2 Velocidad</p>
+                                </div>
+                            </div>
+                        </button>
+                        <button class="item-button card-container" data-slot="helmet" data-item="demon_helmet">
+                            <div class="card-inner">
+                                <div class="card-front">
+                                    <img src="https://images4.imagebam.com/f6/3b/ef/ME13I0KE_o.png" alt="" class="w-20 h-20 mb-2 rounded-lg object-contain">
+                                    <span class="text-sm text-center">Casco de Demonio</span>
+                                </div>
+                                <div class="card-back">
+                                    <p class="text-xs text-center p-1">+7 Defensa, +3 Ataque</p>
+                                </div>
+                            </div>
+                        </button>
+                        <button class="item-button card-container" data-slot="helmet" data-item="lion_helmet">
+                            <div class="card-inner">
+                                <div class="card-front">
+                                    <img src="https://images4.imagebam.com/b2/83/86/ME13I0UX_o.png" alt="" class="w-20 h-20 mb-2 rounded-lg object-contain">
+                                    <span class="text-sm text-center">Casco de León</span>
+                                </div>
+                                <div class="card-back">
+                                    <p class="text-xs text-center p-1">+8 Defensa</p>
+                                </div>
+                            </div>
+                        </button>
+                        <button class="item-button card-container" data-slot="helmet" data-item="assassination_helmet">
+                            <div class="card-inner">
+                                <div class="card-front">
+                                    <img src="https://images4.imagebam.com/ad/d7/7b/ME13I0V3_o.png" alt="" class="w-20 h-20 mb-2 rounded-lg object-contain">
+                                    <span class="text-sm text-center">Casco de Asesinato</span>
+                                </div>
+                                <div class="card-back">
+                                    <p class="text-xs text-center p-1">+4 Velocidad, +3 Crítico</p>
+                                </div>
+                            </div>
+                        </button>
+                        <button class="item-button card-container" data-slot="helmet" data-item="noble_helmet">
+                            <div class="card-inner">
+                                <div class="card-front">
+                                    <img src="https://images4.imagebam.com/a1/b6/79/ME13I0V9_o.png" alt="" class="w-20 h-20 mb-2 rounded-lg object-contain">
+                                    <span class="text-sm text-center">Casco de Noble</span>
+                                </div>
+                                <div class="card-back">
+                                    <p class="text-xs text-center p-1">+4 Defensa</p>
+                                </div>
+                            </div>
+                        </button>
+                        <button class="item-button card-container" data-slot="helmet" data-item="mage_helmet">
+                            <div class="card-inner">
+                                <div class="card-front">
+                                    <img src="https://images4.imagebam.com/00/b1/f6/ME13I0VF_o.png" alt="" class="w-20 h-20 mb-2 rounded-lg object-contain">
+                                    <span class="text-sm text-center">Casco de Mago</span>
+                                </div>
+                                <div class="card-back">
+                                    <p class="text-xs text-center p-1">+3 Defensa</p>
+                                </div>
+                            </div>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Armor Section -->
+                <div class="bg-gray-700 p-6 rounded-2xl shadow-inner border border-gray-600 w-full">
+                    <h3 class="text-xl font-semibold mb-4 text-blue-300">Armaduras</h3>
+                    <div id="armor-buttons" class="grid grid-cols-4 gap-4">
+                        <button class="item-button card-container" data-slot="armor" data-item="none">
+                            <div class="card-inner">
+                                <div class="card-front">
+                                    <img src="https://images4.imagebam.com/39/36/7b/ME13I00A_o.png" alt="" class="w-20 h-20 mb-2 rounded-lg object-contain">
+                                    <span class="text-sm text-center">Ninguna</span>
+                                </div>
+                                <div class="card-back">
+                                    <p class="text-xs text-center p-1"></p>
+                                </div>
+                            </div>
+                        </button>
+                        <button class="item-button card-container" data-slot="armor" data-item="iron_armor">
+                            <div class="card-inner">
+                                <div class="card-front">
+                                    <img src="https://images4.imagebam.com/6b/9a/7f/ME13HTTA_o.png" alt="" class="w-20 h-20 mb-2 rounded-lg object-contain">
+                                    <span class="text-sm text-center">Armadura de Hierro</span>
+                                </div>
+                                <div class="card-back">
+                                    <p class="text-xs text-center p-1">+6 Defensa</p>
+                                </div>
+                            </div>
+                        </button>
+                        <button class="item-button card-container" data-slot="armor" data-item="knight_armor">
+                            <div class="card-inner">
+                                <div class="card-front">
+                                    <img src="https://images4.imagebam.com/eb/b9/a2/ME13I0DG_o.png" alt="" class="w-20 h-20 mb-2 rounded-lg object-contain">
+                                    <span class="text-sm text-center">Armadura de Caballero</span>
+                                </div>
+                                <div class="card-back">
+                                    <p class="text-xs text-center p-1">+8 Defensa, +2 Velocidad</p>
+                                </div>
+                            </div>
+                        </button>
+                        <button class="item-button card-container" data-slot="armor" data-item="demon_armor">
+                            <div class="card-inner">
+                                <div class="card-front">
+                                    <img src="https://images4.imagebam.com/71/32/e7/ME13I0KH_o.png" alt="" class="w-20 h-20 mb-2 rounded-lg object-contain">
+                                    <span class="text-sm text-center">Armadura de Demonio</span>
+                                </div>
+                                <div class="card-back">
+                                    <p class="text-xs text-center p-1">+10 Defensa, +4 Ataque</p>
+                                </div>
+                            </div>
+                        </button>
+                        <button class="item-button card-container" data-slot="armor" data-item="lion_armor">
+                            <div class="card-inner">
+                                <div class="card-front">
+                                    <img src="https://images4.imagebam.com/11/ea/74/ME13I0UY_o.png" alt="" class="w-20 h-20 mb-2 rounded-lg object-contain">
+                                    <span class="text-sm text-center">Armadura de León</span>
+                                </div>
+                                <div class="card-back">
+                                    <p class="text-xs text-center p-1">+9 Defensa</p>
+                                </div>
+                            </div>
+                        </button>
+                        <button class="item-button card-container" data-slot="armor" data-item="assassination_armor">
+                            <div class="card-inner">
+                                <div class="card-front">
+                                    <img src="https://images4.imagebam.com/98/18/8c/ME13I0V4_o.png" alt="" class="w-20 h-20 mb-2 rounded-lg object-contain">
+                                    <span class="text-sm text-center">Armadura de Asesinato</span>
+                                </div>
+                                <div class="card-back">
+                                    <p class="text-xs text-center p-1">+6 Velocidad, +4 Crítico</p>
+                                </div>
+                            </div>
+                        </button>
+                        <button class="item-button card-container" data-slot="armor" data-item="noble_armor">
+                            <div class="card-inner">
+                                <div class="card-front">
+                                    <img src="https://images4.imagebam.com/50/8e/7b/ME13I0VA_o.png" alt="" class="w-20 h-20 mb-2 rounded-lg object-contain">
+                                    <span class="text-sm text-center">Armadura de Noble</span>
+                                </div>
+                                <div class="card-back">
+                                    <p class="text-xs text-center p-1">+7 Defensa</p>
+                                </div>
+                            </div>
+                        </button>
+                        <button class="item-button card-container" data-slot="armor" data-item="mage_armor">
+                            <div class="card-inner">
+                                <div class="card-front">
+                                    <img src="https://images4.imagebam.com/38/46/40/ME13I0VG_o.png" alt="" class="w-20 h-20 mb-2 rounded-lg object-contain">
+                                    <span class="text-sm text-center">Armadura de Mago</span>
+                                </div>
+                                <div class="card-back">
+                                    <p class="text-xs text-center p-1">+5 Defensa</p>
+                                </div>
+                            </div>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Gloves Section -->
+                <div class="bg-gray-700 p-6 rounded-2xl shadow-inner border border-gray-600 w-full">
+                    <h3 class="text-xl font-semibold mb-4 text-blue-300">Guantes</h3>
+                    <div id="gloves-buttons" class="grid grid-cols-4 gap-4">
+                        <button class="item-button card-container" data-slot="gloves" data-item="none">
+                            <div class="card-inner">
+                                <div class="card-front">
+                                    <img src="https://images4.imagebam.com/39/36/7b/ME13I00A_o.png" alt="" class="w-20 h-20 mb-2 rounded-lg object-contain">
+                                    <span class="text-sm text-center">Ninguno</span>
+                                </div>
+                                <div class="card-back">
+                                    <p class="text-xs text-center p-1"></p>
+                                </div>
+                            </div>
+                        </button>
+                        <button class="item-button card-container" data-slot="gloves" data-item="iron_gloves">
+                            <div class="card-inner">
+                                <div class="card-front">
+                                    <img src="https://images4.imagebam.com/2e/ca/1f/ME13HTQA_o.png" alt="" class="w-20 h-20 mb-2 rounded-lg object-contain">
+                                    <span class="text-sm text-center">Guantes de Hierro</span>
+                                </div>
+                                <div class="card-back">
+                                    <p class="text-xs text-center p-1">+3 Ataque</p>
+                                </div>
+                            </div>
+                        </button>
+                        <button class="item-button card-container" data-slot="gloves" data-item="knight_gloves">
+                            <div class="card-inner">
+                                <div class="card-front">
+                                    <img src="https://images4.imagebam.com/cc/c5/5e/ME13I0DI_o.png" alt="" class="w-20 h-20 mb-2 rounded-lg object-contain">
+                                    <span class="text-sm text-center">Guantes de Caballero</span>
+                                </div>
+                                <div class="card-back">
+                                    <p class="text-xs text-center p-1">+4 Ataque, +1 Defensa</p>
+                                </div>
+                            </div>
+                        </button>
+                        <button class="item-button card-container" data-slot="gloves" data-item="demon_gloves">
+                            <div class="card-inner">
+                                <div class="card-front">
+                                    <img src="https://images4.imagebam.com/52/eb/91/ME13I0KJ_o.png" alt="" class="w-20 h-20 mb-2 rounded-lg object-contain">
+                                    <span class="text-sm text-center">Guantes de Demonio</span>
+                                </div>
+                                <div class="card-back">
+                                    <p class="text-xs text-center p-1">+6 Ataque, +2 Velocidad</p>
+                                </div>
+                            </div>
+                        </button>
+                        <button class="item-button card-container" data-slot="gloves" data-item="lion_gloves">
+                            <div class="card-inner">
+                                <div class="card-front">
+                                    <img src="https://images4.imagebam.com/28/54/49/ME13I0V0_o.png" alt="" class="w-20 h-20 mb-2 rounded-lg object-contain">
+                                    <span class="text-sm text-center">Guantes de León</span>
+                                </div>
+                                <div class="card-back">
+                                    <p class="text-xs text-center p-1">+5 Ataque</p>
+                                </div>
+                            </div>
+                        </button>
+                        <button class="item-button card-container" data-slot="gloves" data-item="assassination_gloves">
+                            <div class="card-inner">
+                                <div class="card-front">
+                                    <img src="https://images4.imagebam.com/a3/a6/35/ME13I0V7_o.png" alt="" class="w-20 h-20 mb-2 rounded-lg object-contain">
+                                    <span class="text-sm text-center">Guantes de Asesinato</span>
+                                </div>
+                                <div class="card-back">
+                                    <p class="text-xs text-center p-1">+5 Crítico, +3 Velocidad</p>
+                                </div>
+                            </div>
+                        </button>
+                        <button class="item-button card-container" data-slot="gloves" data-item="noble_gloves">
+                            <div class="card-inner">
+                                <div class="card-front">
+                                    <img src="https://images4.imagebam.com/ca/68/8b/ME13I0VD_o.png" alt="" class="w-20 h-20 mb-2 rounded-lg object-contain">
+                                    <span class="text-sm text-center">Guantes de Noble</span>
+                                </div>
+                                <div class="card-back">
+                                    <p class="text-xs text-center p-1">+3 Ataque</p>
+                                </div>
+                            </div>
+                        </button>
+                        <button class="item-button card-container" data-slot="gloves" data-item="mage_gloves">
+                            <div class="card-inner">
+                                <div class="card-front">
+                                    <img src="https://images4.imagebam.com/2c/29/01/ME13I0VH_o.png" alt="" class="w-20 h-20 mb-2 rounded-lg object-contain">
+                                    <span class="text-sm text-center">Guantes de Mago</span>
+                                </div>
+                                <div class="card-back">
+                                    <p class="text-xs text-center p-1">+2 Velocidad</p>
+                                </div>
+                            </div>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Boots Section -->
+                <div class="bg-gray-700 p-6 rounded-2xl shadow-inner border border-gray-600 w-full">
+                    <h3 class="text-xl font-semibold mb-4 text-blue-300">Botas</h3>
+                    <div id="boots-buttons" class="grid grid-cols-4 gap-4">
+                        <button class="item-button card-container" data-slot="boots" data-item="none">
+                            <div class="card-inner">
+                                <div class="card-front">
+                                    <img src="https://images4.imagebam.com/39/36/7b/ME13I00A_o.png" alt="" class="w-20 h-20 mb-2 rounded-lg object-contain">
+                                    <span class="text-sm text-center">Ninguno</span>
+                                </div>
+                                <div class="card-back">
+                                    <p class="text-xs text-center p-1"></p>
+                                </div>
+                            </div>
+                        </button>
+                        <button class="item-button card-container" data-slot="boots" data-item="iron_boots">
+                            <div class="card-inner">
+                                <div class="card-front">
+                                    <img src="https://images4.imagebam.com/37/09/04/ME13HTNB_o.png" alt="" class="w-20 h-20 mb-2 rounded-lg object-contain">
+                                    <span class="text-sm text-center">Botas de Hierro</span>
+                                </div>
+                                <div class="card-back">
+                                    <p class="text-xs text-center p-1">+3 Velocidad</p>
+                                </div>
+                            </div>
+                        </button>
+                        <button class="item-button card-container" data-slot="boots" data-item="knight_boots">
+                            <div class="card-inner">
+                                <div class="card-front">
+                                    <img src="https://images4.imagebam.com/39/47/40/ME13I0DF_o.png" alt="" class="w-20 h-20 mb-2 rounded-lg object-contain">
+                                    <span class="text-sm text-center">Botas de Caballero</span>
+                                </div>
+                                <div class="card-back">
+                                    <p class="text-xs text-center p-1">+5 Velocidad, +1 Defensa</p>
+                                </div>
+                            </div>
+                        </button>
+                        <button class="item-button card-container" data-slot="boots" data-item="demon_boots">
+                            <div class="card-inner">
+                                <div class="card-front">
+                                    <img src="https://images4.imagebam.com/cb/f1/65/ME13I0KL_o.png" alt="" class="w-20 h-20 mb-2 rounded-lg object-contain">
+                                    <span class="text-sm text-center">Botas de Demonio</span>
+                                </div>
+                                <div class="card-back">
+                                    <p class="text-xs text-center p-1">+7 Velocidad, +2 Ataque</p>
+                                </div>
+                            </div>
+                        </button>
+                        <button class="item-button card-container" data-slot="boots" data-item="lion_boots">
+                            <div class="card-inner">
+                                <div class="card-front">
+                                    <img src="https://images4.imagebam.com/91/fd/2b/ME13I0V1_o.png" alt="" class="w-20 h-20 mb-2 rounded-lg object-contain">
+                                    <span class="text-sm text-center">Botas de León</span>
+                                </div>
+                                <div class="card-back">
+                                    <p class="text-xs text-center p-1">+8 Velocidad</p>
+                                </div>
+                            </div>
+                        </button>
+                        <button class="item-button card-container" data-slot="boots" data-item="assassination_boots">
+                            <div class="card-inner">
+                                <div class="card-front">
+                                    <img src="https://images4.imagebam.com/14/2c/da/ME13I0V8_o.png" alt="" class="w-20 h-20 mb-2 rounded-lg object-contain">
+                                    <span class="text-sm text-center">Botas de Asesinato</span>
+                                </div>
+                                <div class="card-back">
+                                    <p class="text-xs text-center p-1">+9 Velocidad</p>
+                                </div>
+                            </div>
+                        </button>
+                        <button class="item-button card-container" data-slot="boots" data-item="noble_boots">
+                            <div class="card-inner">
+                                <div class="card-front">
+                                    <img src="https://images4.imagebam.com/4b/e5/f8/ME13I0VE_o.png" alt="" class="w-20 h-20 mb-2 rounded-lg object-contain">
+                                    <span class="text-sm text-center">Botas de Noble</span>
+                                </div>
+                                <div class="card-back">
+                                    <p class="text-xs text-center p-1">+4 Velocidad</p>
+                                </div>
+                            </div>
+                        </button>
+                        <button class="item-button card-container" data-slot="boots" data-item="mage_boots">
+                            <div class="card-inner">
+                                <div class="card-front">
+                                    <img src="https://images4.imagebam.com/2b/b5/d3/ME13I0VI_o.png" alt="" class="w-20 h-20 mb-2 rounded-lg object-contain">
+                                    <span class="text-sm text-center">Botas de Mago</span>
+                                </div>
+                                <div class="card-back">
+                                    <p class="text-xs text-center p-1">+6 Velocidad</p>
+                                </div>
+                            </div>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Weapon Section -->
+                <div class="bg-gray-700 p-6 rounded-2xl shadow-inner border border-gray-600 w-full">
+                    <h3 class="text-xl font-semibold mb-4 text-blue-300">Armas</h3>
+                    <div id="weapon-buttons" class="grid grid-cols-4 gap-4">
+                        <button class="item-button card-container" data-slot="weapon" data-item="none">
+                            <div class="card-inner">
+                                <div class="card-front">
+                                    <img src="https://images4.imagebam.com/39/36/7b/ME13I00A_o.png" alt="" class="w-20 h-20 mb-2 rounded-lg object-contain">
+                                    <span class="text-sm text-center">Ninguna</span>
+                                </div>
+                                <div class="card-back">
+                                    <p class="text-xs text-center p-1"></p>
+                                </div>
+                            </div>
+                        </button>
+                        <button class="item-button card-container" data-slot="weapon" data-item="colossal_shield">
+                            <div class="card-inner">
+                                <div class="card-front">
+                                    <img src="https://images4.imagebam.com/91/32/4f/ME13I1SP_o.png" alt="" class="w-20 h-20 mb-2 rounded-lg object-contain">
+                                    <span class="text-sm text-center">Escudo Colosal</span>
+                                </div>
+                                <div class="card-back">
+                                    <p class="text-xs text-center p-1">+10 Defensa</p>
+                                </div>
+                            </div>
+                        </button>
+                        <button class="item-button card-container" data-slot="weapon" data-item="war_mace">
+                            <div class="card-inner">
+                                <div class="card-front">
+                                    <img src="https://images4.imagebam.com/ae/e5/90/ME13I1SQ_o.png" alt="" class="w-20 h-20 mb-2 rounded-lg object-contain">
+                                    <span class="text-sm text-center">Maza de Guerra</span>
+                                </div>
+                                <div class="card-back">
+                                    <p class="text-xs text-center p-1">+9 Ataque</p>
+                                </div>
+                            </div>
+                        </button>
+                        <button class="item-button card-container" data-slot="weapon" data-item="light_sword">
+                            <div class="card-inner">
+                                <div class="card-front">
+                                    <img src="https://images4.imagebam.com/ca/a7/f7/ME13I1SR_o.png" alt="" class="w-20 h-20 mb-2 rounded-lg object-contain">
+                                    <span class="text-sm text-center">Espada de Luz</span>
+                                </div>
+                                <div class="card-back">
+                                    <p class="text-xs text-center p-1">+7 Ataque, +3 Velocidad</p>
+                                </div>
+                            </div>
+                        </button>
+                        <button class="item-button card-container" data-slot="weapon" data-item="celestial_book">
+                            <div class="card-inner">
+                                <div class="card-front">
+                                    <img src="https://images4.imagebam.com/cd/bf/f2/ME13I1SS_o.png" alt="" class="w-20 h-20 mb-2 rounded-lg object-contain">
+                                    <span class="text-sm text-center">Libro Celestial</span>
+                                </div>
+                                <div class="card-back">
+                                    <p class="text-xs text-center p-1">+5 Ataque, +4 Velocidad</p>
+                                </div>
+                            </div>
+                        </button>
+                        <button class="item-button card-container" data-slot="weapon" data-item="darkness_ray">
+                            <div class="card-inner">
+                                <div class="card-front">
+                                    <img src="https://images4.imagebam.com/74/c2/3a/ME13I1ST_o.png" alt="" class="w-20 h-20 mb-2 rounded-lg object-contain">
+                                    <span class="text-sm text-center">Rayo de Oscuridad</span>
+                                </div>
+                                <div class="card-back">
+                                    <p class="text-xs text-center p-1">+7 Ataque, +3 Crítico</p>
+                                </div>
+                            </div>
+                        </button>
+                        <button class="item-button card-container" data-slot="weapon" data-item="power_dagger">
+                            <div class="card-inner">
+                                <div class="card-front">
+                                    <img src="https://images4.imagebam.com/61/cc/e7/ME13I1SU_o.png" alt="" class="w-20 h-20 mb-2 rounded-lg object-contain">
+                                    <span class="text-sm text-center">Daga de Poder</span>
+                                </div>
+                                <div class="card-back">
+                                    <p class="text-xs text-center p-1">+6 Ataque, +4 Velocidad</p>
+                                </div>
+                            </div>
+                        </button>
+                        <button class="item-button card-container" data-slot="weapon" data-item="forest_bow">
+                            <div class="card-inner">
+                                <div class="card-front">
+                                    <img src="https://images4.imagebam.com/b9/79/dc/ME13I1SV_o.png" alt="" class="w-20 h-20 mb-2 rounded-lg object-contain">
+                                    <span class="text-sm text-center">Arco del Bosque</span>
+                                </div>
+                                <div class="card-back">
+                                    <p class="text-xs text-center p-1">+6 Ataque, +4 Crítico</p>
+                                </div>
+                            </div>
+                        </button>
+                        <button class="item-button card-container" data-slot="weapon" data-item="frozen_scythe">
+                            <div class="card-inner">
+                                <div class="card-front">
+                                    <img src="https://images4.imagebam.com/f0/da/a7/ME13I1SW_o.png" alt="" class="w-20 h-20 mb-2 rounded-lg object-contain">
+                                    <span class="text-sm text-center">Guadaña Helada</span>
+                                </div>
+                                <div class="card-back">
+                                    <p class="text-xs text-center p-1">+8 Ataque</p>
+                                </div>
+                            </div>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Skills Section -->
+                <div class="bg-gray-700 p-6 rounded-2xl shadow-inner border border-gray-600 w-full">
+                    <h3 class="text-xl font-semibold mb-4 text-blue-300">Habilidades</h3>
+                    <div id="skills-buttons" class="grid grid-cols-4 gap-4">
+                        <!-- Skill buttons with flip effect -->
+                        <button class="item-button card-container" data-slot="skills" data-item="stealth">
+                            <div class="card-inner">
+                                <div class="card-front">
+                                    <img src="https://images4.imagebam.com/b5/e0/51/ME13J7QB_o.png" alt="" class="w-20 h-20 mb-2 rounded-lg object-contain">
+                                    <span class="text-sm text-center">Sigilo</span>
+                                </div>
+                                <div class="card-back">
+                                    <p class="text-xs text-center p-1">Te vuelves uno con las sombras, imperceptible para los monstruos durante 7 segundos.</p>
+                                </div>
+                            </div>
+                        </button>
+                        <button class="item-button card-container" data-slot="skills" data-item="critical_hit">
+                            <div class="card-inner">
+                                <div class="card-front">
+                                    <img src="https://images4.imagebam.com/8e/e4/d7/ME13J7QC_o.png" alt="" class="w-20 h-20 mb-2 rounded-lg object-contain">
+                                    <span class="text-sm text-center">Golpe Crítico</span>
+                                </div>
+                                <div class="card-back">
+                                    <p class="text-xs text-center p-1">El siguiente golpe que asestes será un 50% más devastador.</p>
+                                </div>
+                            </div>
+                        </button>
+                        <button class="item-button card-container" data-slot="skills" data-item="teleportation">
+                            <div class="card-inner">
+                                <div class="card-front">
+                                    <img src="https://images4.imagebam.com/9d/ef/8f/ME13J7QD_o.png" alt="" class="w-20 h-20 mb-2 rounded-lg object-contain">
+                                    <span class="text-sm text-center">Teletransportación</span>
+                                </div>
+                                <div class="card-back">
+                                    <p class="text-xs text-center p-1">Desplázate instantáneamente a un punto aleatorio del mapa.</p>
+                                </div>
+                            </div>
+                        </button>
+                        <button class="item-button card-container" data-slot="skills" data-item="summon">
+                            <div class="card-inner">
+                                <div class="card-front">
+                                    <img src="https://images4.imagebam.com/84/38/a5/ME13J7QF_o.png" alt="" class="w-20 h-20 mb-2 rounded-lg object-contain">
+                                    <span class="text-sm text-center">Invocar</span>
+                                </div>
+                                <div class="card-back">
+                                    <p class="text-xs text-center p-1">Manifiesta un súbdito leal con el 25% de tus estadísticas.</p>
+                                </div>
+                            </div>
+                        </button>
+                        <button class="item-button card-container" data-slot="skills" data-item="regeneration">
+                            <div class="card-inner">
+                                <div class="card-front">
+                                    <img src="https://images4.imagebam.com/07/7b/1b/ME13J7QG_o.png" alt="" class="w-20 h-20 mb-2 rounded-lg object-contain">
+                                    <span class="text-sm text-center">Regeneración</span>
+                                </div>
+                                <div class="card-back">
+                                    <p class="text-xs text-center p-1">Restaura el 50% de tu salud máxima al instante.</p>
+                                </div>
+                            </div>
+                        </button>
+                        <button class="item-button card-container" data-slot="skills" data-item="speed">
+                            <div class="card-inner">
+                                <div class="card-front">
+                                    <img src="https://images4.imagebam.com/b4/77/6f/ME13J7QH_o.png" alt="" class="w-20 h-20 mb-2 rounded-lg object-contain">
+                                    <span class="text-sm text-center">Velocidad</span>
+                                </div>
+                                <div class="card-back">
+                                    <p class="text-xs text-center p-1">Incrementa tu velocidad de movimiento en un 10%.</p>
+                                </div>
+                            </div>
+                        </button>
+                        <button class="item-button card-container" data-slot="skills" data-item="invincible">
+                            <div class="card-inner">
+                                <div class="card-front">
+                                    <img src="https://images4.imagebam.com/6d/5d/02/ME13J7QJ_o.png" alt="" class="w-20 h-20 mb-2 rounded-lg object-contain">
+                                    <span class="text-sm text-center">Invencible</span>
+                                </div>
+                                <div class="card-back">
+                                    <p class="text-xs text-center p-1">Te vuelves inmune a todo daño durante 3 segundos.</p>
+                                </div>
+                            </div>
+                        </button>
+                        <button class="item-button card-container" data-slot="skills" data-item="ice_ray">
+                            <div class="card-inner">
+                                <div class="card-front">
+                                    <img src="https://images4.imagebam.com/ea/39/04/ME13J7QK_o.png" alt="" class="w-20 h-20 mb-2 rounded-lg object-contain">
+                                    <span class="text-sm text-center">Rayo de Hielo</span>
+                                </div>
+                                <div class="card-back">
+                                    <p class="text-xs text-center p-1">Congela a un enemigo en su lugar durante 5 segundos.</p>
+                                </div>
+                            </div>
+                        </button>
+                        <button class="item-button card-container" data-slot="skills" data-item="luck">
+                            <div class="card-inner">
+                                <div class="card-front">
+                                    <img src="https://images4.imagebam.com/cc/45/2c/ME13J7QL_o.png" alt="" class="w-20 h-20 mb-2 rounded-lg object-contain">
+                                    <span class="text-sm text-center">Suerte</span>
+                                </div>
+                                <div class="card-back">
+                                    <p class="text-xs text-center p-1">Aumenta tu probabilidad de asestar un golpe crítico en un 5%.</p>
+                                </div>
+                            </div>
+                        </button>
+                        <button class="item-button card-container" data-slot="skills" data-item="weakness">
+                            <div class="card-inner">
+                                <div class="card-front">
+                                    <img src="https://images4.imagebam.com/c3/e7/67/ME13J7QM_o.png" alt="" class="w-20 h-20 mb-2 rounded-lg object-contain">
+                                    <span class="text-sm text-center">Debilidad</span>
+                                </div>
+                                <div class="card-back">
+                                    <p class="text-xs text-center p-1">Reduce la resistencia de los enemigos en un 5%.</p>
+                                </div>
+                            </div>
+                        </button>
+                        <button class="item-button card-container" data-slot="skills" data-item="fury">
+                            <div class="card-inner">
+                                <div class="card-front">
+                                    <img src="https://images4.imagebam.com/44/a4/49/ME13J7QO_o.png" alt="" class="w-20 h-20 mb-2 rounded-lg object-contain">
+                                    <span class="text-sm text-center">Furia</span>
+                                </div>
+                                <div class="card-back">
+                                    <p class="text-xs text-center p-1">Duplica tu ataque cuando tu salud desciende al 25% o menos.</p>
+                                </div>
+                            </div>
+                        </button>
+                        <button class="item-button card-container" data-slot="skills" data-item="soul_extraction">
+                            <div class="card-inner">
+                                <div class="card-front">
+                                    <img src="https://images4.imagebam.com/e7/9b/a4/ME13J7QP_o.png" alt="" class="w-20 h-20 mb-2 rounded-lg object-contain">
+                                    <span class="text-sm text-center">Extracción de Almas</span>
+                                </div>
+                                <div class="card-back">
+                                    <p class="text-xs text-center p-1">Recupera salud por cada 5 golpes exitosos que asestes.</p>
+                                </div>
+                            </div>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Message Box -->
+    <div id="messageBox" class="fixed bottom-8 left-1/2 -translate-x-1/2 bg-blue-600 text-white px-6 py-3 rounded-lg shadow-xl z-50 transition-all duration-300 ease-in-out transform scale-0 opacity-0">
+        ¡Item equipado!
+    </div>
+
+    <script>
+        // Define character and item data
+        const character = {
+            name: "Héroe Anónimo",
+            level: 1,
+            health: 100,
+            attack: 10,
+            defense: 5,
+            equipped: {
+                helmet: "none",
+                armor: "none",
+                gloves: "none",
+                boots: "none",
+                weapon: "none"
+            },
+            selectedSkills: [] // New property for selected skills
+        };
+
+        // Item data with image URLs for display and small icons for buttons
+        const items = {
+            helmet: {
+                none: { src: "https://images4.imagebam.com/39/36/7b/ME13I00A_o.png", text: "Sin Casco", icon: "https://images4.imagebam.com/39/36/7b/ME13I00A_o.png", description: "" },
+                iron_helmet: { src: "https://images4.imagebam.com/de/34/f4/ME13HPW6_o.png", text: "Casco de Hierro", icon: "https://images4.imagebam.com/de/34/f4/ME13HPW6_o.png", description: "+3 Defensa" },
+                knight_helmet: { src: "https://images4.imagebam.com/6a/d9/a9/ME13I0DH_o.png", text: "Casco de Caballero", icon: "https://images4.imagebam.com/6a/d9/a9/ME13I0DH_o.png", description: "+5 Defensa, +2 Velocidad" },
+                demon_helmet: { src: "https://images4.imagebam.com/f6/3b/ef/ME13I0KE_o.png", text: "Casco de Demonio", icon: "https://images4.imagebam.com/f6/3b/ef/ME13I0KE_o.png", description: "+7 Defensa, +3 Ataque" },
+                lion_helmet: { src: "https://images4.imagebam.com/b2/83/86/ME13I0UX_o.png", text: "Casco de León", icon: "https://images4.imagebam.com/b2/83/86/ME13I0UX_o.png", description: "+8 Defensa" },
+                assassination_helmet: { src: "https://images4.imagebam.com/ad/d7/7b/ME13I0V3_o.png", text: "Casco de Asesinato", icon: "https://images4.imagebam.com/ad/d7/7b/ME13I0V3_o.png", description: "+4 Velocidad, +3 Crítico" },
+                noble_helmet: { src: "https://images4.imagebam.com/a1/b6/79/ME13I0V9_o.png", text: "Casco de Noble", icon: "https://images4.imagebam.com/a1/b6/79/ME13I0V9_o.png", description: "+4 Defensa" },
+                mage_helmet: { src: "https://images4.imagebam.com/00/b1/f6/ME13I0VF_o.png", text: "Casco de Mago", icon: "https://images4.imagebam.com/00/b1/f6/ME13I0VF_o.png", description: "+3 Defensa" }
+            },
+            armor: {
+                none: { src: "https://images4.imagebam.com/39/36/7b/ME13I00A_o.png", text: "Sin Armadura", icon: "https://images4.imagebam.com/39/36/7b/ME13I00A_o.png", description: "" },
+                iron_armor: { src: "https://images4.imagebam.com/6b/9a/7f/ME13HTTA_o.png", text: "Armadura de Hierro", icon: "https://images4.imagebam.com/6b/9a/7f/ME13HTTA_o.png", description: "+6 Defensa" },
+                knight_armor: { src: "https://images4.imagebam.com/eb/b9/a2/ME13I0DG_o.png", text: "Armadura de Caballero", icon: "https://images4.imagebam.com/eb/b9/a2/ME13I0DG_o.png", description: "+8 Defensa, +2 Velocidad" },
+                demon_armor: { src: "https://images4.imagebam.com/71/32/e7/ME13I0KH_o.png", text: "Armadura de Demonio", icon: "https://images4.imagebam.com/71/32/e7/ME13I0KH_o.png", description: "+10 Defensa, +4 Ataque" },
+                lion_armor: { src: "https://images4.imagebam.com/11/ea/74/ME13I0UY_o.png", text: "Armadura de León", icon: "https://images4.imagebam.com/11/ea/74/ME13I0UY_o.png", description: "+9 Defensa" },
+                assassination_armor: { src: "https://images4.imagebam.com/98/18/8c/ME13I0V4_o.png", text: "Armadura de Asesinato", icon: "https://images4.imagebam.com/98/18/8c/ME13I0V4_o.png", description: "+6 Velocidad, +4 Crítico" },
+                noble_armor: { src: "https://images4.imagebam.com/50/8e/7b/ME13I0VA_o.png", text: "Armadura de Noble", icon: "https://images4.imagebam.com/50/8e/7b/ME13I0VA_o.png", description: "+7 Defensa" },
+                mage_armor: { src: "https://images4.imagebam.com/38/46/40/ME13I0VG_o.png", text: "Armadura de Mago", icon: "https://images4.imagebam.com/38/46/40/ME13I0VG_o.png", description: "+5 Defensa" }
+            },
+            gloves: {
+                none: { src: "https://images4.imagebam.com/39/36/7b/ME13I00A_o.png", text: "Sin Guantes", icon: "https://images4.imagebam.com/39/36/7b/ME13I00A_o.png", description: "" },
+                iron_gloves: { src: "https://images4.imagebam.com/2e/ca/1f/ME13HTQA_o.png", text: "Guantes de Hierro", icon: "https://images4.imagebam.com/2e/ca/1f/ME13HTQA_o.png", description: "+3 Ataque" },
+                knight_gloves: { src: "https://images4.imagebam.com/cc/c5/5e/ME13I0DI_o.png", text: "Guantes de Caballero", icon: "https://images4.imagebam.com/cc/c5/5e/ME13I0DI_o.png", description: "+4 Ataque, +1 Defensa" },
+                demon_gloves: { src: "https://images4.imagebam.com/52/eb/91/ME13I0KJ_o.png", text: "Guantes de Demonio", icon: "https://images4.imagebam.com/52/eb/91/ME13I0KJ_o.png", description: "+6 Ataque, +2 Velocidad" },
+                lion_gloves: { src: "https://images4.imagebam.com/28/54/49/ME13I0V0_o.png", text: "Guantes de León", icon: "https://images4.imagebam.com/28/54/49/ME13I0V0_o.png", description: "+5 Ataque" },
+                assassination_gloves: { src: "https://images4.imagebam.com/a3/a6/35/ME13I0V7_o.png", text: "Guantes de Asesinato", icon: "https://images4.imagebam.com/a3/a6/35/ME13I0V7_o.png", description: "+5 Crítico, +3 Velocidad" },
+                noble_gloves: { src: "https://images4.imagebam.com/ca/68/8b/ME13I0VD_o.png", text: "Guantes de Noble", icon: "https://images4.imagebam.com/ca/68/8b/ME13I0VD_o.png", description: "+3 Ataque" },
+                mage_gloves: { src: "https://images4.imagebam.com/2c/29/01/ME13I0VH_o.png", text: "Guantes de Mago", icon: "https://images4.imagebam.com/2c/29/01/ME13I0VH_o.png", description: "+2 Velocidad" }
+            },
+            boots: {
+                none: { src: "https://images4.imagebam.com/39/36/7b/ME13I00A_o.png", text: "Sin Botas", icon: "https://images4.imagebam.com/39/36/7b/ME13I00A_o.png", description: "" },
+                iron_boots: { src: "https://images4.imagebam.com/37/09/04/ME13HTNB_o.png", text: "Botas de Hierro", icon: "https://images4.imagebam.com/37/09/04/ME13HTNB_o.png", description: "+3 Velocidad" },
+                knight_boots: { src: "https://images4.imagebam.com/39/47/40/ME13I0DF_o.png", text: "Botas de Caballero", icon: "https://images4.imagebam.com/39/47/40/ME13I0DF_o.png", description: "+5 Velocidad, +1 Defensa" },
+                demon_boots: { src: "https://images4.imagebam.com/cb/f1/65/ME13I0KL_o.png", text: "Botas de Demonio", icon: "https://images4.imagebam.com/cb/f1/65/ME13I0KL_o.png", description: "+7 Velocidad, +2 Ataque" },
+                lion_boots: { src: "https://images4.imagebam.com/91/fd/2b/ME13I0V1_o.png", text: "Botas de León", icon: "https://images4.imagebam.com/91/fd/2b/ME13I0V1_o.png", description: "+8 Velocidad" },
+                assassination_boots: { src: "https://images4.imagebam.com/14/2c/da/ME13I0V8_o.png", text: "Botas de Asesinato", icon: "https://images4.imagebam.com/14/2c/da/ME13I0V8_o.png", description: "+9 Velocidad" },
+                noble_boots: { src: "https://images4.imagebam.com/4b/e5/f8/ME13I0VE_o.png", text: "Botas de Noble", icon: "https://images4.imagebam.com/4b/e5/f8/ME13I0VE_o.png", description: "+4 Velocidad" },
+                mage_boots: { src: "https://images4.imagebam.com/2b/b5/d3/ME13I0VI_o.png", text: "Botas de Mago", icon: "https://images4.imagebam.com/2b/b5/d3/ME13I0VI_o.png", description: "+6 Velocidad" }
+            },
+            weapon: {
+                none: { src: "https://images4.imagebam.com/39/36/7b/ME13I00A_o.png", text: "Sin Arma", icon: "https://images4.imagebam.com/39/36/7b/ME13I00A_o.png", description: "" },
+                colossal_shield: { src: "https://images4.imagebam.com/91/32/4f/ME13I1SP_o.png", text: "Escudo Colosal", icon: "https://images4.imagebam.com/91/32/4f/ME13I1SP_o.png", description: "+10 Defensa" },
+                war_mace: { src: "https://images4.imagebam.com/ae/e5/90/ME13I1SQ_o.png", text: "Maza de Guerra", icon: "https://images4.imagebam.com/ae/e5/90/ME13I1SQ_o.png", description: "+9 Ataque" },
+                light_sword: { src: "https://images4.imagebam.com/ca/a7/f7/ME13I1SR_o.png", text: "Espada de Luz", icon: "https://images4.imagebam.com/ca/a7/f7/ME13I1SR_o.png", description: "+7 Ataque, +3 Velocidad" },
+                celestial_book: { src: "https://images4.imagebam.com/cd/bf/f2/ME13I1SS_o.png", text: "Libro Celestial", icon: "https://images4.imagebam.com/cd/bf/f2/ME13I1SS_o.png", description: "+5 Ataque, +4 Velocidad" },
+                darkness_ray: { src: "https://images4.imagebam.com/74/c2/3a/ME13I1ST_o.png", text: "Rayo de Oscuridad", icon: "https://images4.imagebam.com/74/c2/3a/ME13I1ST_o.png", description: "+7 Ataque, +3 Crítico" },
+                power_dagger: { src: "https://images4.imagebam.com/61/cc/e7/ME13I1SU_o.png", text: "Daga de Poder", icon: "https://images4.imagebam.com/61/cc/e7/ME13I1SU_o.png", description: "+6 Ataque, +4 Velocidad" },
+                forest_bow: { src: "https://images4.imagebam.com/b9/79/dc/ME13I1SV_o.png", text: "Arco del Bosque", icon: "https://images4.imagebam.com/b9/79/dc/ME13I1SV_o.png", description: "+6 Ataque, +4 Crítico" },
+                frozen_scythe: { src: "https://images4.imagebam.com/f0/da/a7/ME13I1SW_o.png", text: "Guadaña Helada", icon: "https://images4.imagebam.com/f0/da/a7/ME13I1SW_o.png", description: "+8 Ataque" }
+            },
+            skills: { // New skills category
+                stealth: { src: "https://images4.imagebam.com/b5/e0/51/ME13J7QB_o.png", text: "Sigilo", icon: "https://images4.imagebam.com/b5/e0/51/ME13J7QB_o.png", description: "Te vuelves uno con las sombras, imperceptible para los monstruos durante 7 segundos." },
+                critical_hit: { src: "https://images4.imagebam.com/8e/e4/d7/ME13J7QC_o.png", text: "Golpe Crítico", icon: "https://images4.imagebam.com/8e/e4/d7/ME13J7QC_o.png", description: "El siguiente golpe que asestes será un 50% más devastador." },
+                teleportation: { src: "https://images4.imagebam.com/9d/ef/8f/ME13J7QD_o.png", text: "Teletransportación", icon: "https://images4.imagebam.com/9d/ef/8f/ME13J7QD_o.png", description: "Desplázate instantáneamente a un punto aleatorio del mapa." },
+                summon: { src: "https://images4.imagebam.com/84/38/a5/ME13J7QF_o.png", text: "Invocar", icon: "https://images4.imagebam.com/84/38/a5/ME13J7QF_o.png", description: "Manifiesta un súbdito leal con el 25% de tus estadísticas." },
+                regeneration: { src: "https://images4.imagebam.com/07/7b/1b/ME13J7QG_o.png", text: "Regeneración", icon: "https://images4.imagebam.com/07/7b/1b/ME13J7QG_o.png", description: "Restaura el 50% de tu salud máxima al instante." },
+                speed: { src: "https://images4.imagebam.com/b4/77/6f/ME13J7QH_o.png", text: "Velocidad", icon: "https://images4.imagebam.com/b4/77/6f/ME13J7QH_o.png", description: "Incrementa tu velocidad de movimiento en un 10%." },
+                invincible: { src: "https://images4.imagebam.com/6d/5d/02/ME13J7QJ_o.png", text: "Invencible", icon: "https://images4.imagebam.com/6d/5d/02/ME13J7QJ_o.png", description: "Te vuelves inmune a todo daño durante 3 segundos." },
+                ice_ray: { src: "https://images4.imagebam.com/ea/39/04/ME13J7QK_o.png", text: "Rayo de Hielo", icon: "https://images4.imagebam.com/ea/39/04/ME13J7QK_o.png", description: "Congela a un enemigo en su lugar durante 5 segundos." },
+                luck: { src: "https://images4.imagebam.com/cc/45/2c/ME13J7QL_o.png", text: "Suerte", icon: "https://images4.imagebam.com/cc/45/2c/ME13J7QL_o.png", description: "Aumenta tu probabilidad de asestar un golpe crítico en un 5%." },
+                weakness: { src: "https://images4.imagebam.com/c3/e7/67/ME13J7QM_o.png", text: "Debilidad", icon: "https://images4.imagebam.com/c3/e7/67/ME13J7QM_o.png", description: "Reduce la resistencia de los enemigos en un 5%." },
+                fury: { src: "https://images4.imagebam.com/44/a4/49/ME13J7QO_o.png", text: "Furia", icon: "https://images4.imagebam.com/44/a4/49/ME13J7QO_o.png", description: "Duplica tu ataque cuando tu salud desciende al 25% o menos." },
+                soul_extraction: { src: "https://images4.imagebam.com/e7/9b/a4/ME13J7QP_o.png", text: "Extracción de Almas", icon: "https://images4.imagebam.com/e7/9b/a4/ME13J7QP_o.png", description: "Recupera salud por cada 5 golpes exitosos que asestes." }
+            }
+        };
+
+        // Get DOM elements
+        const characterBaseImg = document.getElementById('characterBase');
+
+        // Equipped item icon displays (top section)
+        const equippedHelmetIcon = document.getElementById('equippedHelmetIcon');
+        const equippedArmorIcon = document.getElementById('equippedArmorIcon');
+        const equippedGlovesIcon = document.getElementById('equippedGlovesIcon');
+        const equippedBootsIcon = document.getElementById('equippedBootsIcon');
+        const equippedWeaponIcon = document.getElementById('equippedWeaponIcon');
+        const equippedSkillsIconsContainer = document.getElementById('equippedSkillsIcons'); // Container for selected skills
+
+        const itemButtons = document.querySelectorAll('.item-button');
+        const resetButton = document.getElementById('resetButton');
+        const messageBox = document.getElementById('messageBox');
+
+        // Function to update character display and selected item highlighting
+        function updateCharacterDisplay() {
+            // Update equipped item icons
+            equippedHelmetIcon.src = items.helmet[character.equipped.helmet].icon;
+            highlightSelectedItem('helmet', character.equipped.helmet);
+
+            equippedArmorIcon.src = items.armor[character.equipped.armor].icon;
+            highlightSelectedItem('armor', character.equipped.armor);
+
+            equippedGlovesIcon.src = items.gloves[character.equipped.gloves].icon;
+            highlightSelectedItem('gloves', character.equipped.gloves);
+
+            equippedBootsIcon.src = items.boots[character.equipped.boots].icon;
+            highlightSelectedItem('boots', character.equipped.boots);
+
+            equippedWeaponIcon.src = items.weapon[character.equipped.weapon].icon;
+            highlightSelectedItem('weapon', character.equipped.weapon);
+
+            // Update skills display
+            equippedSkillsIconsContainer.innerHTML = ''; // Clear previous icons
+            character.selectedSkills.forEach(skillName => {
+                const skillItem = items.skills[skillName];
+                if (skillItem) {
+                    const img = document.createElement('img');
+                    img.src = skillItem.icon;
+                    img.alt = skillItem.text;
+                    img.classList.add('w-16', 'h-16', 'rounded-lg', 'object-contain', 'border', 'border-gray-600'); // Consistent styling
+                    equippedSkillsIconsContainer.appendChild(img);
+                }
+            });
+            highlightSelectedSkills(); // Highlight skill buttons in inventory
+        }
+
+        // Function to highlight the currently selected item button and manage flip
+        function highlightSelectedItem(slot, selectedItem) {
+            const slotButtons = document.querySelectorAll(`#${slot}-buttons .item-button`);
+            slotButtons.forEach(button => {
+                if (button.dataset.item === selectedItem) {
+                    button.classList.add('selected');
+                    button.classList.add('flipped'); // Keep flipped if selected
+                } else {
+                    button.classList.remove('selected');
+                    button.classList.remove('flipped'); // Unflip if not selected
+                }
+            });
+        }
+
+        // New function to highlight selected skill buttons and manage flip
+        function highlightSelectedSkills() {
+            const skillButtons = document.querySelectorAll('#skills-buttons .item-button');
+            skillButtons.forEach(button => {
+                const skillName = button.dataset.item;
+                if (character.selectedSkills.includes(skillName)) {
+                    button.classList.add('selected');
+                    button.classList.add('flipped'); // Keep flipped if selected
+                } else {
+                    button.classList.remove('selected');
+                    button.classList.remove('flipped'); // Unflip if not selected
+                }
+            });
+        }
+
+        // Function to show a message
+        function showMessage(message) {
+            messageBox.textContent = message;
+            messageBox.style.display = 'block';
+            messageBox.classList.remove('scale-0', 'opacity-0');
+            messageBox.classList.add('scale-100', 'opacity-100');
+
+            setTimeout(() => {
+                messageBox.classList.remove('scale-100', 'opacity-100');
+                messageBox.classList.add('scale-0', 'opacity-0');
+                messageBox.addEventListener('transitionend', function handler() {
+                    messageBox.style.display = 'none';
+                    messageBox.removeEventListener('transitionend', handler);
+                });
+            }, 2000); // Message disappears after 2 seconds
+        }
+
+        // Event listeners for item buttons
+        itemButtons.forEach(button => {
+            const slot = button.dataset.slot;
+
+            button.addEventListener('click', (event) => {
+                const item = button.dataset.item;
+
+                if (slot === 'skills') {
+                    event.stopPropagation(); // Stop event from bubbling up
+                    toggleSkill(item); // Handle skills separately
+                } else {
+                    character.equipped[slot] = item;
+                    showMessage(`¡${items[slot][item].text} equipado!`);
+                }
+                updateCharacterDisplay(); // Always update display
+            });
+
+            // Add hover effect for all card containers
+            if (button.classList.contains('card-container')) {
+                button.addEventListener('mouseenter', () => {
+                    if (!button.classList.contains('selected')) { // Only flip on hover if not selected
+                        button.classList.add('flipped');
+                    }
+                });
+                button.addEventListener('mouseleave', () => {
+                    if (!button.classList.contains('selected')) { // Only unflip on leave if not selected
+                        button.classList.remove('flipped');
+                    }
+                });
+            }
+        });
+
+        // New function to toggle skills
+        function toggleSkill(skillName) {
+            const index = character.selectedSkills.indexOf(skillName);
+            if (index > -1) {
+                // Skill is already selected, remove it
+                character.selectedSkills.splice(index, 1);
+                showMessage(`¡${items.skills[skillName].text} deseleccionado!`);
+            } else {
+                // Skill is not selected, add it if limit not reached
+                if (character.selectedSkills.length < 3) {
+                    character.selectedSkills.push(skillName);
+                    showMessage(`¡${items.skills[skillName].text} seleccionado!`);
+                } else {
+                    showMessage("¡Máximo de 3 habilidades seleccionadas!");
+                }
+            }
+        }
+
+        // Event listener for reset button
+        resetButton.addEventListener('click', () => {
+            character.equipped = {
+                helmet: "none",
+                armor: "none",
+                gloves: "none",
+                boots: "none",
+                weapon: "none"
+            };
+            character.selectedSkills = []; // Reset skills
+            updateCharacterDisplay();
+            showMessage("Personaje reiniciado.");
+        });
+
+        // Initial display update when the page loads
+        document.addEventListener('DOMContentLoaded', updateCharacterDisplay);
+    </script>
+</body>
+</html>
