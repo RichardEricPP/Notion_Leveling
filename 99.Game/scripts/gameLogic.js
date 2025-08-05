@@ -303,18 +303,18 @@ function updateMonsters(currentTime) {
 
         const bossCenter = (m.type === 'finalBoss') ? { x: m.tileX + 0.5, y: m.tileY + 0.5 } : { x: m.tileX, y: m.tileY };
         let target = player; // Default target is player
-        let distanceToTarget = getDistance(bossCenter.x, bossCenter.y, player.tileX, player.tileY);
+        let distanceToTarget = getDistance(m.tileX, m.tileY, player.tileX, player.tileY, m);
         let canSeeTarget = hasLineOfSight(m, player) && !player.isStealthed;
 
         // Target selection for all monsters (including non-minions)
         if (!m.isMinion) { // Only non-minion monsters should consider minions as targets
             let nearestValidTarget = player; // Start with player as default
-            let minDistanceToValidTarget = getDistance(m.tileX, m.tileY, player.tileX, player.tileY);
+            let minDistanceToValidTarget = getDistance(m.tileX, m.tileY, player.tileX, player.tileY, m);
 
             // Check for minions as potential targets
             monsters.forEach(ally => {
                 if (ally.isMinion && ally.hp > 0) { // Consider alive minions
-                    const dist = getDistance(m.tileX, m.tileY, ally.tileX, ally.tileY);
+                    const dist = getDistance(m.tileX, m.tileY, ally.tileX, ally.tileY, m);
                     if (dist < minDistanceToValidTarget) {
                         minDistanceToValidTarget = dist;
                         nearestValidTarget = ally;
@@ -329,7 +329,7 @@ function updateMonsters(currentTime) {
             let minDistanceToEnemy = Infinity;
             monsters.forEach(enemy => {
                 if (!enemy.isMinion && enemy.hp > 0) {
-                    const dist = getDistance(m.tileX, m.tileY, enemy.tileX, enemy.tileY);
+                    const dist = getDistance(m.tileX, m.tileY, enemy.tileX, enemy.tileY, enemy);
                     if (dist < m.aggroRange && dist < minDistanceToEnemy) {
                         minDistanceToEnemy = dist;
                         nearestEnemy = enemy;
@@ -343,7 +343,7 @@ function updateMonsters(currentTime) {
                 canSeeTarget = hasLineOfSight(m, nearestEnemy);
             } else {
                 target = player;
-                distanceToTarget = getDistance(m.tileX, m.tileY, player.tileX, player.tileY);
+                distanceToTarget = getDistance(m.tileX, m.tileY, player.tileX, player.tileY, m);
                 canSeeTarget = true;
             }
         }
@@ -455,7 +455,12 @@ function updateMonsters(currentTime) {
                     break;
                 case 'CHASE':
                 case 'SEARCH':
-                    let targetPos = (m.state === 'CHASE') ? findOptimalAttackPosition(m, target) : m.lastKnownPlayerPosition; // Use 'target'
+                    let targetPos;
+                    if (m.attackRange > 1.5) { 
+                        targetPos = (m.state === 'CHASE') ? { x: target.tileX, y: target.tileY } : m.lastKnownPlayerPosition;
+                    } else {
+                        targetPos = (m.state === 'CHASE') ? findOptimalAttackPosition(m, target) : m.lastKnownPlayerPosition;
+                    }
                     if (!targetPos) targetPos = m.lastKnownPlayerPosition;
                     if (!targetPos) break;
 
@@ -467,9 +472,21 @@ function updateMonsters(currentTime) {
                     const moveY = Math.sign(dy);
 
                     const potentialMoves = [];
-                    if (moveX !== 0) potentialMoves.push({ x: m.tileX + moveX, y: m.tileY });
-                    if (moveY !== 0) potentialMoves.push({ x: m.tileX, y: m.tileY + moveY });
-                    if (moveX !== 0 && moveY !== 0) potentialMoves.push({ x: m.tileX + moveX, y: m.tileY + moveY });
+
+                    // 1. Diagonal
+                    if (moveX !== 0 && moveY !== 0) {
+                        potentialMoves.push({ x: m.tileX + moveX, y: m.tileY + moveY });
+                    }
+
+                    // 2. & 3. Cardinal directions, ordered by distance
+                    if (Math.abs(dx) > Math.abs(dy)) {
+                        if (moveX !== 0) potentialMoves.push({ x: m.tileX + moveX, y: m.tileY });
+                        if (moveY !== 0) potentialMoves.push({ x: m.tileX, y: m.tileY + moveY });
+                    } else {
+                        if (moveY !== 0) potentialMoves.push({ x: m.tileX, y: m.tileY + moveY });
+                        if (moveX !== 0) potentialMoves.push({ x: m.tileX + moveX, y: m.tileY });
+                    }
+
 
                     for (const pMove of potentialMoves) {
                         if (isPassable(pMove.x, pMove.y, false, m)) {
@@ -622,17 +639,26 @@ function carvePathBetweenRooms(room1, room2) {
 
 function hasLineOfSight(monster, target) {
     let x0 = monster.tileX, y0 = monster.tileY;
-    if (monster.width > 1 || monster.height > 1) {
-        x0 += (monster.width - 1) / 2;
-        y0 += (monster.height - 1) / 2;
-    }
     const x1 = target.tileX, y1 = target.tileY;
+
+    if (monster.width > 1 || monster.height > 1) {
+        // Use the closest point on the monster's bounding box to the target
+        x0 = Math.max(monster.tileX, Math.min(x1, monster.tileX + monster.width - 1));
+        y0 = Math.max(monster.tileY, Math.min(y1, monster.tileY + monster.height - 1));
+    }
+    
     const dx = Math.abs(x1 - x0), sx = x0 < x1 ? 1 : -1;
     const dy = -Math.abs(y1 - y0), sy = y0 < y1 ? 1 : -1;
     let err = dx + dy, e2;
     while (true) {
         if (Math.floor(x0) === Math.floor(x1) && Math.floor(y0) === Math.floor(y1)) return true;
-        if (map[Math.floor(y0)][Math.floor(x0)] === 0) return false;
+        
+        // Check if the current point is a wall, but allow it if it's part of the monster itself
+        const isMonsterTile = Math.floor(x0) >= monster.tileX && Math.floor(x0) < monster.tileX + (monster.width || 1) &&
+                              Math.floor(y0) >= monster.tileY && Math.floor(y0) < monster.tileY + (monster.height || 1);
+
+        if (!isMonsterTile && map[Math.floor(y0)][Math.floor(x0)] === 0) return false;
+
         e2 = 2 * err;
         if (e2 >= dy) { err += dy; x0 += sx; }
         if (e2 <= dx) { err += dx; y0 += sy; }
@@ -641,17 +667,25 @@ function hasLineOfSight(monster, target) {
 
 function findOptimalAttackPosition(monster, target) {
     const attackPositions = [];
-    for (let y = -1; y <= 1; y++) {
-        for (let x = -1; x <= 1; x++) {
-            if (x === 0 && y === 0) continue;
-            const tileX = target.tileX + x;
-            const tileY = target.tileY + y;
+    const monsterWidth = monster.width || 1;
+    const monsterHeight = monster.height || 1;
+
+    // Iterate around the multi-tile monster's perimeter
+    for (let i = -1; i <= monsterWidth; i++) {
+        for (let j = -1; j <= monsterHeight; j++) {
+            // Skip the inner tiles of the monster
+            if (i >= 0 && i < monsterWidth && j >= 0 && j < monsterHeight) continue;
+
+            const tileX = target.tileX + i;
+            const tileY = target.tileY + j;
+
             if (isPassable(tileX, tileY, false, monster)) {
                 attackPositions.push({ x: tileX, y: tileY });
             }
         }
     }
-    attackPositions.sort((a, b) => getDistance(monster.tileX, monster.tileY, a.x, a.y) - getDistance(monster.tileX, monster.tileY, b.x, b.y));
+
+    attackPositions.sort((a, b) => getDistance(monster.tileX, monster.tileY, a.x, a.y, monster) - getDistance(monster.tileX, monster.tileY, b.x, b.y, monster));
     return attackPositions.find(pos => !monsters.some(m => m !== monster && m.tileX === pos.x && m.tileY === pos.y)) || null;
 }
 
@@ -724,7 +758,7 @@ function createMonster(type, x, y, floor) {
             monster.atk = Math.floor((70 + floor * 10) * atkMultiplier * floorMultiplier);
             monster.moveSpeed = 800;
             monster.attackSpeed = 900;
-            monster.attackRange = 2.5;
+            monster.attackRange = 1.5;
             monster.aggroRange = 12;
             monster.abilityCooldowns = { webShot: 0, summon: 0 };
             break;
@@ -1057,7 +1091,12 @@ function takeDamage(target, damage, isCritical, attackerType = 'player') {
     }
 }
 
-function getDistance(x1, y1, x2, y2) {
+function getDistance(x1, y1, x2, y2, monster = null) {
+    if (monster && monster.type === 'finalBoss') {
+        const closestX = Math.max(monster.tileX, Math.min(x2, monster.tileX + monster.width - 1));
+        const closestY = Math.max(monster.tileY, Math.min(y2, monster.tileY + monster.height - 1));
+        return Math.sqrt(Math.pow(x2 - closestX, 2) + Math.pow(y2 - closestY, 2));
+    }
     return Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2));
 }
 
