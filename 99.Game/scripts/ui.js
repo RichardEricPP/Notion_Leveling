@@ -10,7 +10,7 @@ import {
     gameStarted, gameOver, lastGameScore, lastEnemiesDefeated, 
     finalOutcomeMessage, finalOutcomeMessageLine2, keys, screenShake, 
     revealedMap, projectiles, damageTexts, criticalHitEffects, warMaceShockwave, skillCooldowns, mapWidth, mapHeight, tileSize, iceRayEffects,
-    useItem, learnSkill, equipItem, equipSkill, activateSkill
+    useItem, learnSkill, equipItem, equipSkill, activateSkill, torches
 } from './gameLogic.js';
 
 
@@ -25,6 +25,8 @@ export let offsetY = 0; // Export offsetY
 let selectedIndex = 0;
 let selectedSkillIndex = 0;
 let selectedEquipmentSlotIndex = 0; 
+let playerBreathAnimCounter = 0; 
+let playerWalkAnimCounter = 0; 
 
 // --- DOM Element Selections ---
 export const difficultyScreen = document.getElementById('difficultyScreen');
@@ -48,9 +50,41 @@ export function drawChest(x, y) { if(loadedImages.chest && loadedImages.chest.co
 export function drawStairs(x,y) { 
     if(loadedImages.stairs && loadedImages.stairs.complete) ctx.drawImage(loadedImages.stairs, 0,0,64,64, x, y, tileSize, tileSize); else { ctx.fillStyle = '#704214'; ctx.fillRect(x,y,tileSize,tileSize);}}
 
+export function drawTorch(x, y) {
+    if(loadedImages.torch && loadedImages.torch.complete) {
+        ctx.drawImage(loadedImages.torch, 0,0,64,64, x, y, tileSize, tileSize);
+    } else {
+        ctx.fillStyle = 'orange';
+        ctx.fillRect(x + tileSize / 2 - 5, y + tileSize / 2 - 15, 10, 30);
+    }
+}
+
 function drawPlayer(x, y) {
-    let drawX = x;
-    let drawY = y;
+    let drawX = x; // Inicializar drawX con la posición base
+    let drawY = y; // Inicializar drawY con la posición base
+    let currentDrawWidth = tileSize; // Siempre tileSize por defecto
+    let currentDrawHeight = tileSize; // Siempre tileSize por defecto
+
+    const isMoving = keys.ArrowLeft || keys.KeyA || keys.ArrowRight || keys.KeyD || keys.ArrowUp || keys.KeyW || keys.ArrowDown || keys.KeyS;
+
+    if (isMoving) {
+        playerWalkAnimCounter += 0.2; // Velocidad de la animación de caminata
+        // Eliminado: const verticalHop = Math.sin(playerWalkAnimCounter) * 4; // Desplazamiento vertical (rebote/salto)
+
+        // Eliminado: drawY += verticalHop; // Solo aplica el salto vertical a drawY
+
+        playerBreathAnimCounter = 0; // Reiniciar contador de respiración si se mueve
+    } else if (!player.isAttacking) {
+        playerBreathAnimCounter += 0.05; // Velocidad de la respiración
+        const breathScale = 1 + Math.sin(playerBreathAnimCounter) * 0.02; // Escala de 1% a 2%
+        currentDrawHeight = tileSize * breathScale; // Solo escala verticalmente
+        drawY = y - (currentDrawHeight - tileSize) / 2; // Centrar verticalmente
+        // drawX y currentDrawWidth no se modifican aquí, permanecen en sus valores base
+        playerWalkAnimCounter = 0; // Reiniciar contador de caminata si está quieto
+    } else {
+        playerBreathAnimCounter = 0;
+        playerWalkAnimCounter = 0;
+    }
 
     if (player.isAttacking) {
         const progress = player.attackAnimFrame / player.attackAnimDuration;
@@ -66,39 +100,37 @@ function drawPlayer(x, y) {
     }
 
     if (loadedImages.player && loadedImages.player.complete) {
-        ctx.drawImage(loadedImages.player, 0,0,64,64, drawX, drawY, tileSize, tileSize);
-    } else { 
-        ctx.fillStyle = 'blue'; ctx.fillRect(drawX, drawY, tileSize, tileSize);
+        ctx.drawImage(loadedImages.player, 0,0,64,64, drawX, drawY, currentDrawWidth, currentDrawHeight);
+    } else {
+        ctx.fillStyle = 'blue'; ctx.fillRect(drawX, drawY, currentDrawWidth, currentDrawHeight);
     }
 
-    if (player.hitFrame > 0) { 
+    if (player.hitFrame > 0) {
         ctx.save();
-        ctx.globalAlpha = 0.5 + (player.hitFrame / 10) * 0.3; 
-        ctx.fillStyle = 'red'; 
-        ctx.fillRect(drawX, drawY, tileSize, tileSize); 
+        ctx.globalAlpha = 0.5 + (player.hitFrame / 10) * 0.3;
+        ctx.fillStyle = 'red';
+        ctx.fillRect(drawX, drawY, currentDrawWidth, currentDrawHeight);
         ctx.restore();
-        player.hitFrame--; 
+        player.hitFrame--;
     }
     const currentTime = Date.now();
     if (player.isSlowed && currentTime < player.slowEndTime) {
-        ctx.fillStyle = 'rgba(0, 100, 255, 0.3)'; 
-        ctx.fillRect(drawX, drawY, tileSize, tileSize);
+        ctx.fillStyle = 'rgba(0, 100, 255, 0.3)';
+        ctx.fillRect(drawX, drawY, currentDrawWidth, currentDrawHeight);
     }
     if (player.isInvincible && currentTime < player.invincibleEndTime) {
-        ctx.fillStyle = 'rgba(255, 215, 0, 0.3)'; 
-        ctx.fillRect(drawX, drawY, tileSize, tileSize);
+        ctx.fillStyle = 'rgba(255, 215, 0, 0.3)';
+        ctx.fillRect(drawX, drawY, currentDrawWidth, currentDrawHeight);
     }
-    if (player.isStealthed && currentTime < player.stealthEndTime) { 
+    if (player.isStealthed && currentTime < player.stealthEndTime) {
         ctx.fillStyle = 'rgba(128, 128, 128, 0.5)'; // Efecto de invisibilidad
-        ctx.fillRect(drawX, drawY, tileSize, tileSize);
+        ctx.fillRect(drawX, drawY, currentDrawWidth, currentDrawHeight);
     }
-
-    
 
     const healthPercent = player.hp / player.maxHp;
-    ctx.fillStyle = 'rgba(0,0,0,0.7)'; ctx.fillRect(drawX+5, drawY-10, tileSize-10, 5);
+    ctx.fillStyle = 'rgba(0,0,0,0.7)'; ctx.fillRect(drawX+5, drawY-10, currentDrawWidth-10, 5);
     ctx.fillStyle = healthPercent > 0.5 ? 'rgba(0,255,0,0.7)' : healthPercent > 0.25 ? 'rgba(255,255,0,0.7)' : 'rgba(255,0,0,0.7)';
-    ctx.fillRect(drawX+5, drawY-10, (tileSize-10)*healthPercent, 5);
+    ctx.fillRect(drawX+5, drawY-10, (currentDrawWidth-10)*healthPercent, 5);
 }
 
 function drawMonster(m, screenX, screenY) {
@@ -393,6 +425,12 @@ export function drawMap() {
             }
         }
     }
+    // Dibujar antorchas
+    torches.forEach(torch => {
+        const screenX = torch.x * tileSize - offsetX;
+        const screenY = torch.y * tileSize - offsetY;
+        drawTorch(screenX, screenY);
+    });
     monsters.forEach(m => {
         const screenX = m.tileX * tileSize - offsetX; const screenY = m.tileY * tileSize - offsetY;
         drawMonster(m, screenX, screenY);

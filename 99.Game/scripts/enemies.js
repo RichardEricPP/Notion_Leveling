@@ -400,6 +400,36 @@ export function createFloorSprite() { if (sprites.floor) return sprites.floor; c
 export function createWallSprite() { if (sprites.wall) return sprites.wall; const c=document.createElement('canvas');c.width=64;c.height=64;const x=c.getContext('2d');x.fillStyle='#555';x.fillRect(0,0,64,64);x.strokeStyle='#333';x.lineWidth=2;for(let y=16;y<64;y+=16){x.beginPath();x.moveTo(0,y);x.lineTo(64,y);x.stroke();}for(let r=0;r<4;r++){const o=r%2===0?0:16;for(let X=o;X<64;X+=32){x.beginPath();x.moveTo(X,r*16);x.lineTo(X,r*16+16);x.stroke();}}x.fillStyle='#444';const d=[{x:10,y:8,r:1.5},{x:25,y:12,r:2},{x:40,y:7,r:1.2},{x:55,y:10,r:1.8},{x:15,y:22,r:1.3},{x:30,y:26,r:2.2},{x:48,y:24,r:1.7},{x:8,y:38,r:1.9},{x:22,y:42,r:1.4},{x:38,y:40,r:2.1},{x:52,y:44,r:1.6},{x:12,y:56,r:1.8},{x:28,y:58,r:1.5},{x:44,y:54,r:2},{x:58,y:60,r:1.7},{x:18,y:5,r:1.3},{x:34,y:32,r:1.9},{x:50,y:18,r:1.4},{x:5,y:48,r:2.2},{x:60,y:36,r:1.6}];for(const k of d){x.beginPath();x.arc(k.x,k.y,k.r,0,Math.PI*2);x.fill();}return c.toDataURL(); }
 export function createChestSprite() { const c = document.createElement('canvas');c.width=64;c.height=64;const x=c.getContext('2d');x.fillStyle = '#8B4513';x.fillRect(12,20,40,30);x.fillStyle = '#A0522D';x.fillRect(12,20,40,10);x.fillStyle = '#555';x.fillRect(12,30,40,4);x.fillRect(12,40,40,4);x.fillStyle = '#FFD700';x.fillRect(28,28,8,8);x.fillStyle = '#000';x.beginPath();x.arc(32,32,2,0,Math.PI*2);x.fill();x.fillStyle = 'rgba(255,255,255,0.2)';x.fillRect(14,22,36,2);return c.toDataURL(); }
 
+export function createTorchSprite() {
+    const canvas = document.createElement('canvas');
+    canvas.width = 64; canvas.height = 64;
+    const ctx = canvas.getContext('2d');
+
+    // Palo de la antorcha
+    ctx.fillStyle = '#8B4513'; // Marrón
+    ctx.fillRect(30, 30, 4, 20); // Base del palo
+
+    // Llama de la antorcha (simple)
+    ctx.fillStyle = '#FFD700'; // Amarillo dorado
+    ctx.beginPath();
+    ctx.moveTo(32, 28); // Punta superior
+    ctx.lineTo(28, 35); // Esquina inferior izquierda
+    ctx.lineTo(36, 35); // Esquina inferior derecha
+    ctx.closePath();
+    ctx.fill();
+
+    // Pequeño brillo alrededor de la llama
+    const gradient = ctx.createRadialGradient(32, 32, 0, 32, 32, 15);
+    gradient.addColorStop(0, 'rgba(255, 165, 0, 0.5)'); // Naranja brillante
+    gradient.addColorStop(1, 'rgba(255, 165, 0, 0)'); // Transparente
+    ctx.fillStyle = gradient;
+    ctx.beginPath();
+    ctx.arc(32, 32, 15, 0, Math.PI * 2);
+    ctx.fill();
+
+    return canvas.toDataURL();
+}
+
 export function createMonster(type, tileX, tileY, floor, dropsKey = false) {
     const floorMultiplier = 1 + (floor - 1) * 0.2;
     let monster = {
@@ -518,4 +548,5 @@ export function loadSprites() {
     if (!sprites.wall) sprites.wall = createWallSprite();
     if (!sprites.chest) sprites.chest = createChestSprite();
     if (!sprites.stairs) sprites.stairs = createStairsSprite();
+    if (!sprites.torch) sprites.torch = createTorchSprite();
 }

@@ -30,6 +30,7 @@ export let keys = {
 };
 export let screenShake = 0;
 export let revealedMap;
+export let torches = [];
 
 // --- EXPORTS (Game Mechanics Variables) ---
 export let projectiles = [];
@@ -155,6 +156,7 @@ export async function setDifficultyAndStart(difficulty, startFloor = 1, baseLeve
     stairLocation.active = false;
     monsters.length = 0;
     chests.length = 0;
+    torches.length = 0; // Limpiar antorchas al generar nuevo piso
     gameStarted = true;
     gameOver = false;
 
@@ -587,6 +589,25 @@ async function generateFloor() {
         }
         chests.length = 0;
         spawnChests(monsterSpawnLocations);
+    }
+
+    // Colocar antorchas en las paredes
+    const torchDensity = 0.05; // 5% de probabilidad de que un muro con piso adyacente tenga una antorcha
+    for (let y = 0; y < mapHeight; y++) {
+        for (let x = 0; x < mapWidth; x++) {
+            if (map[y][x] === 0) { // Es un muro
+                // Verificar si tiene un piso adyacente
+                const hasAdjacentFloor = (
+                    (y > 0 && map[y-1][x] === 1) || // Arriba
+                    (y < mapHeight - 1 && map[y+1][x] === 1) || // Abajo
+                    (x > 0 && map[y][x-1] === 1) || // Izquierda
+                    (x < mapWidth - 1 && map[y][x+1] === 1)    // Derecha
+                );
+                if (hasAdjacentFloor && Math.random() < torchDensity) {
+                    torches.push({ x, y });
+                }
+            }
+        }
     }
     await loadAllSprites();
     playMusic(monsters.some(m => m.type === 'finalBoss') ? 'boss' : 'dungeon');
