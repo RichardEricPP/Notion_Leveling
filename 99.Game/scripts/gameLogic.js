@@ -515,6 +515,7 @@ async function generateFloor() {
     Object.keys(player.skillUsageThisFloor).forEach(key => delete player.skillUsageThisFloor[key]);
     Object.keys(skillCooldowns).forEach(key => skillCooldowns[key] = 0);
     monsters.length = 0;
+    torches.length = 0; // Clear torches for the new floor
     revealedMap = Array(mapHeight).fill(0).map(() => Array(mapWidth).fill(false));
 
     var hpMultiplier = 1.0, atkMultiplier = 1.0;
@@ -1178,7 +1179,7 @@ export function activateSkill(skillName) {
             const oldHp = player.hp;
             player.hp = Math.min(player.maxHp, player.hp + healAmount);
             const actualHealed = player.hp - oldHp;
-            damageTexts.push({ text: `+${Math.floor(actualHealed)}`, x: player.tileX, y: player.tileY, life: 60, color: '#4CAF50', size: 20, velY: -0.01 });
+            damageTexts.push({ text: `+${Math.floor(actualHealed)} HP`, x: player.tileX, y: player.tileY, life: 60, color: '#4CAF50', size: 20, velY: -0.01 });
             ui.showMessage("¡Salud restaurada!");
             skillUsed = true;
             break;
