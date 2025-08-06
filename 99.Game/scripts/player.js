@@ -318,186 +318,173 @@ export function checkLevelUp() {
     updateStats(); 
 }
 
-/**
- * Crea dinámicamente el sprite del jugador como una imagen Data URL, basándose en el equipo actual.
- * @returns {string} La imagen del sprite del jugador como Data URL.
- */
-export function createPlayerSprite() {
+export function createPlayerSprite(options = {}) {
+    const { pose = 'idle', frame = 0 } = options;
+
+    const finalSize = 70; // The desired final size
+    const baseSize = 96;  // The size the drawing logic is based on
+
     const canvas = document.createElement('canvas');
-    canvas.width = 64; canvas.height = 64;
+    canvas.width = finalSize;
+    canvas.height = finalSize;
     const ctx = canvas.getContext('2d');
 
-    const setColors = {
-        'Hierro': { main: '#607d8b', detail: '#b0bec5' },
-        'Caballero': { main: '#b71c1c', detail: '#ef9a9a' },
-        'Demonio': { main: '#1a237e', detail: '#ffd700' },
-        'León': { main: '#4A2F1B', detail: '#FFD700' }, 
-        'Asesinato': { main: '#006064', detail: '#9c27b0' },
-        'Noble': { main: '#212121', detail: '#ffd700' },
-        'Mago': { main: '#eceff1', detail: '#ffd700' }
-    };
+    // Calculate the scale factor
+    const scaleFactor = finalSize / baseSize;
+    ctx.scale(scaleFactor, scaleFactor);
 
-    const defaultPartColors = {
-        body: '#2c3e50',
-        helmet: '#1a252f', 
-        arm: '#2c3e50', 
-        leg: '#2c3e50', 
-        detail: '#7f8c8d', 
-        skin: '#ffd29c',
-        eyes: '#000'
-    };
+    // Paleta de colores
+    const hairColor = '#1a1a1a';
+    const skinColor = '#f2d3b8';
+    const eyeColor = '#9400D3'; 
+    const shirtColor = '#cccccc';
+    const coatColor = '#2a2a2a';
+    const pantsColor = '#222222';
+    const shoesColor = '#111111';
+    const facialDetailColor = '#4a2e2a';
+    const armorColor = '#7f8c8d';
+    const armorHighlightColor = '#bdc3c7';
+    const armorShineColor = '#f0f0f0';
+    const armorShadowColor = '#596263';
 
-    let currentFullSetDetected = null;
-    const fullSetPieces = ['helmet', 'armor', 'gloves', 'boots']; 
-    const equippedSetNames = [];
+    // Parámetros de animación
+    let leg1_X_offset = 0;
+    let leg2_X_offset = 0;
+    let body_Y_offset = 0;
+    let arm1_Y_offset = 0;
+    let arm2_Y_offset = 0;
 
-    fullSetPieces.forEach(slot => {
-        if (player.equipped[slot] && player.equipped[slot].set) {
-            equippedSetNames.push(player.equipped[slot].set);
-        }
-    });
+    // ==========================================================================
+    // INICIO: LÓGICA DE ANIMACIÓN DE CAMINAR Y BRAZOS
+    // ==========================================================================
+    if (pose === 'walk') {
+        // --- Animación del Cuerpo y Piernas ---
+        const walkCycleBody = [0, 1, 2, 1]; // Define el movimiento vertical del torso.
+        const walkCycleLegs = [0, 4, 0, -4]; // Define el movimiento horizontal de las piernas.
+        body_Y_offset = walkCycleBody[frame % 4];
+        leg1_X_offset = walkCycleLegs[frame % 4];
+        leg2_X_offset = walkCycleLegs[(frame + 2) % 4]; // La segunda pierna se mueve en desfase.
 
-    if (equippedSetNames.length === fullSetPieces.length && new Set(equippedSetNames).size === 1) {
-        currentFullSetDetected = equippedSetNames[0];
+        // --- Animación de los Brazos al Caminar ---
+        const walkCycleArms = [0, -2, 0, 2]; // Define el movimiento vertical de los brazos.
+        arm1_Y_offset = walkCycleArms[frame % 4];
+        arm2_Y_offset = walkCycleArms[frame % 4];
     }
+    // ==========================================================================
+    // FIN: LÓGICA DE ANIMACIÓN DE CAMINAR Y BRAZOS
+    // ==========================================================================
 
-    let torsoColor = defaultPartColors.body;
-    let headColor = defaultPartColors.helmet;
-    let armColor = defaultPartColors.arm;
-    let legColor = defaultPartColors.leg;
-    let detailColor = defaultPartColors.detail;
-    let drawHood = true;
 
-    if (currentFullSetDetected) {
-        const set = setColors[currentFullSetDetected];
-        torsoColor = set.main;
-        headColor = set.main; 
-        armColor = set.main;
-        legColor = set.main;
-        detailColor = set.detail;
-        drawHood = false;
-    } else {
-        if (player.equipped.armor && player.equipped.armor.set) {
-            torsoColor = setColors[player.equipped.armor.set].main;
-            detailColor = setColors[player.equipped.armor.set].detail; 
-        }
-        if (player.equipped.helmet && player.equipped.helmet.set) {
-            headColor = setColors[player.equipped.helmet.set].main;
-            drawHood = false; 
-        }
-        if (player.equipped.gloves && player.equipped.gloves.set) {
-            armColor = setColors[player.equipped.gloves.set].main;
-        }
-        if (player.equipped.boots && player.equipped.boots.set) {
-            legColor = setColors[player.equipped.boots.set].main;
-        }
-    }
+    const cx = baseSize / 2;
+    const cy = baseSize / 2;
+
+    // --- Dibujo del personaje ---
+    ctx.clearRect(0, 0, baseSize, baseSize);
+
+    // Piernas más cortas y anchas para una proporción cuadrada
+    ctx.fillStyle = pantsColor;
+    ctx.fillRect(cx - 14 + leg1_X_offset, cy + 22 + body_Y_offset, 12, 12);
+    ctx.fillRect(cx + 2 + leg2_X_offset, cy + 22 + body_Y_offset, 12, 12);
     
-    ctx.fillStyle = torsoColor; 
-    ctx.fillRect(16, 16, 32, 32); 
+    // Botas
+    ctx.fillStyle = armorColor;
+    ctx.fillRect(cx - 15 + leg1_X_offset, cy + 34 + body_Y_offset, 14, 10);
+    ctx.fillRect(cx + 1 + leg2_X_offset, cy + 34 + body_Y_offset, 14, 10);
+    ctx.fillStyle = armorHighlightColor;
+    ctx.fillRect(cx - 15 + leg1_X_offset, cy + 34 + body_Y_offset, 14, 3);
+    ctx.fillStyle = armorShineColor;
+    ctx.fillRect(cx - 13 + leg1_X_offset, cy + 35 + body_Y_offset, 4, 1);
 
-    if (drawHood) {
-        ctx.fillStyle = headColor;
-        ctx.beginPath();
-        ctx.moveTo(20, 20); ctx.lineTo(18, 10); ctx.lineTo(46, 10); 
-        ctx.lineTo(44, 20); ctx.lineTo(38, 22); ctx.lineTo(32, 24); 
-        ctx.lineTo(26, 22); ctx.closePath(); ctx.fill();
-        ctx.fillStyle = defaultPartColors.skin;
-        ctx.fillRect(26, 13, 12, 7); 
-        ctx.fillStyle = defaultPartColors.eyes;
-        ctx.fillRect(28, 15, 2, 2); 
-        ctx.fillRect(34, 15, 2, 2); 
-    } else { 
-        ctx.fillStyle = headColor;
-        ctx.fillRect(20, 8, 24, 12); 
-        ctx.fillStyle = detailColor;
-        ctx.fillRect(22, 10, 20, 2); 
-        ctx.fillStyle = defaultPartColors.skin;
-        ctx.fillRect(24, 12, 16, 8); 
-        ctx.fillStyle = defaultPartColors.eyes;
-        ctx.fillRect(28, 14, 2, 2); ctx.fillRect(34, 14, 2, 2);
-    }
-    
-    ctx.fillStyle = armColor;
-    ctx.fillRect(8, 24, 10, 16); 
-    ctx.strokeStyle = detailColor;
-    ctx.lineWidth = 2; 
-    ctx.strokeRect(8, 24, 10, 16);
+    // Torso más ancho y corto
+    ctx.fillStyle = shirtColor;
+    ctx.fillRect(cx - 18, cy - 8 + body_Y_offset, 36, 30);
 
-    ctx.fillStyle = legColor;
-    ctx.fillRect(20, 48, 10, 12); ctx.fillRect(34, 48, 10, 12); 
-    ctx.fillStyle = detailColor;
-    ctx.fillRect(20, 52, 10, 2); ctx.fillRect(34, 52, 10, 2);
-    if (player.equipped.weapon) {
-        switch (player.equipped.weapon.name) {
-            case 'Daga de Poder': 
-                ctx.fillStyle = '#333';
-                ctx.fillRect(48, 20, 4, 12);
-                ctx.fillStyle = '#ADD8E6';
-                ctx.beginPath();
-                ctx.moveTo(50, 12);
-                ctx.lineTo(46, 20);
-                ctx.lineTo(54, 20);
-                ctx.closePath();
-                ctx.fill();
-                break;
-            case 'Maza de Guerra': 
-                ctx.fillStyle = '#8B4513'; ctx.fillRect(48, 16, 4, 16);
-                ctx.fillStyle = '#50C878';
-                ctx.beginPath(); ctx.arc(50, 14, 8, 0, Math.PI * 2); ctx.fill(); 
-                ctx.fillStyle = '#FFD700';
-                ctx.beginPath(); ctx.arc(50, 14, 4, 0, Math.PI * 2); ctx.fill();
-                ctx.fillStyle = '#408040';
-                ctx.beginPath(); ctx.moveTo(46, 8); ctx.lineTo(50, 2); ctx.lineTo(54, 8); ctx.closePath(); ctx.fill();
-                ctx.beginPath(); ctx.moveTo(46, 20); ctx.lineTo(50, 26); ctx.lineTo(54, 20); ctx.closePath(); ctx.fill();
-                ctx.beginPath(); ctx.moveTo(42, 14); ctx.lineTo(48, 10); ctx.lineTo(48, 18); ctx.closePath(); ctx.fill();
-                ctx.beginPath(); ctx.moveTo(58, 14); ctx.lineTo(52, 10); ctx.lineTo(52, 18); ctx.closePath(); ctx.fill();
-                break;
-            case 'Espada de Luz': 
-                ctx.fillStyle = '#ADD8E6'; ctx.fillRect(48, 16, 14, 6);
-                ctx.fillStyle = '#FFFFFF'; ctx.fillRect(46, 20, 18, 2);
-                ctx.fillStyle = '#4682B4'; ctx.fillRect(44, 22, 6, 8);
-                break;
-            case 'Libro Celestial': 
-                ctx.fillStyle = '#D3D3D3'; ctx.fillRect(48, 16, 12, 16);
-                ctx.fillStyle = '#FFD700'; ctx.fillRect(46, 18, 2, 12);
-                ctx.fillStyle = '#FFD700'; ctx.fillRect(58, 18, 2, 12);
-                ctx.fillStyle = '#FFFFFF'; ctx.font = '10px Arial'; ctx.fillText('L', 52, 26);
-                break;
-            case 'Rayo de Oscuridad':
-                ctx.fillStyle = '#8A2BE2'; ctx.fillRect(48, 18, 16, 6);
-                ctx.fillStyle = '#4B0082'; ctx.fillRect(44, 16, 6, 10);
-                const darkGlow = ctx.createRadialGradient(56, 21, 2, 56, 21, 15);
-                darkGlow.addColorStop(0, 'rgba(138, 43, 226, 0.8)'); 
-                darkGlow.addColorStop(0.5, 'rgba(75, 0, 130, 0.5)');
-                darkGlow.addColorStop(1, 'rgba(75, 0, 130, 0)');
-                ctx.fillStyle = darkGlow; ctx.fillRect(38, 10, 36, 22); 
-                break;
-            case 'Arco del Bosque':
-                ctx.strokeStyle = '#8B4513'; ctx.lineWidth = 2;
-                ctx.beginPath(); ctx.arc(50, 25, 10, Math.PI * 0.7, Math.PI * 1.3, true); ctx.stroke();
-                ctx.beginPath(); ctx.moveTo(50, 15); ctx.lineTo(50, 35); ctx.stroke();
-                ctx.fillStyle = '#228B22'; ctx.beginPath(); ctx.arc(50, 15, 3, 0, Math.PI * 2); ctx.fill();
-                ctx.beginPath(); ctx.arc(50, 35, 3, 0, Math.PI * 2); ctx.fill();
-                break;
-            case 'Guadaña Helada':
-                ctx.fillStyle = '#A9A9A9'; ctx.fillRect(48, 16, 4, 16);
-                ctx.fillStyle = '#87CEEB'; ctx.beginPath(); ctx.moveTo(52, 16); ctx.lineTo(60, 12); ctx.lineTo(60, 24); ctx.lineTo(52, 28); ctx.fill();
-                break;
-            case 'Escudo Colosal':
-                ctx.fillStyle = '#87CEEB'; ctx.fillRect(35, 10, 25, 25);
-                ctx.fillStyle = '#FFD700'; ctx.beginPath(); ctx.arc(47.5, 22.5, 7, 0, Math.PI * 2); ctx.fill();
-                ctx.strokeStyle = '#36454F'; ctx.lineWidth = 2; ctx.strokeRect(35, 10, 25, 25);
-                break;
-            default: ctx.fillStyle = '#d0d0d0'; ctx.fillRect(48, 20, 12, 4); ctx.fillStyle = '#ffd700'; ctx.fillRect(44, 18, 6, 8);
-        }
-    } else { ctx.fillStyle = '#d0d0d0'; ctx.fillRect(48, 20, 12, 4); ctx.fillStyle = '#ffd700'; ctx.fillRect(44, 18, 6, 8); }
+    // Pechera ajustada
+    ctx.fillStyle = armorShadowColor;
+    ctx.fillRect(cx - 16, cy - 8 + body_Y_offset, 32, 30);
+    ctx.fillStyle = armorColor;
+    ctx.fillRect(cx - 14, cy - 7 + body_Y_offset, 28, 28);
+    ctx.fillStyle = armorHighlightColor;
+    ctx.fillRect(cx - 14, cy - 7 + body_Y_offset, 28, 4);
+    ctx.fillStyle = armorShineColor;
+    ctx.fillRect(cx - 12, cy - 6 + body_Y_offset, 5, 2);
+    ctx.fillStyle = armorShadowColor;
+    ctx.fillRect(cx - 4, cy + 3 + body_Y_offset, 8, 8);
+    ctx.fillStyle = eyeColor; 
+    ctx.fillRect(cx - 3, cy + 4 + body_Y_offset, 6, 6);
     
-    ctx.strokeStyle = '#000'; ctx.lineWidth = 1; 
-    ctx.strokeRect(16, 16, 32, 32);
-    ctx.strokeRect(20, 8, 24, 12);
-    ctx.strokeRect(20, 48, 10, 12);
-    ctx.strokeRect(34, 48, 10, 12);
+    // Brazos (piel)
+    ctx.fillStyle = skinColor;
+    ctx.fillRect(cx - 24, cy + body_Y_offset + arm1_Y_offset, 8, 13);
+    ctx.fillRect(cx + 16, cy + body_Y_offset + arm2_Y_offset, 8, 13);
+    
+    // Guanteletes con detalles
+    ctx.fillStyle = armorShadowColor;
+    ctx.fillRect(cx - 27, cy + 12 + body_Y_offset + arm1_Y_offset, 14, 12);
+    ctx.fillRect(cx + 13, cy + 12 + body_Y_offset + arm2_Y_offset, 14, 12);
+    ctx.fillStyle = armorColor;
+    ctx.fillRect(cx - 26, cy + 13 + body_Y_offset + arm1_Y_offset, 12, 10);
+    ctx.fillRect(cx + 14, cy + 13 + body_Y_offset + arm2_Y_offset, 12, 10);
+    ctx.fillStyle = armorHighlightColor;
+    ctx.fillRect(cx - 26, cy + 13 + body_Y_offset + arm1_Y_offset, 12, 3);
+    ctx.fillRect(cx + 14, cy + 13 + body_Y_offset + arm2_Y_offset, 12, 3);
+    ctx.fillStyle = armorShineColor;
+    ctx.fillRect(cx - 25, cy + 14 + body_Y_offset + arm1_Y_offset, 4, 1);
+    ctx.fillRect(cx + 21, cy + 14 + body_Y_offset + arm2_Y_offset, 4, 1);
+
+    // Hombreras con detalles
+    ctx.fillStyle = armorShadowColor;
+    ctx.fillRect(cx - 27, cy - 11 + body_Y_offset + arm1_Y_offset, 12, 16);
+    ctx.fillRect(cx + 15, cy - 11 + body_Y_offset + arm2_Y_offset, 12, 16);
+    ctx.fillStyle = armorColor;
+    ctx.fillRect(cx - 26, cy - 10 + body_Y_offset + arm1_Y_offset, 10, 14);
+    ctx.fillRect(cx + 16, cy - 10 + body_Y_offset + arm2_Y_offset, 10, 14);
+    ctx.fillStyle = armorHighlightColor;
+    ctx.fillRect(cx - 26, cy - 10 + body_Y_offset + arm1_Y_offset, 10, 3);
+    ctx.fillRect(cx + 16, cy - 10 + body_Y_offset + arm2_Y_offset, 10, 3);
+    ctx.fillStyle = armorShineColor;
+    ctx.fillRect(cx - 25, cy - 9 + body_Y_offset + arm1_Y_offset, 4, 1);
+    ctx.fillRect(cx + 21, cy - 9 + body_Y_offset + arm2_Y_offset, 4, 1);
+
+    // Cabeza ajustada
+    ctx.fillStyle = skinColor;
+    ctx.fillRect(cx - 12, cy - 29 + body_Y_offset, 24, 22);
+
+    // Ojos
+    ctx.fillStyle = eyeColor;
+    ctx.fillRect(cx - 7, cy - 23 + body_Y_offset, 4, 4);
+    ctx.fillRect(cx + 3, cy - 23 + body_Y_offset, 4, 4);
+
+    // Boca
+    ctx.fillStyle = facialDetailColor;
+    ctx.fillRect(cx - 2, cy - 14 + body_Y_offset, 4, 1);
+
+    // Pelo
+    ctx.fillStyle = hairColor;
+            ctx.fillRect(cx - 16, cy - 36 + body_Y_offset, 32, 11);  
+    ctx.beginPath();
+    ctx.moveTo(cx - 16, cy - 29 + body_Y_offset);
+    ctx.lineTo(cx - 13, cy - 21 + body_Y_offset);
+    ctx.lineTo(cx - 9, cy - 29 + body_Y_offset);
+    ctx.lineTo(cx - 5, cy - 19 + body_Y_offset);
+    ctx.lineTo(cx - 1, cy - 29 + body_Y_offset);
+    ctx.lineTo(cx + 4, cy - 21 + body_Y_offset);
+    ctx.lineTo(cx + 8, cy - 29 + body_Y_offset);
+    ctx.lineTo(cx + 12, cy - 23 + body_Y_offset);
+    ctx.lineTo(cx + 16, cy - 29 + body_Y_offset);
+    ctx.closePath();
+    ctx.fill();
+
+    // Casco
+    ctx.fillStyle = armorColor;
+    ctx.fillRect(cx - 16, cy - 36 + body_Y_offset, 32, 7);
+    ctx.fillRect(cx - 16, cy - 30 + body_Y_offset, 4, 15);
+    ctx.fillRect(cx + 12, cy - 30 + body_Y_offset, 4, 15);
+    ctx.fillStyle = armorHighlightColor;
+    ctx.fillRect(cx - 16, cy - 36 + body_Y_offset, 32, 3);
+    ctx.fillStyle = armorShineColor;
+    ctx.fillRect(cx - 10, cy - 35 + body_Y_offset, 5, 1);
+
     return canvas.toDataURL();
 }
 
