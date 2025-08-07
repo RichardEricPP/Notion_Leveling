@@ -482,50 +482,76 @@ export function createPlayerSprite(options = {}) {
     ctx.fillStyle = defaultShineColor;
     ctx.fillRect(cx - 10, cy - 35 + body_Y_offset, 5, 1);
 
-    // Dibujar Arma
+    // Dibujar Arma y Escudo
     const weapon = equipped.weapon;
     if (weapon) {
-        ctx.save();
-        // Posicionar el arma en la mano derecha
-        ctx.translate(cx + 20, cy + 15 + body_Y_offset + arm2_Y_offset);
+        if (weapon.name === 'Escudo Colosal') {
+            ctx.save();
+            // Posicionar el escudo en la mano izquierda
+            ctx.translate(cx - 25, cy + 10 + body_Y_offset + arm1_Y_offset);
 
-        // Rotar el arma según la pose de ataque
-        if (pose === 'attack') {
-            ctx.rotate(Math.PI / 4); // Rotar 45 grados al atacar
-        }
+            // Sombra
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.3)';
+            ctx.fillRect(-1, -1, 22, 32);
 
-        ctx.fillStyle = weapon.color || '#8B4513'; // Color del arma o marrón por defecto
+            // Cuerpo del escudo (Azul Gólem)
+            ctx.fillStyle = '#00BFFF';
+            ctx.fillRect(0, 0, 20, 30);
+            
+            // Borde dorado
+            ctx.strokeStyle = '#FFD700';
+            ctx.lineWidth = 2;
+            ctx.strokeRect(0, 0, 20, 30);
 
-        // Dibujar formas simples basadas en el nombre del arma
-        if (weapon.name.includes('Espada') || weapon.name.includes('Daga')) {
-            ctx.fillRect(-2, -20, 4, 25); // Hoja
-            ctx.fillRect(-4, 5, 8, 3);   // Guarda
-        } else if (weapon.name.includes('Maza')) {
-            ctx.fillRect(-2, -18, 4, 20); // Mango
-            ctx.fillRect(-5, -25, 10, 10); // Cabeza
-        } else if (weapon.name.includes('Guadaña')) {
-            ctx.fillRect(-1, -25, 3, 30); // Mango
-            ctx.beginPath();
-            ctx.moveTo(2, -25);
-            ctx.quadraticCurveTo(15, -15, 2, -5);
-            ctx.fill();
-        } else if (weapon.name.includes('Arco')) {
-            ctx.beginPath();
-            ctx.moveTo(0, -15);
-            ctx.quadraticCurveTo(15, 0, 0, 15);
-            ctx.quadraticCurveTo(-5, 0, 0, -15);
-            ctx.fill();
-        } else if (weapon.name.includes('Libro')) {
-            ctx.fillRect(-8, -10, 16, 20); // Libro
-            ctx.fillStyle = '#FFFFFF';
-            ctx.fillRect(-7, -9, 6, 18); // Página izquierda
-            ctx.fillRect(1, -9, 6, 18);  // Página derecha
+            // Emblema dorado
+            ctx.fillStyle = '#FFD700';
+            ctx.fillRect(7, 10, 6, 10); // Vertical bar
+            ctx.fillRect(4, 14, 12, 2); // Horizontal bar
+
+            ctx.restore();
         } else {
-            // Arma por defecto (palo)
-            ctx.fillRect(-2, -15, 4, 20);
-        }
+            ctx.save();
+            // Posicionar el arma en la mano derecha
+            ctx.translate(cx + 20, cy + 15 + body_Y_offset + arm2_Y_offset);
 
-        ctx.restore();
+            // Rotar el arma según la pose de ataque
+            if (pose === 'attack') {
+                ctx.rotate(Math.PI / 4); // Rotar 45 grados al atacar
+            }
+
+            ctx.fillStyle = weapon.color || '#8B4513'; // Color del arma o marrón por defecto
+
+            // Dibujar formas simples basadas en el nombre del arma
+            if (weapon.name.includes('Espada') || weapon.name.includes('Daga')) {
+                ctx.fillRect(-2, -20, 4, 25); // Hoja
+                ctx.fillRect(-4, 5, 8, 3);   // Guarda
+            } else if (weapon.name.includes('Maza')) {
+                ctx.fillRect(-2, -18, 4, 20); // Mango
+                ctx.fillRect(-5, -25, 10, 10); // Cabeza
+            } else if (weapon.name.includes('Guadaña')) {
+                ctx.fillRect(-1, -25, 3, 30); // Mango
+                ctx.beginPath();
+                ctx.moveTo(2, -25);
+                ctx.quadraticCurveTo(15, -15, 2, -5);
+                ctx.fill();
+            } else if (weapon.name.includes('Arco')) {
+                ctx.beginPath();
+                ctx.moveTo(0, -15);
+                ctx.quadraticCurveTo(15, 0, 0, 15);
+                ctx.quadraticCurveTo(-5, 0, 0, -15);
+                ctx.fill();
+            } else if (weapon.name.includes('Libro')) {
+                ctx.fillRect(-8, -10, 16, 20); // Libro
+                ctx.fillStyle = '#FFFFFF';
+                ctx.fillRect(-7, -9, 6, 18); // Página izquierda
+                ctx.fillRect(1, -9, 6, 18);  // Página derecha
+            } else {
+                // Arma por defecto (palo)
+                ctx.fillRect(-2, -15, 4, 20);
+            }
+
+            ctx.restore();
+        }
     }
 
     return canvas.toDataURL();
