@@ -91,15 +91,17 @@ function drawPlayer(x, y) {
         ctx.fillRect(drawX, drawY, playerWidth, playerHeight);
     }
 
-    // Dibuja los efectos visuales (golpe, estados, etc.) sobre el jugador
-    if (player.hitFrame > 0) {
+    // Dibuja el mini-escudo si está activo
+    if (player.hasMiniShield) {
         ctx.save();
-        ctx.globalAlpha = 0.5 + (player.hitFrame / 10) * 0.3;
-        ctx.fillStyle = 'red';
-        ctx.fillRect(drawX, drawY, playerWidth, playerHeight);
+        ctx.globalAlpha = 0.4 + Math.sin(Date.now() / 200) * 0.2; // Efecto de pulso
+        ctx.fillStyle = '#00BFFF';
+        ctx.beginPath();
+        ctx.arc(x + tileSize / 2, y + tileSize / 2, tileSize * 0.6, 0, Math.PI * 2);
+        ctx.fill();
         ctx.restore();
-        player.hitFrame--;
     }
+
     const currentTime = Date.now();
     if (player.isSlowed && currentTime < player.slowEndTime) {
         ctx.fillStyle = 'rgba(0, 100, 255, 0.3)';

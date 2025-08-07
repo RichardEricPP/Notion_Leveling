@@ -221,6 +221,7 @@ function updateGame(timestamp) {
     updateStatusEffects(currentTime);
     updateProjectiles();
     updateMonsters(currentTime);
+    checkWeaponAbilities(currentTime);
     criticalHitEffects = criticalHitEffects.filter(effect => effect.life > 0);
     damageTexts = damageTexts.filter(text => text.life > 0);
     if (warMaceShockwave) {
@@ -1052,12 +1053,16 @@ function takeDamage(target, damage, isCritical, attackerType = 'player') {
 
     actualDamage = Math.max(1, Math.floor(actualDamage));
 
-
     if (target === player && player.hasMiniShield && player.miniShieldHP > 0) {
-        const damageAbsorbed = Math.min(player.miniShieldHP, actualDamage);
-        player.miniShieldHP -= damageAbsorbed;
-        actualDamage -= damageAbsorbed;
-        if (player.miniShieldHP <= 0) ui.showMessage("¡Tu mini escudo se ha roto!");
+        const absorbedDamage = Math.min(actualDamage, player.miniShieldHP);
+        player.miniShieldHP -= absorbedDamage;
+        actualDamage -= absorbedDamage;
+        if (player.miniShieldHP <= 0) {
+            player.miniShieldCooldownEnd = Date.now() + 7000; 
+            player.hasMiniShield = false;
+            player.miniShieldHP = 0;
+            ui.showMessage("El mini escudo se ha roto");
+        }
     }
 
     if (actualDamage > 0) target.hp -= actualDamage;
@@ -1127,6 +1132,29 @@ function getDistance(x1, y1, x2, y2, monster = null) {
         return Math.sqrt(Math.pow(x2 - closestX, 2) + Math.pow(y2 - closestY, 2));
     }
     return Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2));
+}
+
+function checkWeaponAbilities(currentTime) {
+    const weapon = player.equipped.weapon;
+    if (!weapon) return;
+
+    if (weapon.name === 'Escudo Colosal') {
+        if (!player.hasMiniShield && currentTime > (player.miniShieldCooldownEnd || 0)) {
+            let surroundingEnemies = 0;
+            monsters.forEach(m => {
+                if (getDistance(player.tileX, player.tileY, m.tileX, m.tileY) <= 1.5) {
+                    surroundingEnemies++;
+                }
+            });
+
+            if (surroundingEnemies >= 3) {
+                player.hasMiniShield = true;
+                player.miniShieldHP = 50; // O cualquier valor que desees
+                player.miniShieldMaxHP = 50;
+                ui.showMessage("El mini escudo está activo");
+            }
+        }
+    }
 }
 
 function calculateScore() {
