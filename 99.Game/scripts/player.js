@@ -70,7 +70,9 @@ export let player = {
     miniShieldMaxHP: 0, 
     miniShieldCooldownEnd: 0, 
     darkRayEnemiesDefeated: 0,
-    hitsSinceLastSoulExtraction: 0 
+    hitsSinceLastSoulExtraction: 0,
+    walkAnimFrame: 0,
+    isMoving: false 
 };
 
 /**

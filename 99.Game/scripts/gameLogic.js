@@ -194,6 +194,26 @@ function updateGame(timestamp) {
             player.attackAnimFrame = 0;
         }
     }
+
+    if (player.isMoving) {
+        player.walkAnimFrame = (player.walkAnimFrame + 1) % 4; // Cycle through 4 frames
+        sprites.player = createPlayerSprite({ pose: 'walk', frame: player.walkAnimFrame });
+        const img = new Image();
+        img.src = sprites.player;
+        img.onload = () => {
+            loadedImages.player = img;
+        };
+    } else {
+        player.walkAnimFrame = 0;
+        sprites.player = createPlayerSprite({ pose: 'idle', frame: 0 });
+        const img = new Image();
+        img.src = sprites.player;
+        img.onload = () => {
+            loadedImages.player = img;
+        };
+    }
+    player.isMoving = false;
+
     const currentTime = Date.now();
     updateStatusEffects(currentTime);
     updateProjectiles();
@@ -218,7 +238,10 @@ function handlePlayerInput(timestamp) {
         else if (keys.ArrowRight || keys.KeyD) { tryMove(1, 0); moved = true; }
         else if (keys.ArrowUp || keys.KeyW) { tryMove(0, -1); moved = true; }
         else if (keys.ArrowDown || keys.KeyS) { tryMove(0, 1); moved = true; }
-        if (moved) lastMoveTime = timestamp;
+        if (moved) {
+            lastMoveTime = timestamp;
+            player.isMoving = true;
+        }
     }
 
     let attackInterval = player.equipped.weapon?.attackSpeed || 400;

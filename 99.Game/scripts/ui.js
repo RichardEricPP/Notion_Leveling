@@ -69,10 +69,6 @@ function drawPlayer(x, y) {
 
     if (isMoving) {
         playerWalkAnimCounter += 0.2; // Velocidad de la animación de caminata
-        // Eliminado: const verticalHop = Math.sin(playerWalkAnimCounter) * 4; // Desplazamiento vertical (rebote/salto)
-
-        // Eliminado: drawY += verticalHop; // Solo aplica el salto vertical a drawY
-
         playerBreathAnimCounter = 0; // Reiniciar contador de respiración si se mueve
     } else if (!player.isAttacking) {
         playerBreathAnimCounter += 0.05; // Velocidad de la respiración
