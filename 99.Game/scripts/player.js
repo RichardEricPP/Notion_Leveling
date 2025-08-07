@@ -361,31 +361,24 @@ export function createPlayerSprite(options = {}) {
     let arm1_Y_offset = 0;
     let arm2_Y_offset = 0;
 
-    // ==========================================================================
-    // INICIO: LÓGICA DE ANIMACIÓN DE CAMINAR Y BRAZOS
-    // ==========================================================================
     if (pose === 'walk') {
-        // --- Animación del Cuerpo y Piernas (8 fotogramas) ---
-        const walkCycleBody = [0, 1, 2, 3, 2, 1, 0, 1]; // Rebote más suave
-        const walkCycleLegs = [0, 4, 8, 4, 0, -4, -8, -4]; // Aumenta el recorrido de las piernas
+        const walkCycleBody = [0, 1, 2, 3, 2, 1, 0, 1];
+        const walkCycleLegs = [0, 4, 8, 4, 0, -4, -8, -4];
         body_Y_offset = walkCycleBody[frame % 8];
         leg1_X_offset = walkCycleLegs[frame % 8];
-        leg2_X_offset = walkCycleLegs[(frame + 4) % 8]; // Desfase de 4 fotogramas para la otra pierna
+        leg2_X_offset = walkCycleLegs[(frame + 4) % 8];
 
-        // --- Animación de los Brazos al Caminar (8 fotogramas) ---
-        const walkCycleArms = [0, -1, -2, -1, 0, 1, 2, 1]; // Movimiento de brazos más suave
+        const walkCycleArms = [0, -1, -2, -1, 0, 1, 2, 1];
         arm1_Y_offset = walkCycleArms[frame % 8];
-        arm2_Y_offset = walkCycleArms[(frame + 4) % 8]; // Desfase para el brazo opuesto
+        arm2_Y_offset = walkCycleArms[(frame + 4) % 8];
     }
-
 
     const cx = baseSize / 2;
     const cy = baseSize / 2;
 
-    // --- Dibujo del personaje ---
     ctx.clearRect(0, 0, baseSize, baseSize);
 
-    // Piernas más cortas y anchas para una proporción cuadrada
+    // Piernas
     ctx.fillStyle = pantsColor;
     ctx.fillRect(cx - 14 + leg1_X_offset, cy + 22 + body_Y_offset, 12, 12);
     ctx.fillRect(cx + 2 + leg2_X_offset, cy + 22 + body_Y_offset, 12, 12);
@@ -394,16 +387,16 @@ export function createPlayerSprite(options = {}) {
     ctx.fillStyle = bootsColor;
     ctx.fillRect(cx - 15 + leg1_X_offset, cy + 34 + body_Y_offset, 14, 10);
     ctx.fillRect(cx + 1 + leg2_X_offset, cy + 34 + body_Y_offset, 14, 10);
-    ctx.fillStyle = defaultHighlightColor; // Usar highlight por defecto para el brillo
+    ctx.fillStyle = defaultHighlightColor;
     ctx.fillRect(cx - 15 + leg1_X_offset, cy + 34 + body_Y_offset, 14, 3);
     ctx.fillStyle = defaultShineColor;
     ctx.fillRect(cx - 13 + leg1_X_offset, cy + 35 + body_Y_offset, 4, 1);
 
-    // Torso más ancho y corto
+    // Torso
     ctx.fillStyle = shirtColor;
     ctx.fillRect(cx - 18, cy - 8 + body_Y_offset, 36, 30);
 
-    // Pechera ajustada
+    // Pechera
     ctx.fillStyle = defaultShadowColor;
     ctx.fillRect(cx - 16, cy - 8 + body_Y_offset, 32, 30);
     ctx.fillStyle = armorColor;
@@ -417,12 +410,12 @@ export function createPlayerSprite(options = {}) {
     ctx.fillStyle = eyeColor; 
     ctx.fillRect(cx - 3, cy + 4 + body_Y_offset, 6, 6);
     
-    // Brazos (piel)
+    // Brazos
     ctx.fillStyle = skinColor;
     ctx.fillRect(cx - 24, cy + body_Y_offset + arm1_Y_offset, 8, 13);
     ctx.fillRect(cx + 16, cy + body_Y_offset + arm2_Y_offset, 8, 13);
     
-    // Guanteletes con detalles
+    // Guantes
     ctx.fillStyle = defaultShadowColor;
     ctx.fillRect(cx - 27, cy + 12 + body_Y_offset + arm1_Y_offset, 14, 12);
     ctx.fillRect(cx + 13, cy + 12 + body_Y_offset + arm2_Y_offset, 14, 12);
@@ -436,11 +429,11 @@ export function createPlayerSprite(options = {}) {
     ctx.fillRect(cx - 25, cy + 14 + body_Y_offset + arm1_Y_offset, 4, 1);
     ctx.fillRect(cx + 21, cy + 14 + body_Y_offset + arm2_Y_offset, 4, 1);
 
-    // Hombreras con detalles (usarán el color de la armadura)
+    // Hombreras
     ctx.fillStyle = defaultShadowColor;
     ctx.fillRect(cx - 27, cy - 11 + body_Y_offset + arm1_Y_offset, 12, 16);
     ctx.fillRect(cx + 15, cy - 11 + body_Y_offset + arm2_Y_offset, 12, 16);
-    ctx.fillStyle = armorColor; // Hombreras usan el color de la armadura
+    ctx.fillStyle = armorColor;
     ctx.fillRect(cx - 26, cy - 10 + body_Y_offset + arm1_Y_offset, 10, 14);
     ctx.fillRect(cx + 16, cy - 10 + body_Y_offset + arm2_Y_offset, 10, 14);
     ctx.fillStyle = defaultHighlightColor;
@@ -450,7 +443,7 @@ export function createPlayerSprite(options = {}) {
     ctx.fillRect(cx - 25, cy - 9 + body_Y_offset + arm1_Y_offset, 4, 1);
     ctx.fillRect(cx + 21, cy - 9 + body_Y_offset + arm2_Y_offset, 4, 1);
 
-    // Cabeza ajustada
+    // Cabeza
     ctx.fillStyle = skinColor;
     ctx.fillRect(cx - 12, cy - 29 + body_Y_offset, 24, 22);
 
@@ -465,7 +458,7 @@ export function createPlayerSprite(options = {}) {
 
     // Pelo
     ctx.fillStyle = hairColor;
-            ctx.fillRect(cx - 16, cy - 36 + body_Y_offset, 32, 11);  
+    ctx.fillRect(cx - 16, cy - 36 + body_Y_offset, 32, 11);  
     ctx.beginPath();
     ctx.moveTo(cx - 16, cy - 29 + body_Y_offset);
     ctx.lineTo(cx - 13, cy - 21 + body_Y_offset);
@@ -488,6 +481,52 @@ export function createPlayerSprite(options = {}) {
     ctx.fillRect(cx - 16, cy - 36 + body_Y_offset, 32, 3);
     ctx.fillStyle = defaultShineColor;
     ctx.fillRect(cx - 10, cy - 35 + body_Y_offset, 5, 1);
+
+    // Dibujar Arma
+    const weapon = equipped.weapon;
+    if (weapon) {
+        ctx.save();
+        // Posicionar el arma en la mano derecha
+        ctx.translate(cx + 20, cy + 15 + body_Y_offset + arm2_Y_offset);
+
+        // Rotar el arma según la pose de ataque
+        if (pose === 'attack') {
+            ctx.rotate(Math.PI / 4); // Rotar 45 grados al atacar
+        }
+
+        ctx.fillStyle = weapon.color || '#8B4513'; // Color del arma o marrón por defecto
+
+        // Dibujar formas simples basadas en el nombre del arma
+        if (weapon.name.includes('Espada') || weapon.name.includes('Daga')) {
+            ctx.fillRect(-2, -20, 4, 25); // Hoja
+            ctx.fillRect(-4, 5, 8, 3);   // Guarda
+        } else if (weapon.name.includes('Maza')) {
+            ctx.fillRect(-2, -18, 4, 20); // Mango
+            ctx.fillRect(-5, -25, 10, 10); // Cabeza
+        } else if (weapon.name.includes('Guadaña')) {
+            ctx.fillRect(-1, -25, 3, 30); // Mango
+            ctx.beginPath();
+            ctx.moveTo(2, -25);
+            ctx.quadraticCurveTo(15, -15, 2, -5);
+            ctx.fill();
+        } else if (weapon.name.includes('Arco')) {
+            ctx.beginPath();
+            ctx.moveTo(0, -15);
+            ctx.quadraticCurveTo(15, 0, 0, 15);
+            ctx.quadraticCurveTo(-5, 0, 0, -15);
+            ctx.fill();
+        } else if (weapon.name.includes('Libro')) {
+            ctx.fillRect(-8, -10, 16, 20); // Libro
+            ctx.fillStyle = '#FFFFFF';
+            ctx.fillRect(-7, -9, 6, 18); // Página izquierda
+            ctx.fillRect(1, -9, 6, 18);  // Página derecha
+        } else {
+            // Arma por defecto (palo)
+            ctx.fillRect(-2, -15, 4, 20);
+        }
+
+        ctx.restore();
+    }
 
     return canvas.toDataURL();
 }

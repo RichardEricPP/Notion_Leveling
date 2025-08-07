@@ -1303,13 +1303,28 @@ export function learnSkill(skill) {
 
 export function equipItem(slotType, direction, specificItem = null) {
     const availableItems = player.inventory.filter(i => i.type === slotType);
+
+    // Define which slots cannot be empty
+    const mandatorySlots = ['helmet', 'armor', 'gloves', 'boots', 'weapon'];
+    const isMandatory = mandatorySlots.includes(slotType);
+
+    // If a mandatory slot has no items in inventory, we can't change it.
+    if (isMandatory && availableItems.length === 0) {
+        return;
+    }
     
-    // Allow unequipping by adding a null option
-    const itemOptions = [null, ...availableItems];
+    // Conditionally add the null option for unequipping
+    const itemOptions = isMandatory 
+        ? [...availableItems] 
+        : [null, ...availableItems];
     
     const currentItem = player.equipped[slotType];
     let currentIndex = itemOptions.findIndex(i => i && currentItem && i.name === currentItem.name);
-    if (currentIndex === -1) currentIndex = 0; // Default to null if not found
+    
+    // If current item not found or was null, default to the first option.
+    if (currentIndex === -1) {
+        currentIndex = 0;
+    }
 
     let newIndex;
     if (direction === 'right') {
