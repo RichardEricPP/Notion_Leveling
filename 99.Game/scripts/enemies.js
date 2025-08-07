@@ -396,8 +396,66 @@ export function createStairsSprite() {
     ctx.fillRect(0, 32, 64, 32);
     return canvas.toDataURL();
 }
-export function createFloorSprite() { if (sprites.floor) return sprites.floor; const c=document.createElement('canvas');c.width=64;c.height=64;const x=c.getContext('2d');x.fillStyle='#aaa';x.fillRect(0,0,64,64);x.strokeStyle='#888';x.lineWidth=1;for(let y=8;y<64;y+=16){x.beginPath();x.moveTo(0,y);x.lineTo(64,y);x.stroke();}for(let X=8;X<64;X+=16){x.beginPath();x.moveTo(X,0);x.lineTo(X,64);x.stroke();}x.strokeStyle='#777';const p=[{x:12,y:15,l:10,a:0.5},{x:32,y:24,l:8,a:1.2},{x:48,y:40,l:12,a:2.1},{x:20,y:52,l:9,a:3.6},{x:52,y:8,l:11,a:5.2}];for(const k of p){x.beginPath();x.moveTo(k.x,k.y);x.lineTo(k.x+Math.cos(k.a)*k.l,k.y+Math.sin(k.a)*k.l);x.stroke();}return c.toDataURL(); }
-export function createWallSprite() { if (sprites.wall) return sprites.wall; const c=document.createElement('canvas');c.width=64;c.height=64;const x=c.getContext('2d');x.fillStyle='#555';x.fillRect(0,0,64,64);x.strokeStyle='#333';x.lineWidth=2;for(let y=16;y<64;y+=16){x.beginPath();x.moveTo(0,y);x.lineTo(64,y);x.stroke();}for(let r=0;r<4;r++){const o=r%2===0?0:16;for(let X=o;X<64;X+=32){x.beginPath();x.moveTo(X,r*16);x.lineTo(X,r*16+16);x.stroke();}}x.fillStyle='#444';const d=[{x:10,y:8,r:1.5},{x:25,y:12,r:2},{x:40,y:7,r:1.2},{x:55,y:10,r:1.8},{x:15,y:22,r:1.3},{x:30,y:26,r:2.2},{x:48,y:24,r:1.7},{x:8,y:38,r:1.9},{x:22,y:42,r:1.4},{x:38,y:40,r:2.1},{x:52,y:44,r:1.6},{x:12,y:56,r:1.8},{x:28,y:58,r:1.5},{x:44,y:54,r:2},{x:58,y:60,r:1.7},{x:18,y:5,r:1.3},{x:34,y:32,r:1.9},{x:50,y:18,r:1.4},{x:5,y:48,r:2.2},{x:60,y:36,r:1.6}];for(const k of d){x.beginPath();x.arc(k.x,k.y,k.r,0,Math.PI*2);x.fill();}return c.toDataURL(); }
+export function createFloorSprite() {
+    if (sprites.floor) return sprites.floor;
+    const c = document.createElement('canvas');
+    c.width = 64; c.height = 64;
+    const x = c.getContext('2d');
+
+    // Base color with a darker, more dungeon-like gradient
+    const gradient = x.createLinearGradient(0, 0, 64, 64);
+    gradient.addColorStop(0, '#4A4A4A'); // Darker grey
+    gradient.addColorStop(1, '#2A2A2A'); // Even darker grey
+    x.fillStyle = gradient;
+    x.fillRect(0, 0, 64, 64);
+
+    // Grid lines with more pronounced shadows and highlights for depth
+    x.lineWidth = 1.5; // Slightly thicker lines
+    for (let y = 0; y < 64; y += 16) {
+        // Shadow for horizontal lines (bottom-right offset)
+        x.strokeStyle = '#1A1A1A'; 
+        x.beginPath();
+        x.moveTo(0, y + 1.5);
+        x.lineTo(64, y + 1.5);
+        x.stroke();
+        // Highlight for horizontal lines (top-left offset)
+        x.strokeStyle = '#6A6A6A'; 
+        x.beginPath();
+        x.moveTo(0, y);
+        x.lineTo(64, y);
+        x.stroke();
+    }
+    for (let X = 0; X < 64; X += 16) {
+        // Shadow for vertical lines (bottom-right offset)
+        x.strokeStyle = '#1A1A1A'; 
+        x.beginPath();
+        x.moveTo(X + 1.5, 0);
+        x.lineTo(X + 1.5, 64);
+        x.stroke();
+        // Highlight for vertical lines (top-left offset)
+        x.strokeStyle = '#6A6A6A'; 
+        x.beginPath();
+        x.moveTo(X, 0);
+        x.lineTo(X, 64);
+        x.stroke();
+    }
+
+    // Random details (cracks, etc.) - adjust color to fit darker theme
+    x.strokeStyle = '#3A3A3A'; // Darker for cracks
+    const p = [
+        { x: 12, y: 15, l: 10, a: 0.5 }, { x: 32, y: 24, l: 8, a: 1.2 },
+        { x: 48, y: 40, l: 12, a: 2.1 }, { x: 20, y: 52, l: 9, a: 3.6 },
+        { x: 52, y: 8, l: 11, a: 5.2 }
+    ];
+    for (const k of p) {
+        x.beginPath();
+        x.moveTo(k.x, k.y);
+        x.lineTo(k.x + Math.cos(k.a) * k.l, k.y + Math.sin(k.a) * k.l);
+        x.stroke();
+    }
+    return c.toDataURL();
+}
+
 export function createChestSprite() { const c = document.createElement('canvas');c.width=64;c.height=64;const x=c.getContext('2d');x.fillStyle = '#8B4513';x.fillRect(12,20,40,30);x.fillStyle = '#A0522D';x.fillRect(12,20,40,10);x.fillStyle = '#555';x.fillRect(12,30,40,4);x.fillRect(12,40,40,4);x.fillStyle = '#FFD700';x.fillRect(28,28,8,8);x.fillStyle = '#000';x.beginPath();x.arc(32,32,2,0,Math.PI*2);x.fill();x.fillStyle = 'rgba(255,255,255,0.2)';x.fillRect(14,22,36,2);return c.toDataURL(); }
 
 export function createTorchSprite() {
@@ -544,8 +602,11 @@ export function loadSprites() {
     if (!sprites.boss) sprites.boss = createGolemMiniBossSprite();
     if (!sprites.finalBoss) sprites.finalBoss = createArachnidBossSprite();
     if (!sprites.spiderling) sprites.spiderling = createSpiderlingSprite();
-    if (!sprites.floor) sprites.floor = createFloorSprite();
-    if (!sprites.wall) sprites.wall = createWallSprite();
+    sprites.floor = './assets/dungeon_floor.jpg'; // Use the image directly
+    sprites.wall_up = './assets/wall_up.jpg';
+    sprites.wall_down = './assets/wall_down.jpg';
+    sprites.wall_left = './assets/wall_left.jpg';
+    sprites.wall_right = './assets/wall_right.jpg';
     if (!sprites.chest) sprites.chest = createChestSprite();
     if (!sprites.stairs) sprites.stairs = createStairsSprite();
     if (!sprites.torch) sprites.torch = createTorchSprite();

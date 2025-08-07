@@ -75,10 +75,18 @@ export class Projectile {
 }
 
 async function loadAllSprites() {
-    loadSprites();
-    sprites.player = createPlayerSprite({ equipped: player.equipped });
-    const allSpriteKeys = Object.keys(sprites);
+    // Clear wall and floor sprites from cache to force regeneration
+    delete sprites.wall;
+    delete loadedImages.wall;
+    delete sprites.floor;
+    delete loadedImages.floor;
+
+    loadSprites(); // This populates the 'sprites' object with static sprites
+    sprites.player = createPlayerSprite({ equipped: player.equipped }); // Create player sprite
+    sprites.minion = createMinionSprite(sprites.player); // Create minion sprite here, after player is created
+
     return new Promise(resolve => {
+        // Now, imagesToLoad will correctly include all sprites, including minion
         let imagesToLoad = Object.keys(sprites).length;
         if (imagesToLoad === 0) {
             resolve();
@@ -94,20 +102,12 @@ async function loadAllSprites() {
             img.src = sprites[key];
             img.onload = () => {
                 loadedImages[key] = img;
-                if (key === 'player') {
-                    sprites.minion = createMinionSprite(loadedImages.player);
-                    imagesToLoad++;
-                    const minionImg = new Image();
-                    minionImg.src = sprites.minion;
-                    minionImg.onload = () => {
-                        loadedImages.minion = minionImg;
-                        checkAllLoaded();
-                    };
-                    minionImg.onerror = () => checkAllLoaded();
-                }
                 checkAllLoaded();
             };
-            img.onerror = () => checkAllLoaded();
+            img.onerror = () => {
+                console.error(`Failed to load sprite: ${key}`);
+                checkAllLoaded(); // Still call checkAllLoaded even on error to prevent deadlock
+            };
         });
     });
 }
@@ -583,12 +583,12 @@ function updateMonsters(currentTime) {
 }
 
 async function generateFloor() {
-    map = Array(mapHeight).fill(0).map(() => Array(mapWidth).fill(0));
+    map = Array(mapHeight).fill(0).map(() => Array(mapWidth).fill(9)); // Initialize with 'void' (9)
     stairLocation = { x: -1, y: -1, active: false, type: 4 };
     Object.keys(player.skillUsageThisFloor).forEach(key => delete player.skillUsageThisFloor[key]);
     Object.keys(skillCooldowns).forEach(key => skillCooldowns[key] = 0);
     monsters.length = 0;
-    torches.length = 0; // Clear torches for the new floor
+    torches.length = 0; // Limpiar antorchas al generar nuevo piso
     revealedMap = Array(mapHeight).fill(0).map(() => Array(mapWidth).fill(false));
 
     var hpMultiplier = 1.0, atkMultiplier = 1.0;
@@ -599,11 +599,18 @@ async function generateFloor() {
         const arenaWidth = 15, arenaHeight = 15;
         const arenaX = Math.floor((mapWidth - arenaWidth) / 2);
         const arenaY = Math.floor((mapHeight - arenaHeight) / 2);
-        for (let y = 0; y < mapHeight; y++) {
-            for (let x = 0; x < mapWidth; x++) map[y][x] = 0;
-        }
+        // Fill arena with floor (1)
         for (let y = arenaY; y < arenaY + arenaHeight; y++) {
             for (let x = arenaX; x < arenaX + arenaWidth; x++) map[y][x] = 1;
+        }
+        // Add walls around the arena (0) where there was void (9)
+        for (let y = arenaY - 1; y <= arenaY + arenaHeight; y++) {
+            for (let x = arenaX - 1; x <= arenaX + arenaWidth; x++) {
+                if (x < 0 || x >= mapWidth || y < 0 || y >= mapHeight) continue;
+                if (map[y][x] === 9) { // If it's void, make it a wall
+                    map[y][x] = 0;
+                }
+            }
         }
         player.tileX = arenaX + Math.floor(arenaWidth / 2);
         player.tileY = arenaY + arenaHeight - 2;
@@ -645,6 +652,24 @@ async function generateFloor() {
         });
         for (let i = 0; i < rooms.length - 1; i++) {
             carvePathBetweenRooms(rooms[i], rooms[i + 1]);
+        }
+        // After carving paths, add walls (0) around floor (1) tiles
+        for (let y = 0; y < mapHeight; y++) {
+            for (let x = 0; x < mapWidth; x++) {
+                if (map[y][x] === 1) { // If it's a floor tile
+                    for (let dy = -1; dy <= 1; dy++) {
+                        for (let dx = -1; dx <= 1; dx++) {
+                            const checkX = x + dx;
+                            const checkY = y + dy;
+                            if (checkX >= 0 && checkX < mapWidth && checkY >= 0 && checkY < mapHeight) {
+                                if (map[checkY][checkX] === 9) { // If adjacent to void, make it a wall
+                                    map[checkY][checkX] = 0;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
         }
         player.tileX = rooms[0].centerX;
         player.tileY = rooms[0].centerY;

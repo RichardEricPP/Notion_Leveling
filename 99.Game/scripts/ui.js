@@ -45,7 +45,41 @@ const minimapCtx = minimapCanvas.getContext('2d');
 
 // --- Drawing Functions ---
 export function drawFloor(x, y) { if(loadedImages.floor && loadedImages.floor.complete) ctx.drawImage(loadedImages.floor, 0,0,64,64, x, y, tileSize, tileSize); else { ctx.fillStyle = '#aaa'; ctx.fillRect(x,y,tileSize,tileSize);}}
-export function drawWall(x, y) { if(loadedImages.wall && loadedImages.wall.complete) ctx.drawImage(loadedImages.wall, 0,0,64,64, x, y, tileSize, tileSize); else { ctx.fillStyle = '#555'; ctx.fillRect(x,y,tileSize,tileSize);}}
+export function drawWall(x, y, wallType) {
+    let imageToDraw;
+    let drawWidth = tileSize;
+    let drawHeight = tileSize;
+    let drawX = x;
+    let drawY = y;
+
+    switch (wallType) {
+        case 'wall_up':
+            imageToDraw = loadedImages.wall_up;
+            break;
+        case 'wall_down':
+            imageToDraw = loadedImages.wall_down;
+            break;
+        case 'wall_left':
+            imageToDraw = loadedImages.wall_left;
+            // No width reduction or X adjustment needed, image should fill tile
+            break;
+        case 'wall_right':
+            imageToDraw = loadedImages.wall_right;
+            // No width reduction or X adjustment needed, image should fill tile
+            break;
+        default:
+            // Fallback for generic wall or if wallType is not recognized
+            imageToDraw = loadedImages.wall_up; // Default to wall_up
+            break;
+    }
+
+    if (imageToDraw && imageToDraw.complete) {
+        ctx.drawImage(imageToDraw, 0, 0, 64, 64, drawX, drawY, drawWidth, drawHeight);
+    } else {
+        ctx.fillStyle = '#555';
+        ctx.fillRect(x, y, tileSize, tileSize);
+    }
+}
 export function drawChest(x, y) { if(loadedImages.chest && loadedImages.chest.complete) ctx.drawImage(loadedImages.chest, 0,0,64,64, x, y, tileSize, tileSize); else { ctx.fillStyle = '#8B4513'; ctx.fillRect(x,y,tileSize,tileSize);}}
 export function drawStairs(x,y) { 
     if(loadedImages.stairs && loadedImages.stairs.complete) ctx.drawImage(loadedImages.stairs, 0,0,64,64, x, y, tileSize, tileSize); else { ctx.fillStyle = '#704214'; ctx.fillRect(x,y,tileSize,tileSize);}}
@@ -382,6 +416,25 @@ function drawIceRayEffects(offsetX, offsetY) {
     });
 }
 
+function hasAdjacentFloor(x, y, map) {
+    for (let dy = -1; dy <= 1; dy++) {
+        for (let dx = -1; dx <= 1; dx++) {
+            if (dx === 0 && dy === 0) continue; // Skip the current tile
+
+            const checkX = x + dx;
+            const checkY = y + dy;
+
+            // Check bounds
+            if (checkX >= 0 && checkX < mapWidth && checkY >= 0 && checkY < mapHeight) {
+                if (map[checkY][checkX] === 1) { // If adjacent tile is floor
+                    return true;
+                }
+            }
+        }
+    }
+    return false;
+}
+
 export function drawMap() {
     offsetX = Math.max(0, Math.min(player.tileX * tileSize - gameCanvas.width / 2 + tileSize / 2, mapWidth * tileSize - gameCanvas.width));
     offsetY = Math.max(0, Math.min(player.tileY * tileSize - gameCanvas.height / 2 + tileSize / 2, mapHeight * tileSize - gameCanvas.height));
@@ -396,15 +449,46 @@ export function drawMap() {
         shakeOffsetY = (Math.random() - 0.5) * screenShake * 2;
         
     }
-    ctx.fillStyle = '#2a1f15'; ctx.fillRect(0, 0, gameCanvas.width, gameCanvas.height);
+    ctx.fillStyle = '#000000'; ctx.fillRect(0, 0, gameCanvas.width, gameCanvas.height);
     ctx.save(); ctx.translate(shakeOffsetX, shakeOffsetY);
 
     for (let y = startY; y <= endY; y++) {
         for (let x = startX; x <= endX; x++) {
             const screenX = x * tileSize - offsetX; const screenY = y * tileSize - offsetY;
             if (map[y] && map[y][x] !== undefined) { 
-                if (map[y][x] === 0) drawWall(screenX, screenY);
-                else drawFloor(screenX, screenY);
+                if (map[y][x] === 0) { // It's a wall
+                    let wallType = null;
+                    // Check for floor below (top edge of a horizontal wall)
+                    if (y + 1 < mapHeight && map[y + 1][x] === 1) {
+                        wallType = 'wall_up';
+                    }
+                    // Check for floor above (bottom edge of a horizontal wall)
+                    else if (y - 1 >= 0 && map[y - 1][x] === 1) {
+                        wallType = 'wall_down';
+                    }
+                    // Check for floor left (right edge of a vertical wall)
+                    else if (x - 1 >= 0 && map[y][x - 1] === 1) {
+                        wallType = 'wall_right';
+                    }
+                    // Check for floor right (left edge of a vertical wall)
+                    else if (x + 1 < mapWidth && map[y][x + 1] === 1) {
+                        wallType = 'wall_left';
+                    }
+
+                    if (wallType) {
+                        drawWall(screenX, screenY, wallType);
+                    } else {
+                        // If it's a wall but has no adjacent floor (e.g., interior wall or surrounded by void/other walls)
+                        // Draw it as black
+                        ctx.fillStyle = '#000000';
+                        ctx.fillRect(screenX, screenY, tileSize, tileSize);
+                    }
+                } else if (map[y][x] === 1) { // It's a floor
+                    drawFloor(screenX, screenY);
+                } else if (map[y][x] === 9) { // It's void
+                    ctx.fillStyle = '#000000';
+                    ctx.fillRect(screenX, screenY, tileSize, tileSize);
+                }
 
                 if (map[y][x] === 2) { drawChest(screenX, screenY); }
 
@@ -412,7 +496,8 @@ export function drawMap() {
                     drawStairs(screenX, screenY);
                 }
             } else { 
-                drawFloor(screenX, screenY);
+                ctx.fillStyle = '#000000'; // Draw black for areas outside the defined map
+                ctx.fillRect(screenX, screenY, tileSize, tileSize);
             }
         }
     }

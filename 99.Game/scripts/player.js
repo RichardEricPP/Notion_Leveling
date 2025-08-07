@@ -593,11 +593,19 @@ export function createPlayerSprite(options = {}) {
     return canvas.toDataURL();
 }
 
-export function createMinionSprite(playerImage) {
+export function createMinionSprite(playerSpriteDataUrl) {
     const canvas = document.createElement('canvas');
     canvas.width = 64; canvas.height = 64;
     const ctx = canvas.getContext('2d');
-    ctx.drawImage(playerImage, 0, 0);
+
+    // Create a temporary image object from the data URL
+    const playerImageTemp = new Image();
+    playerImageTemp.src = playerSpriteDataUrl;
+
+    // Draw the player image onto the minion canvas. This will happen synchronously.
+    // The data URL for the minion is generated immediately.
+    // The actual visual representation will be correct once playerImageTemp has loaded.
+    ctx.drawImage(playerImageTemp, 0, 0);
     
     ctx.globalCompositeOperation = 'source-atop'; 
     ctx.fillStyle = 'rgba(0, 0, 0, 1)'; 
