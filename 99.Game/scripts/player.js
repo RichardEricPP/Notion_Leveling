@@ -323,7 +323,7 @@ export function checkLevelUp() {
 }
 
 export function createPlayerSprite(options = {}) {
-    const { pose = 'idle', frame = 0 } = options;
+    const { pose = 'idle', frame = 0, equipped = {} } = options;
 
     const finalSize = 70; // The desired final size
     const baseSize = 96;  // The size the drawing logic is based on
@@ -337,19 +337,24 @@ export function createPlayerSprite(options = {}) {
     const scaleFactor = finalSize / baseSize;
     ctx.scale(scaleFactor, scaleFactor);
 
-    // Paleta de colores
+    // Paleta de colores base
     const hairColor = '#1a1a1a';
     const skinColor = '#f2d3b8';
     const eyeColor = '#9400D3'; 
     const shirtColor = '#cccccc';
-    const coatColor = '#2a2a2a';
     const pantsColor = '#222222';
-    const shoesColor = '#111111';
     const facialDetailColor = '#4a2e2a';
-    const armorColor = '#7f8c8d';
-    const armorHighlightColor = '#bdc3c7';
-    const armorShineColor = '#f0f0f0';
-    const armorShadowColor = '#596263';
+
+    // Colores de armadura dinámicos
+    const defaultArmorColor = '#7f8c8d'; // Gris por defecto
+    const defaultHighlightColor = '#bdc3c7';
+    const defaultShineColor = '#f0f0f0';
+    const defaultShadowColor = '#596263';
+
+    const helmetColor = equipped.helmet?.color || defaultArmorColor;
+    const armorColor = equipped.armor?.color || defaultArmorColor;
+    const glovesColor = equipped.gloves?.color || defaultArmorColor;
+    const bootsColor = equipped.boots?.color || defaultArmorColor;
 
     // Parámetros de animación
     let leg1_X_offset = 0;
@@ -388,12 +393,12 @@ export function createPlayerSprite(options = {}) {
     ctx.fillRect(cx + 2 + leg2_X_offset, cy + 22 + body_Y_offset, 12, 12);
     
     // Botas
-    ctx.fillStyle = armorColor;
+    ctx.fillStyle = bootsColor;
     ctx.fillRect(cx - 15 + leg1_X_offset, cy + 34 + body_Y_offset, 14, 10);
     ctx.fillRect(cx + 1 + leg2_X_offset, cy + 34 + body_Y_offset, 14, 10);
-    ctx.fillStyle = armorHighlightColor;
+    ctx.fillStyle = defaultHighlightColor; // Usar highlight por defecto para el brillo
     ctx.fillRect(cx - 15 + leg1_X_offset, cy + 34 + body_Y_offset, 14, 3);
-    ctx.fillStyle = armorShineColor;
+    ctx.fillStyle = defaultShineColor;
     ctx.fillRect(cx - 13 + leg1_X_offset, cy + 35 + body_Y_offset, 4, 1);
 
     // Torso más ancho y corto
@@ -401,15 +406,15 @@ export function createPlayerSprite(options = {}) {
     ctx.fillRect(cx - 18, cy - 8 + body_Y_offset, 36, 30);
 
     // Pechera ajustada
-    ctx.fillStyle = armorShadowColor;
+    ctx.fillStyle = defaultShadowColor;
     ctx.fillRect(cx - 16, cy - 8 + body_Y_offset, 32, 30);
     ctx.fillStyle = armorColor;
     ctx.fillRect(cx - 14, cy - 7 + body_Y_offset, 28, 28);
-    ctx.fillStyle = armorHighlightColor;
+    ctx.fillStyle = defaultHighlightColor;
     ctx.fillRect(cx - 14, cy - 7 + body_Y_offset, 28, 4);
-    ctx.fillStyle = armorShineColor;
+    ctx.fillStyle = defaultShineColor;
     ctx.fillRect(cx - 12, cy - 6 + body_Y_offset, 5, 2);
-    ctx.fillStyle = armorShadowColor;
+    ctx.fillStyle = defaultShadowColor;
     ctx.fillRect(cx - 4, cy + 3 + body_Y_offset, 8, 8);
     ctx.fillStyle = eyeColor; 
     ctx.fillRect(cx - 3, cy + 4 + body_Y_offset, 6, 6);
@@ -420,30 +425,30 @@ export function createPlayerSprite(options = {}) {
     ctx.fillRect(cx + 16, cy + body_Y_offset + arm2_Y_offset, 8, 13);
     
     // Guanteletes con detalles
-    ctx.fillStyle = armorShadowColor;
+    ctx.fillStyle = defaultShadowColor;
     ctx.fillRect(cx - 27, cy + 12 + body_Y_offset + arm1_Y_offset, 14, 12);
     ctx.fillRect(cx + 13, cy + 12 + body_Y_offset + arm2_Y_offset, 14, 12);
-    ctx.fillStyle = armorColor;
+    ctx.fillStyle = glovesColor;
     ctx.fillRect(cx - 26, cy + 13 + body_Y_offset + arm1_Y_offset, 12, 10);
     ctx.fillRect(cx + 14, cy + 13 + body_Y_offset + arm2_Y_offset, 12, 10);
-    ctx.fillStyle = armorHighlightColor;
+    ctx.fillStyle = defaultHighlightColor;
     ctx.fillRect(cx - 26, cy + 13 + body_Y_offset + arm1_Y_offset, 12, 3);
     ctx.fillRect(cx + 14, cy + 13 + body_Y_offset + arm2_Y_offset, 12, 3);
-    ctx.fillStyle = armorShineColor;
+    ctx.fillStyle = defaultShineColor;
     ctx.fillRect(cx - 25, cy + 14 + body_Y_offset + arm1_Y_offset, 4, 1);
     ctx.fillRect(cx + 21, cy + 14 + body_Y_offset + arm2_Y_offset, 4, 1);
 
-    // Hombreras con detalles
-    ctx.fillStyle = armorShadowColor;
+    // Hombreras con detalles (usarán el color de la armadura)
+    ctx.fillStyle = defaultShadowColor;
     ctx.fillRect(cx - 27, cy - 11 + body_Y_offset + arm1_Y_offset, 12, 16);
     ctx.fillRect(cx + 15, cy - 11 + body_Y_offset + arm2_Y_offset, 12, 16);
-    ctx.fillStyle = armorColor;
+    ctx.fillStyle = armorColor; // Hombreras usan el color de la armadura
     ctx.fillRect(cx - 26, cy - 10 + body_Y_offset + arm1_Y_offset, 10, 14);
     ctx.fillRect(cx + 16, cy - 10 + body_Y_offset + arm2_Y_offset, 10, 14);
-    ctx.fillStyle = armorHighlightColor;
+    ctx.fillStyle = defaultHighlightColor;
     ctx.fillRect(cx - 26, cy - 10 + body_Y_offset + arm1_Y_offset, 10, 3);
     ctx.fillRect(cx + 16, cy - 10 + body_Y_offset + arm2_Y_offset, 10, 3);
-    ctx.fillStyle = armorShineColor;
+    ctx.fillStyle = defaultShineColor;
     ctx.fillRect(cx - 25, cy - 9 + body_Y_offset + arm1_Y_offset, 4, 1);
     ctx.fillRect(cx + 21, cy - 9 + body_Y_offset + arm2_Y_offset, 4, 1);
 
@@ -477,13 +482,13 @@ export function createPlayerSprite(options = {}) {
     ctx.fill();
 
     // Casco
-    ctx.fillStyle = armorColor;
+    ctx.fillStyle = helmetColor;
     ctx.fillRect(cx - 16, cy - 36 + body_Y_offset, 32, 7);
     ctx.fillRect(cx - 16, cy - 30 + body_Y_offset, 4, 15);
     ctx.fillRect(cx + 12, cy - 30 + body_Y_offset, 4, 15);
-    ctx.fillStyle = armorHighlightColor;
+    ctx.fillStyle = defaultHighlightColor;
     ctx.fillRect(cx - 16, cy - 36 + body_Y_offset, 32, 3);
-    ctx.fillStyle = armorShineColor;
+    ctx.fillStyle = defaultShineColor;
     ctx.fillRect(cx - 10, cy - 35 + body_Y_offset, 5, 1);
 
     return canvas.toDataURL();

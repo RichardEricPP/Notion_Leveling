@@ -76,7 +76,7 @@ export class Projectile {
 
 async function loadAllSprites() {
     loadSprites();
-    sprites.player = createPlayerSprite();
+    sprites.player = createPlayerSprite({ equipped: player.equipped });
     const allSpriteKeys = Object.keys(sprites);
     return new Promise(resolve => {
         let imagesToLoad = Object.keys(sprites).length;
@@ -197,7 +197,7 @@ function updateGame(timestamp) {
 
     if (player.isMoving) {
                     player.walkAnimFrame = (player.walkAnimFrame + 1) % 8; // Ciclo de 8 fotogramas
-        const newSprite = createPlayerSprite({ pose: 'walk', frame: player.walkAnimFrame });
+        const newSprite = createPlayerSprite({ pose: 'walk', frame: player.walkAnimFrame, equipped: player.equipped });
         if (sprites.player !== newSprite) {
             sprites.player = newSprite;
             const img = new Image();
@@ -208,7 +208,7 @@ function updateGame(timestamp) {
         }
     } else if (player.walkAnimFrame !== 0) { // Regenerate idle sprite only once when stopping
         player.walkAnimFrame = 0;
-        sprites.player = createPlayerSprite({ pose: 'idle', frame: 0 });
+        sprites.player = createPlayerSprite({ pose: 'idle', frame: 0, equipped: player.equipped });
         const img = new Image();
         img.src = sprites.player;
         img.onload = () => {
