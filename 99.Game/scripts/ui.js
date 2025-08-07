@@ -250,9 +250,9 @@ function drawProjectiles(offsetX, offsetY) {
             ctx.arc(0, 0, 15, 0, Math.PI * 2);
             ctx.fill();
         } else if (proj.type === 'celestial_ray') { 
-            const rayLength = tileSize * 1.5;
-            const rayWidth = tileSize * 0.15;
-            const glowRadius = tileSize * 0.8;
+            const rayLength = tileSize * 0.8; // Reducido a 0.8 de tileSize
+            const rayWidth = tileSize * 0.08; // Reducido a 0.08 de tileSize
+            const glowRadius = tileSize * 0.5; // Reducido el radio del brillo
 
             ctx.fillStyle = 'rgba(255, 255, 0, 0.9)';
             ctx.fillRect(-rayWidth / 2, -rayLength / 2, rayWidth, rayLength);
@@ -267,9 +267,9 @@ function drawProjectiles(offsetX, offsetY) {
             ctx.fill();
 
             for (let i = 0; i < 3; i++) {
-                const sparkX = (Math.random() - 0.5) * rayWidth * 2;
-                const sparkY = (Math.random() - 0.5) * rayLength * 2;
-                const sparkSize = Math.random() * 3 + 1;
+                const sparkX = (Math.random() - 0.5) * rayWidth * 1.5; // Ajuste para chispas
+                const sparkY = (Math.random() - 0.5) * rayLength * 1.5; // Ajuste para chispas
+                const sparkSize = Math.random() * 2 + 1; // Chispas más pequeñas
                 ctx.fillStyle = `rgba(255, 255, 255, ${0.5 + Math.random() * 0.5})`;
                 ctx.beginPath();
                 ctx.arc(sparkX, sparkY, sparkSize, 0, Math.PI * 2);

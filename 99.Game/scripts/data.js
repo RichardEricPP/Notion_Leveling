@@ -48,7 +48,7 @@ export const gearList = [
     { name: 'Escudo Colosal', type: 'weapon', def: 10, attackSpeed: 250, color: '#A9A9A9' },
     { name: 'Maza de Guerra', type: 'weapon', atk: 9, attackSpeed: 250, color: '#B0C4DE' },
     { name: 'Espada de Luz', type: 'weapon', atk: 7, spd: 3, attackSpeed: 150, color: '#8B0000' },
-    { name: 'Libro Celestial', type: 'weapon', atk: 5, spd: 4, attackSpeed: 250, color: '#8A2BE2' },
+    { name: 'Libro Celestial', type: 'weapon', atk: 5, spd: 4, attackSpeed: 250, color: '#4169E1' },
     { name: 'Rayo de Oscuridad', type: 'weapon', atk: 7, critical: 0.03, attackSpeed: 250, color: '#004953' },
     { name: 'Daga de Poder', type: 'weapon', atk: 6, spd: 4, attackSpeed: 800, color: '#004953' },
     { name: 'Arco del Bosque', type: 'weapon', atk: 6, critical: 0.04, attackSpeed: 250, color: '#A0522D' },
