@@ -195,7 +195,7 @@ function drawProjectiles(offsetX, offsetY) {
         const screenY = proj.y * tileSize - offsetY;
         
         ctx.save();
-        ctx.translate(screenX + tileSize / 2, screenY + tileSize / 2); 
+        ctx.translate(screenX - 25 + tileSize / 2, screenY - 20 + tileSize / 2); 
 
         let rotationAngle = 0;
         if (proj.type === 'arrow' || proj.type === 'web' || proj.type === 'dark_ray' || proj.type === 'celestial_ray') { 

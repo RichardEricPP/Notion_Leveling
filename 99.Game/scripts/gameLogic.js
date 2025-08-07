@@ -286,18 +286,41 @@ function updateStatusEffects(currentTime) {
 
 function updateProjectiles() {
     projectiles = projectiles.filter(p => {
-        if (!p.update()) return false;
-        const tileX = Math.floor(p.x);
-        const tileY = Math.floor(p.y);
-        if (!isPassable(tileX, tileY, true)) return false;
+        const prevTileX = Math.floor(p.x);
+        const prevTileY = Math.floor(p.y);
+
+        if (!p.update()) return false; // Update projectile position
+
+        const currTileX = Math.floor(p.x);
+        const currTileY = Math.floor(p.y);
+
+        // Check for collision with walls
+        if (!isPassable(currTileX, currTileY, true)) return false;
+
+        // Check for player projectiles hitting monsters
         if (p.owner === 'player') {
-            const monster = getMonsterAt(tileX, tileY);
-            if (monster) {
-                takeDamage(monster, p.damage, p.isCritical, 'player');
-                return false;
+            let hitMonster = null;
+
+            // Check current tile
+            hitMonster = getMonsterAt(currTileX, currTileY);
+
+            // If moved diagonally, check intermediate tiles
+            if (!hitMonster && prevTileX !== currTileX && prevTileY !== currTileY) {
+                // Check the tile that completes the square (e.g., if moving from (0,0) to (1,1), check (1,0) and (0,1))
+                if (getMonsterAt(currTileX, prevTileY)) {
+                    hitMonster = getMonsterAt(currTileX, prevTileY);
+                } else if (getMonsterAt(prevTileX, currTileY)) {
+                    hitMonster = getMonsterAt(prevTileX, currTileY);
+                }
             }
-        } else { 
-            if (tileX === player.tileX && tileY === player.tileY) {
+
+            if (hitMonster) {
+                takeDamage(hitMonster, p.damage, p.isCritical, 'player');
+                return false; // Remove projectile after hitting a monster
+            }
+        } else { // Monster projectiles hitting player
+            // Check current tile
+            if (currTileX === player.tileX && currTileY === player.tileY) {
                 if (!player.isInvincible) {
                     takeDamage(player, p.damage, false, 'monster');
                     if (p.type === 'web') {
@@ -307,10 +330,26 @@ function updateProjectiles() {
                         ui.showMessage("¡Has sido ralentizado por una telaraña!");
                     }
                 }
-                return false;
+                return false; // Remove projectile after hitting player
+            }
+            // If moved diagonally, check intermediate tiles for player collision
+            if (prevTileX !== currTileX && prevTileY !== currTileY) {
+                if ((prevTileX === player.tileX && currTileY === player.tileY) ||
+                    (currTileX === player.tileX && prevTileY === player.tileY)) {
+                    if (!player.isInvincible) {
+                        takeDamage(player, p.damage, false, 'monster');
+                        if (p.type === 'web') {
+                            player.isSlowed = true;
+                            player.slowEndTime = Date.now() + 3000;
+                            updateStats();
+                            ui.showMessage("¡Has sido ralentizado por una telaraña!");
+                        }
+                    }
+                    return false;
+                }
             }
         }
-        return true;
+        return true; // Keep projectile if no collision
     });
 }
 
@@ -919,7 +958,7 @@ function performAttack() {
             isCritical = true;
             player.nextAttackIsCritical = false;
         }
-        projectiles.push(new Projectile(player.tileX, player.tileY, dx, dy, projectileType, 'player', player.atk, isCritical, projectileRange));
+        projectiles.push(new Projectile(player.tileX + 0.5, player.tileY + 0.5, dx, dy, projectileType, 'player', player.atk, isCritical, projectileRange));
     } else {
         let targetTiles = [];
         const dX = player.attackDirectionX;
@@ -943,6 +982,9 @@ function performAttack() {
                     targetTiles.push({ x: player.tileX + 1, y: player.tileY + dY });
                 }
             }
+        } else if (dX !== 0 && dY !== 0) {
+            targetTiles.push({ x: player.tileX + dX, y: player.tileY });
+            targetTiles.push({ x: player.tileX, y: player.tileY + dY });
         }
 
         let monstersHit = [];
