@@ -253,6 +253,9 @@ function handlePlayerInput(timestamp) {
         attackInterval = 850; // 0.85 attacks per second
     }
 
+    // Aplicar bonificación de velocidad de ataque de la Espada de Luz
+    attackInterval /= player.lightSwordAttackSpeedMultiplier;
+
     if (keys.Space && timestamp - lastAttackTime > attackInterval) {
         performAttack();
         lastAttackTime = timestamp;
@@ -273,6 +276,10 @@ function updateStatusEffects(currentTime) {
     }
     if (player.isSpeedBoosted && currentTime > player.speedBoostEndTime) {
         player.isSpeedBoosted = false;
+        updateStats();
+    }
+    if (player.isLightSwordSpeedBoosted && currentTime > player.lightSwordSpeedBoostEndTime) {
+        player.isLightSwordSpeedBoosted = false;
         updateStats();
     }
 }
@@ -966,6 +973,15 @@ function performAttack() {
                     }
                 } else if (equippedWeapon.name === 'Maza de Guerra' && monstersHit.length >= 2) {
                     warMaceShockwave = { x: player.tileX, y: player.tileY, life: 15 };
+                } else if (equippedWeapon.name === 'Espada de Luz') {
+                    player.lightSwordAttackCount++;
+                    if (player.lightSwordAttackCount >= 10) {
+                        player.isLightSwordSpeedBoosted = true;
+                        player.lightSwordSpeedBoostEndTime = currentTime + 5000; // 5 segundos de bonificación
+                        player.lightSwordAttackCount = 0;
+                        updateStats();
+                        ui.showMessage("¡Espada de Luz: Velocidad de ataque aumentada en un 10%!");
+                    }
                 }
             }
         });

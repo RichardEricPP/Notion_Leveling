@@ -71,6 +71,10 @@ export let player = {
     miniShieldCooldownEnd: 0, 
     darkRayEnemiesDefeated: 0,
     hitsSinceLastSoulExtraction: 0,
+    lightSwordAttackCount: 0, // Contador de ataques para la Espada de Luz
+    isLightSwordSpeedBoosted: false, // Estado de la bonificación de velocidad de la Espada de Luz
+    lightSwordSpeedBoostEndTime: 0, // Tiempo de finalización de la bonificación de velocidad
+    lightSwordAttackSpeedMultiplier: 1.0, // Multiplicador de velocidad de ataque de la Espada de Luz
     walkAnimFrame: 0,
     isMoving: false,
     walkAnimCounter: 0,
@@ -295,6 +299,11 @@ export function updateStats() {
         player.spd *= 1.5; 
     }
 
+    player.lightSwordAttackSpeedMultiplier = 1.0; // Reset to default
+    if (player.isLightSwordSpeedBoosted && currentTime < player.lightSwordSpeedBoostEndTime) {
+        player.lightSwordAttackSpeedMultiplier = 1.10; // 10% increase in attack speed
+    }
+
     player.hp = Math.min(player.hp, player.maxHp);
     if (player.isSlowed && currentTime < player.slowEndTime) {
         player.spd *= 0.5;
@@ -512,7 +521,9 @@ export function createPlayerSprite(options = {}) {
         } else {
             ctx.save();
             // Posicionar el arma en la mano derecha
-            ctx.translate(cx + 25, cy + 5 + body_Y_offset + arm2_Y_offset);
+            // Ajuste para la Espada de Luz para que no se salga del sprite al rotar
+            const translateX = (weapon.name === 'Espada de Luz') ? cx + 10 : cx + 35;
+            ctx.translate(translateX, cy + 5 + body_Y_offset + arm2_Y_offset);
 
             // Rotar el arma según la pose de ataque
             if (pose === 'attack') {
@@ -522,7 +533,23 @@ export function createPlayerSprite(options = {}) {
             ctx.fillStyle = weapon.color || '#8B4513'; // Color del arma o marrón por defecto
 
             // Dibujar formas simples basadas en el nombre del arma
-            if (weapon.name.includes('Espada') || weapon.name.includes('Daga')) {
+            if (weapon.name === 'Espada de Luz') {
+                ctx.rotate(Math.PI / 2); // Rotar 90 grados horario para que apunte al otro lado
+
+                // Hoja (Light Blue) con punta
+                ctx.fillStyle = '#ADD8E6';
+                ctx.beginPath();
+                ctx.moveTo(0, -35); // Punta de la espada (centro superior, más corta)
+                ctx.lineTo(-4, -5); // Base izquierda de la hoja (más estrecha)
+                ctx.lineTo(4, -5);  // Base derecha de la hoja (más estrecha)
+                ctx.closePath();
+                ctx.fill();
+
+                // Guarda (White)
+                ctx.fillStyle = '#FFFFFF'; ctx.fillRect(-7, -5, 14, 2); 
+                // Empuñadura (Dark Blue)
+                ctx.fillStyle = '#4682B4'; ctx.fillRect(-2, -3, 4, 6); 
+            } else if (weapon.name.includes('Espada') || weapon.name.includes('Daga')) {
                 ctx.fillRect(-2, -20, 4, 25); // Hoja
                 ctx.fillRect(-4, 5, 8, 3);   // Guarda
             } else if (weapon.name.includes('Maza')) {
