@@ -72,7 +72,9 @@ export let player = {
     darkRayEnemiesDefeated: 0,
     hitsSinceLastSoulExtraction: 0,
     walkAnimFrame: 0,
-    isMoving: false 
+    isMoving: false,
+    walkAnimCounter: 0,
+    walkAnimSpeed: 3 
 };
 
 /**
@@ -360,21 +362,18 @@ export function createPlayerSprite(options = {}) {
     // INICIO: LÓGICA DE ANIMACIÓN DE CAMINAR Y BRAZOS
     // ==========================================================================
     if (pose === 'walk') {
-        // --- Animación del Cuerpo y Piernas ---
-        const walkCycleBody = [0, 1, 2, 1]; // Define el movimiento vertical del torso.
-        const walkCycleLegs = [0, 4, 0, -4]; // Define el movimiento horizontal de las piernas.
-        body_Y_offset = walkCycleBody[frame % 4];
-        leg1_X_offset = walkCycleLegs[frame % 4];
-        leg2_X_offset = walkCycleLegs[(frame + 2) % 4]; // La segunda pierna se mueve en desfase.
+        // --- Animación del Cuerpo y Piernas (8 fotogramas) ---
+        const walkCycleBody = [0, 1, 2, 3, 2, 1, 0, 1]; // Rebote más suave
+        const walkCycleLegs = [0, 4, 8, 4, 0, -4, -8, -4]; // Aumenta el recorrido de las piernas
+        body_Y_offset = walkCycleBody[frame % 8];
+        leg1_X_offset = walkCycleLegs[frame % 8];
+        leg2_X_offset = walkCycleLegs[(frame + 4) % 8]; // Desfase de 4 fotogramas para la otra pierna
 
-        // --- Animación de los Brazos al Caminar ---
-        const walkCycleArms = [0, -2, 0, 2]; // Define el movimiento vertical de los brazos.
-        arm1_Y_offset = walkCycleArms[frame % 4];
-        arm2_Y_offset = walkCycleArms[frame % 4];
+        // --- Animación de los Brazos al Caminar (8 fotogramas) ---
+        const walkCycleArms = [0, -1, -2, -1, 0, 1, 2, 1]; // Movimiento de brazos más suave
+        arm1_Y_offset = walkCycleArms[frame % 8];
+        arm2_Y_offset = walkCycleArms[(frame + 4) % 8]; // Desfase para el brazo opuesto
     }
-    // ==========================================================================
-    // FIN: LÓGICA DE ANIMACIÓN DE CAMINAR Y BRAZOS
-    // ==========================================================================
 
 
     const cx = baseSize / 2;

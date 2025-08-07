@@ -196,7 +196,7 @@ function updateGame(timestamp) {
     }
 
     if (player.isMoving) {
-        player.walkAnimFrame = (player.walkAnimFrame + 1) % 4; // Cycle through 4 frames
+                    player.walkAnimFrame = (player.walkAnimFrame + 1) % 8; // Ciclo de 8 fotogramas
         const newSprite = createPlayerSprite({ pose: 'walk', frame: player.walkAnimFrame });
         if (sprites.player !== newSprite) {
             sprites.player = newSprite;
