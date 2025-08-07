@@ -197,13 +197,16 @@ function updateGame(timestamp) {
 
     if (player.isMoving) {
         player.walkAnimFrame = (player.walkAnimFrame + 1) % 4; // Cycle through 4 frames
-        sprites.player = createPlayerSprite({ pose: 'walk', frame: player.walkAnimFrame });
-        const img = new Image();
-        img.src = sprites.player;
-        img.onload = () => {
-            loadedImages.player = img;
-        };
-    } else {
+        const newSprite = createPlayerSprite({ pose: 'walk', frame: player.walkAnimFrame });
+        if (sprites.player !== newSprite) {
+            sprites.player = newSprite;
+            const img = new Image();
+            img.src = sprites.player;
+            img.onload = () => {
+                loadedImages.player = img;
+            };
+        }
+    } else if (player.walkAnimFrame !== 0) { // Regenerate idle sprite only once when stopping
         player.walkAnimFrame = 0;
         sprites.player = createPlayerSprite({ pose: 'idle', frame: 0 });
         const img = new Image();

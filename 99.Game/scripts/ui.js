@@ -60,28 +60,15 @@ export function drawTorch(x, y) {
 }
 
 function drawPlayer(x, y) {
-    let drawX = x; // Inicializar drawX con la posición base
-    let drawY = y; // Inicializar drawY con la posición base
-    let currentDrawWidth = tileSize; // Siempre tileSize por defecto
-    let currentDrawHeight = tileSize; // Siempre tileSize por defecto
+    const sizeMultiplier = 1.15; // Aumenta el tamaño del jugador en un 15%
+    const playerWidth = tileSize * sizeMultiplier;
+    const playerHeight = tileSize * sizeMultiplier;
 
-    const isMoving = keys.ArrowLeft || keys.KeyA || keys.ArrowRight || keys.KeyD || keys.ArrowUp || keys.KeyW || keys.ArrowDown || keys.KeyS;
+    // Centra el sprite más grande en la casilla original
+    let drawX = x - (playerWidth - tileSize) / 2;
+    let drawY = y - (playerHeight - tileSize) / 2;
 
-    if (isMoving) {
-        playerWalkAnimCounter += 0.2; // Velocidad de la animación de caminata
-        playerBreathAnimCounter = 0; // Reiniciar contador de respiración si se mueve
-    } else if (!player.isAttacking) {
-        playerBreathAnimCounter += 0.05; // Velocidad de la respiración
-        const breathScale = 1 + Math.sin(playerBreathAnimCounter) * 0.02; // Escala de 1% a 2%
-        currentDrawHeight = tileSize * breathScale; // Solo escala verticalmente
-        drawY = y - (currentDrawHeight - tileSize) / 2; // Centrar verticalmente
-        // drawX y currentDrawWidth no se modifican aquí, permanecen en sus valores base
-        playerWalkAnimCounter = 0; // Reiniciar contador de caminata si está quieto
-    } else {
-        playerBreathAnimCounter = 0;
-        playerWalkAnimCounter = 0;
-    }
-
+    // La animación de ataque (estocada) se mantiene
     if (player.isAttacking) {
         const progress = player.attackAnimFrame / player.attackAnimDuration;
         let lunge = 0;
@@ -90,43 +77,49 @@ function drawPlayer(x, y) {
         } else {
             lunge = player.attackLungeDistance * ((1 - progress) / 0.5);
         }
-
         drawX += lunge * player.attackDirectionX;
         drawY += lunge * player.attackDirectionY;
     }
 
+    // Dibuja el sprite del jugador
     if (loadedImages.player && loadedImages.player.complete) {
-        ctx.drawImage(loadedImages.player, 0,0,64,64, drawX, drawY, currentDrawWidth, currentDrawHeight);
+        // Usa 70x70 como el tamaño de la fuente, que es el tamaño real del canvas del sprite
+        ctx.drawImage(loadedImages.player, 0, 0, 70, 70, drawX, drawY, playerWidth, playerHeight);
     } else {
-        ctx.fillStyle = 'blue'; ctx.fillRect(drawX, drawY, currentDrawWidth, currentDrawHeight);
+        // Fallback si la imagen no se carga
+        ctx.fillStyle = 'blue'; 
+        ctx.fillRect(drawX, drawY, playerWidth, playerHeight);
     }
 
+    // Dibuja los efectos visuales (golpe, estados, etc.) sobre el jugador
     if (player.hitFrame > 0) {
         ctx.save();
         ctx.globalAlpha = 0.5 + (player.hitFrame / 10) * 0.3;
         ctx.fillStyle = 'red';
-        ctx.fillRect(drawX, drawY, currentDrawWidth, currentDrawHeight);
+        ctx.fillRect(drawX, drawY, playerWidth, playerHeight);
         ctx.restore();
         player.hitFrame--;
     }
     const currentTime = Date.now();
     if (player.isSlowed && currentTime < player.slowEndTime) {
         ctx.fillStyle = 'rgba(0, 100, 255, 0.3)';
-        ctx.fillRect(drawX, drawY, currentDrawWidth, currentDrawHeight);
+        ctx.fillRect(drawX, drawY, playerWidth, playerHeight);
     }
     if (player.isInvincible && currentTime < player.invincibleEndTime) {
         ctx.fillStyle = 'rgba(255, 215, 0, 0.3)';
-        ctx.fillRect(drawX, drawY, currentDrawWidth, currentDrawHeight);
+        ctx.fillRect(drawX, drawY, playerWidth, playerHeight);
     }
     if (player.isStealthed && currentTime < player.stealthEndTime) {
-        ctx.fillStyle = 'rgba(128, 128, 128, 0.5)'; // Efecto de invisibilidad
-        ctx.fillRect(drawX, drawY, currentDrawWidth, currentDrawHeight);
+        ctx.fillStyle = 'rgba(128, 128, 128, 0.5)';
+        ctx.fillRect(drawX, drawY, playerWidth, playerHeight);
     }
 
+    // Dibuja la barra de vida sobre el jugador
     const healthPercent = player.hp / player.maxHp;
-    ctx.fillStyle = 'rgba(0,0,0,0.7)'; ctx.fillRect(drawX+5, drawY-10, currentDrawWidth-10, 5);
+    ctx.fillStyle = 'rgba(0,0,0,0.7)'; 
+    ctx.fillRect(drawX + 5, drawY - 10, playerWidth - 10, 5);
     ctx.fillStyle = healthPercent > 0.5 ? 'rgba(0,255,0,0.7)' : healthPercent > 0.25 ? 'rgba(255,255,0,0.7)' : 'rgba(255,0,0,0.7)';
-    ctx.fillRect(drawX+5, drawY-10, (currentDrawWidth-10)*healthPercent, 5);
+    ctx.fillRect(drawX + 5, drawY - 10, (playerWidth - 10) * healthPercent, 5);
 }
 
 function drawMonster(m, screenX, screenY) {
