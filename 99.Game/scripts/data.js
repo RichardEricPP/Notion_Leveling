@@ -4,42 +4,55 @@ export const gearList = [
     { name: 'Poción de Vida Mediana', type: 'potion', heal: 50 },
     { name: 'Poción de Vida Grande', type: 'potion', heal: 100 },
     // Gear
+    // --- Cascos (Helmets) ---
     { name: 'Casco de Hierro', type: 'helmet', def: 3, set: 'Hierro', color: '#A9A9A9' },
-    { name: 'Casco de Caballero', type: 'helmet', def: 5, spd: 2, set: 'Caballero', color: '#B0C4DE' },
+    { name: 'Casco de Caballero', type: 'helmet', def: 5, spd: 2, set: 'Caballero', color: '#708090' },
     { name: 'Casco de Demonio', type: 'helmet', def: 7, atk: 3, set: 'Demonio', color: '#8B0000' },
-    { name: 'Casco de León', type: 'helmet', def: 8, set: 'León', color: '#DAA520' },
-    { name: 'Casco de Asesinato', type: 'helmet', spd: 4, critical: 0.03, set: 'Asesinato', color: '#4B0082' }, 
-    { name: 'Casco Noble', type: 'helmet', def: 4, set: 'Noble', color: '#FFD700' },
-    { name: 'Casco de Mago', type: 'helmet', def: 3, set: 'Mago', color: '#8A2BE2' },
+    { name: 'Casco de León', type: 'helmet', def: 8, set: 'León', color: '#A0522D' },
+    { name: 'Casco de Asesinato', type: 'helmet', spd: 4, critical: 0.03, set: 'Asesinato', color: '#004953' },
+    { name: 'Casco Noble', type: 'helmet', def: 4, set: 'Noble', color: '#EAE0C8' },
+    { name: 'Casco de Mago', type: 'helmet', def: 3, set: 'Mago', color: '#FFFFFF' },
+    { name: 'Casco del Caos', type: 'helmet', def: 9, atk: 5, set: 'Caos', color: '#800080' },
+
+    // --- Armaduras (Armor) ---
     { name: 'Armadura de Hierro', type: 'armor', def: 6, set: 'Hierro', color: '#A9A9A9' },
-    { name: 'Armadura de Caballero', type: 'armor', def: 8, spd: 2, set: 'Caballero', color: '#B0C4DE' },
+    { name: 'Armadura de Caballero', type: 'armor', def: 8, spd: 2, set: 'Caballero', color: '#708090' },
     { name: 'Armadura de Demonio', type: 'armor', def: 10, atk: 4, set: 'Demonio', color: '#8B0000' },
-    { name: 'Armadura de León', type: 'armor', def: 9, set: 'León', color: '#DAA520' },
-    { name: 'Armadura de Asesinato', type: 'armor', spd: 6, critical: 0.04, set: 'Asesinato', color: '#4B0082' }, 
-    { name: 'Armadura Noble', type: 'armor', def: 7, set: 'Noble', color: '#FFD700' },
-    { name: 'Armadura de Mago', type: 'armor', def: 5, set: 'Mago', color: '#8A2BE2' },
+    { name: 'Armadura de León', type: 'armor', def: 9, set: 'León', color: '#A0522D' },
+    { name: 'Armadura de Asesinato', type: 'armor', spd: 6, critical: 0.04, set: 'Asesinato', color: '#004953' },
+    { name: 'Armadura Noble', type: 'armor', def: 7, set: 'Noble', color: '#EAE0C8' },
+    { name: 'Armadura de Mago', type: 'armor', def: 5, set: 'Mago', color: '#FFFFFF' },
+    { name: 'Armadura del Caos', type: 'armor', def: 12, atk: 7, set: 'Caos', color: '#800080' },
+
+    // --- Guantes (Gloves) ---
     { name: 'Guantes de Hierro', type: 'gloves', atk: 3, set: 'Hierro', color: '#A9A9A9' },
-    { name: 'Guantes de Caballero', type: 'gloves', atk: 4, def: 1, set: 'Caballero', color: '#B0C4DE' },
+    { name: 'Guantes de Caballero', type: 'gloves', atk: 4, def: 1, set: 'Caballero', color: '#708090' },
     { name: 'Guantes de Demonio', type: 'gloves', atk: 6, spd: 2, set: 'Demonio', color: '#8B0000' },
-    { name: 'Guantes de León', type: 'gloves', atk: 5, set: 'León', color: '#DAA520' },
-    { name: 'Guantes de Asesinato', type: 'gloves', critical: 0.05, spd: 3, set: 'Asesinato', color: '#4B0082' }, 
-    { name: 'Guantes de Noble', type: 'gloves', atk: 3, set: 'Noble', color: '#FFD700' },
-    { name: 'Guantes de Mago', type: 'gloves', spd: 2, set: 'Mago', color: '#8A2BE2' },
+    { name: 'Guantes de León', type: 'gloves', atk: 5, set: 'León', color: '#A0522D' },
+    { name: 'Guantes de Asesinato', type: 'gloves', critical: 0.05, spd: 3, set: 'Asesinato', color: '#004953' },
+    { name: 'Guantes de Noble', type: 'gloves', atk: 3, set: 'Noble', color: '#EAE0C8' },
+    { name: 'Guantes de Mago', type: 'gloves', spd: 2, set: 'Mago', color: '#FFFFFF' },
+    { name: 'Guantes del Caos', type: 'gloves', atk: 8, spd: 3, set: 'Caos', color: '#800080' },
+
+    // --- Botas (Boots) ---
     { name: 'Botas de Hierro', type: 'boots', spd: 3, set: 'Hierro', color: '#A9A9A9' },
-    { name: 'Botas de Caballero', type: 'boots', spd: 5, def: 1, set: 'Caballero', color: '#B0C4DE' },
+    { name: 'Botas de Caballero', type: 'boots', spd: 5, def: 1, set: 'Caballero', color: '#708090' },
     { name: 'Botas de Demonio', type: 'boots', spd: 7, atk: 2, set: 'Demonio', color: '#8B0000' },
-    { name: 'Botas de León', type: 'boots', spd: 8, set: 'León', color: '#DAA520' },
-    { name: 'Botas de Asesinato', type: 'boots', spd: 9, set: 'Asesinato', color: '#4B0082' },
-    { name: 'Botas de Noble', type: 'boots', spd: 4, set: 'Noble', color: '#FFD700' },
-    { name: 'Botas de Mago', type: 'boots', spd: 6, set: 'Mago', color: '#8A2BE2' },
-    { name: 'Escudo Colosal', type: 'weapon', def: 10, set: 'Hierro', attackSpeed: 250, color: '#A9A9A9' }, 
-    { name: 'Maza de Guerra', type: 'weapon', atk: 9, set: 'Caballero', attackSpeed: 250, color: '#B0C4DE' },
-    { name: 'Espada de Luz', type: 'weapon', atk: 7, spd: 3, set: 'Demonio', attackSpeed: 150, color: '#8B0000' },
-    { name: 'Libro Celestial', type: 'weapon', atk: 5, spd: 4, set: 'Mago', attackSpeed: 250, color: '#8A2BE2' }, 
-    { name: 'Rayo de Oscuridad', type: 'weapon', atk: 7, critical: 0.03, set: 'Asesinato', attackSpeed: 250, color: '#4B0082' }, 
-    { name: 'Daga de Poder', type: 'weapon', atk: 6, spd: 4, set: 'Asesinato', attackSpeed: 800, color: '#4B0082' },
-    { name: 'Arco del Bosque', type: 'weapon', atk: 6, critical: 0.04, set: 'León', attackSpeed: 250, color: '#DAA520' }, 
-    { name: 'Guadaña Helada', type: 'weapon', atk: 8, set: 'Noble', attackSpeed: 250, color: '#FFD700' },
+    { name: 'Botas de León', type: 'boots', spd: 8, set: 'León', color: '#A0522D' },
+    { name: 'Botas de Asesinato', type: 'boots', spd: 9, set: 'Asesinato', color: '#004953' },
+    { name: 'Botas de Noble', type: 'boots', spd: 4, set: 'Noble', color: '#EAE0C8' },
+    { name: 'Botas de Mago', type: 'boots', spd: 6, set: 'Mago', color: '#FFFFFF' },
+    { name: 'Botas del Caos', type: 'boots', spd: 10, def: 2, set: 'Caos', color: '#800080' },
+
+    // --- Armas (Weapons) ---
+    { name: 'Escudo Colosal', type: 'weapon', def: 10, attackSpeed: 250, color: '#A9A9A9' },
+    { name: 'Maza de Guerra', type: 'weapon', atk: 9, attackSpeed: 250, color: '#B0C4DE' },
+    { name: 'Espada de Luz', type: 'weapon', atk: 7, spd: 3, attackSpeed: 150, color: '#8B0000' },
+    { name: 'Libro Celestial', type: 'weapon', atk: 5, spd: 4, attackSpeed: 250, color: '#8A2BE2' },
+    { name: 'Rayo de Oscuridad', type: 'weapon', atk: 7, critical: 0.03, attackSpeed: 250, color: '#004953' },
+    { name: 'Daga de Poder', type: 'weapon', atk: 6, spd: 4, attackSpeed: 800, color: '#004953' },
+    { name: 'Arco del Bosque', type: 'weapon', atk: 6, critical: 0.04, attackSpeed: 250, color: '#A0522D' },
+    { name: 'Guadaña Helada', type: 'weapon', atk: 8, attackSpeed: 250, color: '#EAE0C8' }
 ];
 
 export const skills = [
@@ -65,7 +78,8 @@ export const setBonuses = {
     'León': { atk_flat: 10, def_flat: 5, message: "¡Bonificación de Conjunto de León: +10 Ataque, +5 Defensa!" },
     'Asesinato': { spd_percent: 0.10, critical_flat: 0.05, message: "¡Bonificación de Conjunto de Asesinato: +10% Velocidad, +5% Crítico!" },
     'Noble': { goldFind_percent: 0.15, maxHp_flat: 5, message: "¡Bonificación de Conjunto Noble: +15% Oro Encontrado, +5 HP Máximo!" },
-    'Mago': { xpGain_percent: 0.20, maxHp_percent: 0.10, message: "¡Bonificación de Conjunto de Mago: +20% XP, +10% HP Máximo!" }
+    'Mago': { xpGain_percent: 0.20, maxHp_percent: 0.10, message: "¡Bonificación de Conjunto de Mago: +20% XP, +10% HP Máximo!" },
+    'Caos': { atk_percent: 0.20, spd_percent: 0.15, message: "¡Bonificación de Conjunto de Caos: +20% Ataque, +15% Velocidad!" }
 };
 
 export const equipmentSlotNames = {
