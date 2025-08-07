@@ -914,24 +914,26 @@ function performAttack() {
         projectiles.push(new Projectile(player.tileX, player.tileY, dx, dy, projectileType, 'player', player.atk, isCritical, projectileRange));
     } else {
         let targetTiles = [];
-        if (player.facingDirection === 'right') targetTiles.push({ x: player.tileX + 1, y: player.tileY });
-        else if (player.facingDirection === 'left') targetTiles.push({ x: player.tileX - 1, y: player.tileY });
-        else if (player.facingDirection === 'up') targetTiles.push({ x: player.tileX, y: player.tileY - 1 });
-        else if (player.facingDirection === 'down') targetTiles.push({ x: player.tileX, y: player.tileY + 1 });
+        const dX = player.attackDirectionX;
+        const dY = player.attackDirectionY;
+
+        // Add the primary target tile if the attack has a direction
+        if (dX !== 0 || dY !== 0) {
+            targetTiles.push({ x: player.tileX + dX, y: player.tileY + dY });
+        }
 
         if (equippedWeapon && equippedWeapon.name === 'Maza de Guerra') {
-            if (player.facingDirection === 'right') {
-                targetTiles.push({ x: player.tileX + 1, y: player.tileY - 1 });
-                targetTiles.push({ x: player.tileX + 1, y: player.tileY + 1 });
-            } else if (player.facingDirection === 'left') {
-                targetTiles.push({ x: player.tileX - 1, y: player.tileY - 1 });
-                targetTiles.push({ x: player.tileX - 1, y: player.tileY + 1 });
-            } else if (player.facingDirection === 'up') {
-                targetTiles.push({ x: player.tileX - 1, y: player.tileY - 1 });
-                targetTiles.push({ x: player.tileX + 1, y: player.tileY - 1 });
-            } else if (player.facingDirection === 'down') {
-                targetTiles.push({ x: player.tileX - 1, y: player.tileY + 1 });
-                targetTiles.push({ x: player.tileX + 1, y: player.tileY + 1 });
+            if (dX !== 0 && dY !== 0) { // Diagonal attack
+                targetTiles.push({ x: player.tileX + dX, y: player.tileY });
+                targetTiles.push({ x: player.tileX, y: player.tileY + dY });
+            } else { // Cardinal attack
+                if (dX !== 0) { // Horizontal
+                    targetTiles.push({ x: player.tileX + dX, y: player.tileY - 1 });
+                    targetTiles.push({ x: player.tileX + dX, y: player.tileY + 1 });
+                } else if (dY !== 0) { // Vertical
+                    targetTiles.push({ x: player.tileX - 1, y: player.tileY + dY });
+                    targetTiles.push({ x: player.tileX + 1, y: player.tileY + dY });
+                }
             }
         }
 

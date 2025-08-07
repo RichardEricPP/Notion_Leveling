@@ -129,6 +129,9 @@ export function loadPlayerDataFromLocalStorage() {
         const loadedPlayer = JSON.parse(storedData);
         Object.assign(player, loadedPlayer);
 
+        // Ensure inventory is always up-to-date with the master gear list
+        player.inventory = gearList.filter(item => item.type !== 'potion');
+
         // Validate and load equipped items
         for (const slot in loadedPlayer.equipped) {
             if (slot.startsWith('habilidad')) {
@@ -142,20 +145,15 @@ export function loadPlayerDataFromLocalStorage() {
             }
         }
 
-        // Validate and load inventory
-        player.inventory = loadedPlayer.inventory
-            .map(itemData => gearList.find(g => g.name === itemData.name))
-            .filter(item => item !== undefined);
-
         // Validate permanently learned skills
-        // Start with all initial skills
         let currentLearnedSkills = new Set(getInitialSkills());
-        // Add skills from loaded data if they still exist
-        loadedPlayer.permanentlyLearnedSkills.forEach(skillName => {
-            if (skills.some(s => s.name === skillName)) {
-                currentLearnedSkills.add(skillName);
-            }
-        });
+        if (loadedPlayer.permanentlyLearnedSkills) {
+            loadedPlayer.permanentlyLearnedSkills.forEach(skillName => {
+                if (skills.some(s => s.name === skillName)) {
+                    currentLearnedSkills.add(skillName);
+                }
+            });
+        }
         player.permanentlyLearnedSkills = Array.from(currentLearnedSkills);
 
         // If, after validation, no skills are equipped, set the default ones.
