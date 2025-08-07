@@ -512,7 +512,7 @@ export function createPlayerSprite(options = {}) {
         } else {
             ctx.save();
             // Posicionar el arma en la mano derecha
-            ctx.translate(cx + 20, cy + 15 + body_Y_offset + arm2_Y_offset);
+            ctx.translate(cx + 25, cy + 5 + body_Y_offset + arm2_Y_offset);
 
             // Rotar el arma según la pose de ataque
             if (pose === 'attack') {
@@ -526,8 +526,17 @@ export function createPlayerSprite(options = {}) {
                 ctx.fillRect(-2, -20, 4, 25); // Hoja
                 ctx.fillRect(-4, 5, 8, 3);   // Guarda
             } else if (weapon.name.includes('Maza')) {
+                ctx.fillStyle = '#FFD700'; // Dorado
                 ctx.fillRect(-2, -18, 4, 20); // Mango
-                ctx.fillRect(-5, -25, 10, 10); // Cabeza
+                ctx.fillStyle = '#00BFFF'; // Azul
+                ctx.beginPath(); ctx.arc(0, -22, 8, 0, Math.PI * 2); ctx.fill(); 
+                ctx.fillStyle = '#FFD700';
+                ctx.beginPath(); ctx.arc(0, -22, 4, 0, Math.PI * 2); ctx.fill();
+                ctx.fillStyle = '#00008B';
+                ctx.beginPath(); ctx.moveTo(-4, -30); ctx.lineTo(0, -36); ctx.lineTo(4, -30); ctx.closePath(); ctx.fill();
+                ctx.beginPath(); ctx.moveTo(-4, -14); ctx.lineTo(0, -8); ctx.lineTo(4, -14); ctx.closePath(); ctx.fill();
+                ctx.beginPath(); ctx.moveTo(-12, -22); ctx.lineTo(-6, -26); ctx.lineTo(-6, -18); ctx.closePath(); ctx.fill();
+                ctx.beginPath(); ctx.moveTo(12, -22); ctx.lineTo(6, -26); ctx.lineTo(6, -18); ctx.closePath(); ctx.fill();
             } else if (weapon.name.includes('Guadaña')) {
                 ctx.fillRect(-1, -25, 3, 30); // Mango
                 ctx.beginPath();
