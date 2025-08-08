@@ -478,12 +478,9 @@ export function drawMap() {
 
                         if(isVoidLeft) wallType = 'wall_left';
                         else if(isVoidRight) wallType = 'wall_right';
+                        else wallType = 'wall_right'; // Default for isolated walls
                         
-                        if(wallType) drawWall(screenX, screenY, wallType);
-                        else {
-                            ctx.fillStyle = '#000000';
-                            ctx.fillRect(screenX, screenY, tileSize, tileSize);
-                        }
+                        drawWall(screenX, screenY, wallType);
                     }
                 } else if (map[y][x] === 1) { // It's a floor
                     drawFloor(screenX, screenY);

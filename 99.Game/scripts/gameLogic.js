@@ -626,6 +626,7 @@ async function generateFloor() {
         const rooms = [];
         const numRooms = Math.floor(Math.random() * 3) + 8;
         const minRoomSize = 5, maxRoomSize = 8;
+        const roomSpacing = 4; // <-- Changed this line
         for (let i = 0; i < numRooms; i++) {
             let roomW, roomH, roomX, roomY, newRoom, overlaps;
             let attempts = 0;
@@ -635,7 +636,12 @@ async function generateFloor() {
                 roomX = Math.floor(Math.random() * (mapWidth - roomW - 2)) + 1;
                 roomY = Math.floor(Math.random() * (mapHeight - roomH - 2)) + 1;
                 newRoom = { x: roomX, y: roomY, w: roomW, h: roomH, centerX: roomX + Math.floor(roomW / 2), centerY: roomY + Math.floor(roomH / 2) };
-                overlaps = rooms.some(otherRoom => newRoom.x < otherRoom.x + otherRoom.w && newRoom.x + newRoom.w > otherRoom.x && newRoom.y < otherRoom.y + otherRoom.h && newRoom.y + newRoom.h > otherRoom.y);
+                overlaps = rooms.some(otherRoom => 
+                    newRoom.x < otherRoom.x + otherRoom.w + roomSpacing && 
+                    newRoom.x + newRoom.w + roomSpacing > otherRoom.x && 
+                    newRoom.y < otherRoom.y + otherRoom.h + roomSpacing && 
+                    newRoom.y + newRoom.h + roomSpacing > otherRoom.y
+                );
                 attempts++;
             } while (overlaps && attempts < 50);
             if (!overlaps) rooms.push(newRoom);
