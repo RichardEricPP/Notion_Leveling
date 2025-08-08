@@ -458,30 +458,32 @@ export function drawMap() {
             if (map[y] && map[y][x] !== undefined) { 
                 if (map[y][x] === 0) { // It's a wall
                     let wallType = null;
-                    // Check for floor below (top edge of a horizontal wall)
-                    if (y + 1 < mapHeight && map[y + 1][x] === 1) {
-                        wallType = 'wall_up';
-                    }
-                    // Check for floor above (bottom edge of a horizontal wall)
-                    else if (y - 1 >= 0 && map[y - 1][x] === 1) {
-                        wallType = 'wall_down';
-                    }
-                    // Check for floor left (right edge of a vertical wall)
-                    else if (x - 1 >= 0 && map[y][x - 1] === 1) {
-                        wallType = 'wall_right';
-                    }
-                    // Check for floor right (left edge of a vertical wall)
-                    else if (x + 1 < mapWidth && map[y][x + 1] === 1) {
-                        wallType = 'wall_left';
-                    }
+
+                    const hasFloorBelow = (y + 1 < mapHeight && map[y + 1][x] === 1);
+                    const hasFloorAbove = (y - 1 >= 0 && map[y - 1][x] === 1);
+                    const hasFloorLeft = (x - 1 >= 0 && map[y][x - 1] === 1);
+                    const hasFloorRight = (x + 1 < mapWidth && map[y][x + 1] === 1);
+
+                    if (hasFloorBelow) { wallType = 'wall_up'; }
+                    else if (hasFloorAbove) { wallType = 'wall_down'; }
+                    else if (hasFloorLeft) { wallType = 'wall_right'; }
+                    else if (hasFloorRight) { wallType = 'wall_left'; }
 
                     if (wallType) {
                         drawWall(screenX, screenY, wallType);
                     } else {
-                        // If it's a wall but has no adjacent floor (e.g., interior wall or surrounded by void/other walls)
-                        // Draw it as black
-                        ctx.fillStyle = '#000000';
-                        ctx.fillRect(screenX, screenY, tileSize, tileSize);
+                        // Fallback for corners and isolated walls
+                        const isVoidLeft = (x - 1 < 0 || (x - 1 >= 0 && map[y][x - 1] === 9));
+                        const isVoidRight = (x + 1 >= mapWidth || (x + 1 < mapWidth && map[y][x + 1] === 9));
+
+                        if(isVoidLeft) wallType = 'wall_left';
+                        else if(isVoidRight) wallType = 'wall_right';
+                        
+                        if(wallType) drawWall(screenX, screenY, wallType);
+                        else {
+                            ctx.fillStyle = '#000000';
+                            ctx.fillRect(screenX, screenY, tileSize, tileSize);
+                        }
                     }
                 } else if (map[y][x] === 1) { // It's a floor
                     drawFloor(screenX, screenY);
