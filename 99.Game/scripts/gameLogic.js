@@ -11,7 +11,7 @@ import { playMusic, gameCanvas } from './ui.js';
 // --- EXPORTS (Game State Variables) ---
 export let currentFloor = 1;
 export const maxFloors = 4;
-export const mapWidth = 40, mapHeight = 40;
+export const mapWidth = 50, mapHeight = 50;
 export const tileSize = 50;
 export let map = Array(mapHeight).fill().map(() => Array(mapWidth).fill(0));
 export let stairLocation = { x: -1, y: -1, active: false, type: 4 };
@@ -624,9 +624,9 @@ async function generateFloor() {
         }
     } else {
         const rooms = [];
-        const numRooms = Math.floor(Math.random() * 3) + 8;
-        const minRoomSize = 5, maxRoomSize = 8;
-        const roomSpacing = 4; // <-- Changed this line
+        const numRooms = Math.floor(Math.random() * 5) + 12; // Generates between 12 and 16 rooms
+        const minRoomSize = 6, maxRoomSize = 10;
+        const roomSpacing = 5; // Minimum spacing between rooms
         for (let i = 0; i < numRooms; i++) {
             let roomW, roomH, roomX, roomY, newRoom, overlaps;
             let attempts = 0;
@@ -734,8 +734,20 @@ async function generateFloor() {
 function carvePathBetweenRooms(room1, room2) {
     const x1 = room1.centerX, y1 = room1.centerY;
     const x2 = room2.centerX, y2 = room2.centerY;
-    for (let x = Math.min(x1, x2); x <= Math.max(x1, x2); x++) map[y1][x] = 1;
-    for (let y = Math.min(y1, y2); y <= Math.max(y1, y2); y++) map[y][x2] = 1;
+
+    // Carve horizontal path
+    for (let x = Math.min(x1, x2); x <= Math.max(x1, x2); x++) {
+        if (map[y1][x] === 9) { // Only carve if it's void
+            map[y1][x] = 1;
+        }
+    }
+
+    // Carve vertical path
+    for (let y = Math.min(y1, y2); y <= Math.max(y1, y2); y++) {
+        if (map[y][x2] === 9) { // Only carve if it's void
+            map[y][x2] = 1;
+        }
+    }
 }
 
 function hasLineOfSight(monster, target) {
@@ -1203,6 +1215,8 @@ function takeDamage(target, damage, isCritical, attackerType = 'player') {
                 lastGameScore = calculateScore();
                 lastEnemiesDefeated = player.enemiesDefeatedThisRun;
             } else if (monsters.filter(m => !m.isMinion).length === 0) {
+                stairLocation.x = target.tileX;
+                stairLocation.y = target.tileY;
                 stairLocation.active = true;
                 ui.showMessage("¡Todos los monstruos derrotados! Las escaleras han aparecido.");
             }
