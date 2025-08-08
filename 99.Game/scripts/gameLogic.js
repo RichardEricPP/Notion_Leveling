@@ -12,7 +12,7 @@ import { playMusic, gameCanvas } from './ui.js';
 export let currentFloor = 1;
 export const maxFloors = 4;
 export const mapWidth = 50, mapHeight = 50;
-export const tileSize = 50;
+export const tileSize = 70;
 export let map = Array(mapHeight).fill().map(() => Array(mapWidth).fill(0));
 export let stairLocation = { x: -1, y: -1, active: false, type: 4 };
 export let selectedDifficulty = 'medio';
@@ -169,6 +169,10 @@ export async function setDifficultyAndStart(difficulty, startFloor = 1, baseLeve
     ui.minimapCanvas.style.display = 'block';
     ui.equipmentMenu.style.display = 'none';
     const minimapTileSize = 5;
+    const size = Math.min(window.innerWidth, window.innerHeight);
+    ui.gameCanvas.width = size;
+    ui.gameCanvas.height = size;
+
     ui.minimapCanvas.width = mapWidth * minimapTileSize;
     ui.minimapCanvas.height = mapHeight * minimapTileSize;
 
@@ -474,7 +478,7 @@ function updateMonsters(currentTime) {
                 for (let i = 0; i < 15 && spawned < 4; i++) {
                     let spawnX = m.tileX + (Math.floor(Math.random() * 7) - 3);
                     let spawnY = m.tileY + (Math.floor(Math.random() * 7) - 3);
-                    if (isPassable(spawnX, spawnY)) {
+                    if (isPassable(spawnX, spawnY, false, m)) {
                         monsters.push(createMonster('spiderling', spawnX, spawnY, currentFloor));
                         spawned++;
                     }
