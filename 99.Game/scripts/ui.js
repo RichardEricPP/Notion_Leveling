@@ -459,10 +459,10 @@ export function drawMap() {
                 if (map[y][x] === 0) { // It's a wall
                     let wallType = null;
 
-                    const hasFloorBelow = (y + 1 < mapHeight && map[y + 1][x] === 1);
-                    const hasFloorAbove = (y - 1 >= 0 && map[y - 1][x] === 1);
-                    const hasFloorLeft = (x - 1 >= 0 && map[y][x - 1] === 1);
-                    const hasFloorRight = (x + 1 < mapWidth && map[y][x + 1] === 1);
+                    const hasFloorBelow = (y + 1 < mapHeight && (map[y + 1][x] === 1 || map[y + 1][x] === 2));
+                    const hasFloorAbove = (y - 1 >= 0 && (map[y - 1][x] === 1 || map[y - 1][x] === 2));
+                    const hasFloorLeft = (x - 1 >= 0 && (map[y][x - 1] === 1 || map[y][x - 1] === 2));
+                    const hasFloorRight = (x + 1 < mapWidth && (map[y][x + 1] === 1 || map[y][x + 1] === 2));
 
                     if (hasFloorBelow) { wallType = 'wall_up'; }
                     else if (hasFloorAbove) { wallType = 'wall_down'; }
@@ -484,12 +484,13 @@ export function drawMap() {
                     }
                 } else if (map[y][x] === 1) { // It's a floor
                     drawFloor(screenX, screenY);
+                } else if (map[y][x] === 2) { // It's a chest
+                    drawFloor(screenX, screenY); // Draw floor first
+                    drawChest(screenX, screenY);
                 } else if (map[y][x] === 9) { // It's void
                     ctx.fillStyle = '#000000';
                     ctx.fillRect(screenX, screenY, tileSize, tileSize);
                 }
-
-                if (map[y][x] === 2) { drawChest(screenX, screenY); }
 
                 if (x === stairLocation.x && y === stairLocation.y && stairLocation.active) { 
                     drawStairs(screenX, screenY);

@@ -718,14 +718,10 @@ async function generateFloor() {
     for (let y = 0; y < mapHeight; y++) {
         for (let x = 0; x < mapWidth; x++) {
             if (map[y][x] === 0) { // Es un muro
-                // Verificar si tiene un piso adyacente
-                const hasAdjacentFloor = (
-                    (y > 0 && map[y-1][x] === 1) || // Arriba
-                    (y < mapHeight - 1 && map[y+1][x] === 1) || // Abajo
-                    (x > 0 && map[y][x-1] === 1) || // Izquierda
-                    (x < mapWidth - 1 && map[y][x+1] === 1)    // Derecha
-                );
-                if (hasAdjacentFloor && Math.random() < torchDensity) {
+                const hasFloorBelow = (y + 1 < mapHeight && map[y + 1][x] === 1);
+                const hasFloorAbove = (y - 1 >= 0 && map[y - 1][x] === 1);
+
+                if ((hasFloorBelow || hasFloorAbove) && Math.random() < torchDensity) {
                     torches.push({ x, y });
                 }
             }
