@@ -602,12 +602,4 @@ export function loadSprites() {
     if (!sprites.boss) sprites.boss = createGolemMiniBossSprite();
     if (!sprites.finalBoss) sprites.finalBoss = createArachnidBossSprite();
     if (!sprites.spiderling) sprites.spiderling = createSpiderlingSprite();
-    sprites.floor = './assets/dungeon_floor.jpg'; // Use the image directly
-    sprites.wall_up = './assets/wall_up.jpg';
-    sprites.wall_down = './assets/wall_down.jpg';
-    sprites.wall_left = './assets/wall_left.jpg';
-    sprites.wall_right = './assets/wall_right.jpg';
-    if (!sprites.chest) sprites.chest = createChestSprite();
-    if (!sprites.stairs) sprites.stairs = createStairsSprite();
-    if (!sprites.torch) sprites.torch = createTorchSprite();
 }

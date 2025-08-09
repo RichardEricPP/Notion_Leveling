@@ -22,6 +22,8 @@ export let isSkillMenuOpen = false;
 export let isEquipmentOpen = false; 
 export let offsetX = 0; // Export offsetX
 export let offsetY = 0; // Export offsetY
+export let atlasData = null;
+export let atlasImage = null;
 let selectedIndex = 0;
 let selectedSkillIndex = 0;
 let selectedEquipmentSlotIndex = 0; 
@@ -43,53 +45,142 @@ export const lastScoreDisplayElement = document.getElementById('lastScoreDisplay
 const ctx = gameCanvas.getContext('2d');
 const minimapCtx = minimapCanvas.getContext('2d');
 
-// --- Drawing Functions ---
-export function drawFloor(x, y) { if(loadedImages.floor && loadedImages.floor.complete) ctx.drawImage(loadedImages.floor, 0,0,64,64, x, y, tileSize, tileSize); else { ctx.fillStyle = '#aaa'; ctx.fillRect(x,y,tileSize,tileSize);}}
-export function drawWall(x, y, wallType) {
-    let imageToDraw;
-    let drawWidth = tileSize;
-    let drawHeight = tileSize;
-    let drawX = x;
-    let drawY = y;
+// --- Asset Loading ---
+export async function loadAtlas() {
+    try {
+        const response = await fetch('assets/mapa_1.json');
+        atlasData = await response.json();
+        
+        atlasImage = new Image();
+        atlasImage.src = 'assets/mapa_1.png';
+        
+        await new Promise((resolve, reject) => {
+            atlasImage.onload = () => resolve();
+            atlasImage.onerror = () => reject(new Error('Failed to load atlas image.'));
+        });
 
-    switch (wallType) {
-        case 'wall_up':
-            imageToDraw = loadedImages.wall_up;
-            break;
-        case 'wall_down':
-            imageToDraw = loadedImages.wall_down;
-            break;
-        case 'wall_left':
-            imageToDraw = loadedImages.wall_left;
-            // No width reduction or X adjustment needed, image should fill tile
-            break;
-        case 'wall_right':
-            imageToDraw = loadedImages.wall_right;
-            // No width reduction or X adjustment needed, image should fill tile
-            break;
-        default:
-            // Fallback for generic wall or if wallType is not recognized
-            imageToDraw = loadedImages.wall_up; // Default to wall_up
-            break;
-    }
-
-    if (imageToDraw && imageToDraw.complete) {
-        ctx.drawImage(imageToDraw, 0, 0, 64, 64, drawX, drawY, drawWidth, drawHeight);
-    } else {
-        ctx.fillStyle = '#555';
-        ctx.fillRect(x, y, tileSize, tileSize);
+    } catch (error) {
+        console.error("Error loading atlas:", error);
     }
 }
-export function drawChest(x, y) { if(loadedImages.chest && loadedImages.chest.complete) ctx.drawImage(loadedImages.chest, 0,0,64,64, x, y, tileSize, tileSize); else { ctx.fillStyle = '#8B4513'; ctx.fillRect(x,y,tileSize,tileSize);}}
-export function drawStairs(x,y) { 
-    if(loadedImages.stairs && loadedImages.stairs.complete) ctx.drawImage(loadedImages.stairs, 0,0,64,64, x, y, tileSize, tileSize); else { ctx.fillStyle = '#704214'; ctx.fillRect(x,y,tileSize,tileSize);}}
 
-export function drawTorch(x, y) {
-    if(loadedImages.torch && loadedImages.torch.complete) {
-        ctx.drawImage(loadedImages.torch, 0,0,64,64, x, y, tileSize, tileSize);
+// --- Drawing Functions ---
+// --- Drawing Functions ---
+function drawSprite(spriteName, x, y, width = tileSize, height = tileSize) {
+    if (!atlasData || !atlasImage) {
+        ctx.fillStyle = 'magenta'; // Draw a bright color to indicate an error
+        ctx.fillRect(x, y, width, height);
+        return;
+    }
+
+    const sprite = atlasData.frames[spriteName];
+    if (!sprite) {
+        console.warn(`Sprite '${spriteName}' not found in atlas.`);
+        return;
+    }
+
+    const { frame, rotated, sourceSize } = sprite;
+    const { x: sx, y: sy, w: sw, h: sh } = frame;
+
+    ctx.save();
+    if (rotated) {
+        // Translate to the center of the destination rectangle
+        ctx.translate(x + width / 2, y + height / 2);
+        // Rotate the canvas
+        ctx.rotate(-90 * Math.PI / 180);
+        // Draw the image, swapping width and height, and adjusting coordinates
+        ctx.drawImage(atlasImage, sx, sy, sh, sw, -height / 2, -width / 2, height, width);
     } else {
-        ctx.fillStyle = 'orange';
-        ctx.fillRect(x + tileSize / 2 - 5, y + tileSize / 2 - 15, 10, 30);
+        // Draw the image normally
+        ctx.drawImage(atlasImage, sx, sy, sw, sh, x, y, width, height);
+    }
+    ctx.restore();
+}
+
+const tileMap = {
+    0: 'wall_down.jpg', // Default wall
+    1: 'dungeon_floor.jpg',
+    2: 'cofre.png',
+    4: 'calaveras.png', // Assuming stairs are represented by skulls now
+    'wall_up': 'wall_up.jpg',
+    'wall_down': 'wall_down.jpg',
+    'wall_left': 'wall_left.jpg',
+    'wall_right': 'wall_right.jpg',
+    'torch': 'telaraña.png' // Using spider web for torches for now
+};
+
+export function drawFloor(x, y) { drawSprite(tileMap[1], x, y); }
+export function drawWall(x, y, wallType) { drawSprite(tileMap[wallType], x, y); }
+export function drawChest(x, y) {
+    const size = tileSize * 0.6;
+    const offset = (tileSize - size) / 2;
+    drawSprite(tileMap[2], x + offset, y + offset, size, size);
+}
+
+function createStairsSprite() {
+    const canvas = document.createElement('canvas');
+    canvas.width = 64; canvas.height = 64;
+    const ctx = canvas.getContext('2d');
+    ctx.fillStyle = '#4A3B31'; 
+    for (let i = 0; i < 5; i++) {
+        ctx.fillRect(8 + i * 8, 8 + i * 8, 48 - i * 16, 8);
+    }
+    ctx.strokeStyle = '#3A2F28';
+    ctx.lineWidth = 1;
+    for (let i = 0; i < 5; i++) {
+        ctx.strokeRect(8 + i * 8, 8 + i * 8, 48 - i * 16, 8);
+    }
+    const gradient = ctx.createRadialGradient(32, 48, 5, 32, 48, 15);
+    gradient.addColorStop(0, 'rgba(100, 100, 200, 0.6)');
+    gradient.addColorStop(1, 'rgba(100, 100, 200, 0)');
+    ctx.fillStyle = gradient;
+    ctx.fillRect(0, 32, 64, 32);
+    return canvas.toDataURL();
+}
+
+function createTorchSprite() {
+    const canvas = document.createElement('canvas');
+    canvas.width = 64; canvas.height = 64;
+    const ctx = canvas.getContext('2d');
+    ctx.fillStyle = '#8B4513';
+    ctx.fillRect(30, 30, 4, 20);
+    ctx.fillStyle = '#FFD700';
+    ctx.beginPath();
+    ctx.moveTo(32, 28);
+    ctx.lineTo(28, 35);
+    ctx.lineTo(36, 35);
+    ctx.closePath();
+    ctx.fill();
+    const gradient = ctx.createRadialGradient(32, 32, 0, 32, 32, 15);
+    gradient.addColorStop(0, 'rgba(255, 165, 0, 0.5)');
+    gradient.addColorStop(1, 'rgba(255, 165, 0, 0)');
+    ctx.fillStyle = gradient;
+    ctx.beginPath();
+    ctx.arc(32, 32, 15, 0, Math.PI * 2);
+    ctx.fill();
+    return canvas.toDataURL();
+}
+
+const stairsSprite = createStairsSprite();
+const torchSprite = createTorchSprite();
+
+const stairsImage = new Image();
+stairsImage.src = stairsSprite;
+
+const torchImage = new Image();
+torchImage.src = torchSprite;
+
+export function drawStairs(x,y) { 
+    if(stairsImage.complete) ctx.drawImage(stairsImage, x, y, tileSize, tileSize);
+}
+
+export function drawTorch(x, y, rotation = 0) {
+    if(torchImage.complete) {
+        ctx.save();
+        ctx.translate(x + tileSize / 2, y + tileSize / 2);
+        ctx.rotate(rotation * Math.PI / 180);
+        ctx.drawImage(torchImage, -tileSize / 2, -tileSize / 2, tileSize, tileSize);
+        ctx.restore();
     }
 }
 
@@ -456,13 +547,17 @@ export function drawMap() {
         for (let x = startX; x <= endX; x++) {
             const screenX = x * tileSize - offsetX; const screenY = y * tileSize - offsetY;
             if (map[y] && map[y][x] !== undefined) { 
-                if (map[y][x] === 0) { // It's a wall
+                const tile = map[y][x];
+                let baseTileType = tile.base;
+
+                // Draw Base Tile
+                if (baseTileType === 0) { // It's a wall
                     let wallType = null;
 
-                    const hasFloorBelow = (y + 1 < mapHeight && (map[y + 1][x] === 1 || map[y + 1][x] === 2));
-                    const hasFloorAbove = (y - 1 >= 0 && (map[y - 1][x] === 1 || map[y - 1][x] === 2));
-                    const hasFloorLeft = (x - 1 >= 0 && (map[y][x - 1] === 1 || map[y][x - 1] === 2));
-                    const hasFloorRight = (x + 1 < mapWidth && (map[y][x + 1] === 1 || map[y][x + 1] === 2));
+                    const hasFloorBelow = (y + 1 < mapHeight && (map[y + 1][x].base === 1 || map[y + 1][x].base === 2));
+                    const hasFloorAbove = (y - 1 >= 0 && (map[y - 1][x].base === 1 || map[y - 1][x].base === 2));
+                    const hasFloorLeft = (x - 1 >= 0 && (map[y][x - 1].base === 1 || map[y][x - 1].base === 2));
+                    const hasFloorRight = (x + 1 < mapWidth && (map[y][x + 1].base === 1 || map[y][x + 1].base === 2));
 
                     if (hasFloorBelow) { wallType = 'wall_up'; }
                     else if (hasFloorAbove) { wallType = 'wall_down'; }
@@ -471,10 +566,18 @@ export function drawMap() {
 
                     if (wallType) {
                         drawWall(screenX, screenY, wallType);
+                        // Check if this wall has a torch
+                        if (torches.some(t => t.x === x && t.y === y)) {
+                            let rotation = 0;
+                            if (wallType === 'wall_down') {
+                                rotation = 180;
+                            }
+                            drawTorch(screenX, screenY, rotation);
+                        }
                     } else {
                         // Fallback for corners and isolated walls
-                        const isVoidLeft = (x - 1 < 0 || (x - 1 >= 0 && map[y][x - 1] === 9));
-                        const isVoidRight = (x + 1 >= mapWidth || (x + 1 < mapWidth && map[y][x + 1] === 9));
+                        const isVoidLeft = (x - 1 < 0 || (x - 1 >= 0 && map[y][x - 1].base === 9));
+                        const isVoidRight = (x + 1 >= mapWidth || (x + 1 < mapWidth && map[y][x + 1].base === 9));
 
                         if(isVoidLeft) wallType = 'wall_left';
                         else if(isVoidRight) wallType = 'wall_right';
@@ -482,14 +585,26 @@ export function drawMap() {
                         
                         drawWall(screenX, screenY, wallType);
                     }
-                } else if (map[y][x] === 1) { // It's a floor
+                } else if (baseTileType === 1) { // It's a floor
                     drawFloor(screenX, screenY);
-                } else if (map[y][x] === 2) { // It's a chest
+                } else if (baseTileType === 2) { // It's a chest
                     drawFloor(screenX, screenY); // Draw floor first
                     drawChest(screenX, screenY);
-                } else if (map[y][x] === 9) { // It's void
+                } else if (baseTileType === 9) { // It's void
                     ctx.fillStyle = '#000000';
                     ctx.fillRect(screenX, screenY, tileSize, tileSize);
+                }
+
+                // Draw Decoration
+                if (tile.decor && !tile.isDecorSubTile) {
+                    // For large decorations, only draw if this is the top-left tile of the object
+                    if (tile.decor.isLarge) {
+                        // Check if this is the top-left tile of the large object
+                        // This assumes the 'decor' property is only set on the top-left tile in gameLogic.js
+                        drawSprite(tile.decor.name, screenX, screenY, tileSize * tile.decor.width, tileSize * tile.decor.height);
+                    } else {
+                        drawSprite(tile.decor.name, screenX, screenY);
+                    }
                 }
 
                 if (x === stairLocation.x && y === stairLocation.y && stairLocation.active) { 
@@ -501,12 +616,6 @@ export function drawMap() {
             }
         }
     }
-    // Dibujar antorchas
-    torches.forEach(torch => {
-        const screenX = torch.x * tileSize - offsetX;
-        const screenY = torch.y * tileSize - offsetY;
-        drawTorch(screenX, screenY);
-    });
     monsters.forEach(m => {
         const screenX = m.tileX * tileSize - offsetX; const screenY = m.tileY * tileSize - offsetY;
         drawMonster(m, screenX, screenY);
@@ -558,11 +667,11 @@ function drawMinimap() {
             const miniY = y * minimapTileSize;
 
             if (revealedMap[y][x]) { // Only draw if the tile has been revealed
-                if (map[y][x] === 0) { 
+                if (map[y][x].base === 0) { 
                     minimapCtx.fillStyle = '#333';
-                } else if (map[y][x] === 1) { 
+                } else if (map[y][x].base === 1) { 
                     minimapCtx.fillStyle = '#888';
-                } else if (map[y][x] === 2) { 
+                } else if (map[y][x].base === 2) { 
                     minimapCtx.fillStyle = '#FFD700'; 
                 }
                 minimapCtx.fillRect(miniX, miniY, minimapTileSize, minimapTileSize);

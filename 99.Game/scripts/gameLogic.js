@@ -160,6 +160,7 @@ export async function setDifficultyAndStart(difficulty, startFloor = 1, baseLeve
     gameStarted = true;
     gameOver = false;
 
+    await ui.loadAtlas();
     await generateFloor();
     revealMapAroundPlayer();
     await loadAllSprites();
@@ -587,7 +588,7 @@ function updateMonsters(currentTime) {
 }
 
 async function generateFloor() {
-    map = Array(mapHeight).fill(0).map(() => Array(mapWidth).fill(9)); // Initialize with 'void' (9)
+    map = Array(mapHeight).fill(0).map(() => Array(mapWidth).fill(null).map(() => ({ base: 9, decor: null }))); // Initialize with void objects
     stairLocation = { x: -1, y: -1, active: false, type: 4 };
     Object.keys(player.skillUsageThisFloor).forEach(key => delete player.skillUsageThisFloor[key]);
     Object.keys(skillCooldowns).forEach(key => skillCooldowns[key] = 0);
@@ -603,19 +604,39 @@ async function generateFloor() {
         const arenaWidth = 15, arenaHeight = 15;
         const arenaX = Math.floor((mapWidth - arenaWidth) / 2);
         const arenaY = Math.floor((mapHeight - arenaHeight) / 2);
-        // Fill arena with floor (1)
+        // Fill arena with floor
         for (let y = arenaY; y < arenaY + arenaHeight; y++) {
-            for (let x = arenaX; x < arenaX + arenaWidth; x++) map[y][x] = 1;
+            for (let x = arenaX; x < arenaX + arenaWidth; x++) map[y][x].base = 1;
         }
-        // Add walls around the arena (0) where there was void (9)
+        // Add walls around the arena
         for (let y = arenaY - 1; y <= arenaY + arenaHeight; y++) {
             for (let x = arenaX - 1; x <= arenaX + arenaWidth; x++) {
                 if (x < 0 || x >= mapWidth || y < 0 || y >= mapHeight) continue;
-                if (map[y][x] === 9) { // If it's void, make it a wall
-                    map[y][x] = 0;
+                if (map[y][x].base === 9) { 
+                    map[y][x].base = 0;
                 }
             }
         }
+
+        // Place boss decorations
+        const placeDecor = (name, x, y, w, h) => {
+            for (let i = 0; i < w; i++) {
+                for (let j = 0; j < h; j++) {
+                    if (map[y+j] && map[y+j][x+i]) {
+                        map[y+j][x+i].base = 1;
+                        if (i === 0 && j === 0) {
+                            map[y+j][x+i].decor = { name: name, isLarge: true, width: w, height: h };
+                        } else {
+                            map[y+j][x+i].isDecorSubTile = true;
+                        }
+                    }
+                }
+            }
+        };
+        placeDecor('piedras.png', arenaX + 2, arenaY + 2, 2, 2);
+        placeDecor('telaraña.png', arenaX + arenaWidth - 4, arenaY + 2, 2, 2);
+
+
         player.tileX = arenaX + Math.floor(arenaWidth / 2);
         player.tileY = arenaY + arenaHeight - 2;
         stairLocation.x = player.tileX;
@@ -624,7 +645,7 @@ async function generateFloor() {
         const bossSpawnY = arenaY + 1;
         monsters.push(createMonster('finalBoss', bossSpawnX, bossSpawnY, currentFloor));
         for (let r = 0; r < 2; r++) {
-            for (let c = 0; c < 2; c++) map[bossSpawnY + r][bossSpawnX + c] = 1;
+            for (let c = 0; c < 2; c++) map[bossSpawnY + r][bossSpawnX + c].base = 1;
         }
     } else {
         const rooms = [];
@@ -656,7 +677,7 @@ async function generateFloor() {
         rooms.forEach(room => {
             for (let y = room.y; y < room.y + room.h; y++) {
                 for (let x = room.x; x < room.x + room.w; x++) {
-                    if (x >= 0 && x < mapWidth && y >= 0 && y < mapHeight) map[y][x] = 1;
+                    if (x >= 0 && x < mapWidth && y >= 0 && y < mapHeight) map[y][x].base = 1;
                 }
             }
         });
@@ -666,14 +687,14 @@ async function generateFloor() {
         // After carving paths, add walls (0) around floor (1) tiles
         for (let y = 0; y < mapHeight; y++) {
             for (let x = 0; x < mapWidth; x++) {
-                if (map[y][x] === 1) { // If it's a floor tile
+                if (map[y][x].base === 1) { // If it's a floor tile
                     for (let dy = -1; dy <= 1; dy++) {
                         for (let dx = -1; dx <= 1; dx++) {
                             const checkX = x + dx;
                             const checkY = y + dy;
                             if (checkX >= 0 && checkX < mapWidth && checkY >= 0 && checkY < mapHeight) {
-                                if (map[checkY][checkX] === 9) { // If adjacent to void, make it a wall
-                                    map[checkY][checkX] = 0;
+                                if (map[checkY][checkX].base === 9) { // If adjacent to void, make it a wall
+                                    map[checkY][checkX].base = 0;
                                 }
                             }
                         }
@@ -691,7 +712,7 @@ async function generateFloor() {
         const monsterSpawnLocations = [];
         for (let y = 0; y < mapHeight; y++) {
             for (let x = 0; x < mapWidth; x++) {
-                if (map[y][x] === 1 && !(x === player.tileX && y === player.tileY)) {
+                if (map[y][x].base === 1 && !(x === player.tileX && y === player.tileY)) {
                     monsterSpawnLocations.push({ x, y });
                 }
             }
@@ -721,9 +742,9 @@ async function generateFloor() {
     const torchDensity = 0.05; // 5% de probabilidad de que un muro con piso adyacente tenga una antorcha
     for (let y = 0; y < mapHeight; y++) {
         for (let x = 0; x < mapWidth; x++) {
-            if (map[y][x] === 0) { // Es un muro
-                const hasFloorBelow = (y + 1 < mapHeight && map[y + 1][x] === 1);
-                const hasFloorAbove = (y - 1 >= 0 && map[y - 1][x] === 1);
+            if (map[y][x].base === 0) { // Es un muro
+                const hasFloorBelow = (y + 1 < mapHeight && map[y + 1][x].base === 1);
+                const hasFloorAbove = (y - 1 >= 0 && map[y - 1][x].base === 1);
 
                 if ((hasFloorBelow || hasFloorAbove) && Math.random() < torchDensity) {
                     torches.push({ x, y });
@@ -731,6 +752,24 @@ async function generateFloor() {
             }
         }
     }
+
+    // Add random decorations
+    const floorDecorations = ['agua_1.png', 'agua_2.png', 'calaveras.png'];
+    const wallDecorations = ['cadenas.PNG']; // Chains
+    for (let y = 0; y < mapHeight; y++) {
+        for (let x = 0; x < mapWidth; x++) {
+            if (map[y][x].base === 1 && Math.random() < 0.02) { // 2% chance for floor decor
+                map[y][x].decor = { name: floorDecorations[Math.floor(Math.random() * floorDecorations.length)] };
+            } else if (map[y][x].base === 0) { // If it's a wall
+                const hasFloorBelow = (y + 1 < mapHeight && map[y + 1][x].base === 1);
+                const isTorch = torches.some(t => t.x === x && t.y === y);
+                if (hasFloorBelow && !isTorch && Math.random() < 0.2) { // 20% chance for wall decor on walls with floor below and no torch
+                    map[y][x].decor = { name: wallDecorations[0] };
+                }
+            }
+        }
+    }
+
     await loadAllSprites();
     playMusic(monsters.some(m => m.type === 'finalBoss') ? 'boss' : 'dungeon');
 }
@@ -741,15 +780,15 @@ function carvePathBetweenRooms(room1, room2) {
 
     // Carve horizontal path
     for (let x = Math.min(x1, x2); x <= Math.max(x1, x2); x++) {
-        if (map[y1][x] === 9) { // Only carve if it's void
-            map[y1][x] = 1;
+        if (map[y1][x].base === 9) { // Only carve if it's void
+            map[y1][x].base = 1;
         }
     }
 
     // Carve vertical path
     for (let y = Math.min(y1, y2); y <= Math.max(y1, y2); y++) {
-        if (map[y][x2] === 9) { // Only carve if it's void
-            map[y][x2] = 1;
+        if (map[y][x2].base === 9) { // Only carve if it's void
+            map[y][x2].base = 1;
         }
     }
 }
@@ -774,7 +813,7 @@ function hasLineOfSight(monster, target) {
         const isMonsterTile = Math.floor(x0) >= monster.tileX && Math.floor(x0) < monster.tileX + (monster.width || 1) &&
                               Math.floor(y0) >= monster.tileY && Math.floor(y0) < monster.tileY + (monster.height || 1);
 
-        if (!isMonsterTile && map[Math.floor(y0)][Math.floor(x0)] === 0) return false;
+        if (!isMonsterTile && map[Math.floor(y0)][Math.floor(x0)].base === 0) return false;
 
         e2 = 2 * err;
         if (e2 >= dy) { err += dy; x0 += sx; }
@@ -902,7 +941,7 @@ function spawnChests(spawnLocations) {
     for (let i = 0; i < numChestsToSpawn && spawnLocations.length > 0; i++) {
         const spawnIndex = Math.floor(Math.random() * spawnLocations.length);
         const loc = spawnLocations.splice(spawnIndex, 1)[0];
-        map[loc.y][loc.x] = 2;
+        map[loc.y][loc.x].base = 2;
         chests.push({ tileX: loc.x, tileY: loc.y, opened: false, item: getWeightedRandomPotion() });
     }
 }
@@ -1076,7 +1115,7 @@ function performAttack() {
 function openChest(chest) {
     if (chest.opened) return;
     chest.opened = true;
-    map[chest.tileY][chest.tileX] = 1;
+    map[chest.tileY][chest.tileX].base = 1;
     if (chest.item) {
         if (chest.item.type === 'potion') {
             const oldHp = player.hp;
@@ -1105,7 +1144,7 @@ function isPassable(x, y, forProjectiles = false, monster = null) {
             const checkX = x + i;
             const checkY = y + j;
 
-            if (checkY < 0 || checkY >= mapHeight || checkX < 0 || checkX >= mapWidth || map[checkY][checkX] === 0) {
+            if (checkY < 0 || checkY >= mapHeight || checkX < 0 || checkX >= mapWidth || map[checkY][checkX].base === 0 || (map[checkY][checkX].decor && map[checkY][checkX].decor.isLarge) || map[checkY][checkX].isDecorSubTile) {
                 return false;
             }
 

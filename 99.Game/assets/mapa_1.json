@@ -1,0 +1,108 @@
+{"frames": {
+
+"agua_1.png":
+{
+	"frame": {"x":1,"y":112,"w":121,"h":29},
+	"rotated": false,
+	"trimmed": true,
+	"spriteSourceSize": {"x":3,"y":10,"w":121,"h":29},
+	"sourceSize": {"w":124,"h":48}
+},
+"agua_2.png":
+{
+	"frame": {"x":131,"y":1,"w":124,"h":31},
+	"rotated": false,
+	"trimmed": true,
+	"spriteSourceSize": {"x":0,"y":9,"w":124,"h":31},
+	"sourceSize": {"w":124,"h":48}
+},
+"cadenas.PNG":
+{
+	"frame": {"x":67,"y":209,"w":45,"h":48},
+	"rotated": true,
+	"trimmed": true,
+	"spriteSourceSize": {"x":0,"y":0,"w":45,"h":48},
+	"sourceSize": {"w":48,"h":48}
+},
+"calaveras.png":
+{
+	"frame": {"x":75,"y":143,"w":64,"h":48},
+	"rotated": true,
+	"trimmed": true,
+	"spriteSourceSize": {"x":0,"y":11,"w":64,"h":48},
+	"sourceSize": {"w":64,"h":64}
+},
+"cofre.png":
+{
+	"frame": {"x":1,"y":143,"w":72,"h":48},
+	"rotated": false,
+	"trimmed": false,
+	"spriteSourceSize": {"x":0,"y":0,"w":72,"h":48},
+	"sourceSize": {"w":72,"h":48}
+},
+"dungeon_floor.jpg":
+{
+	"frame": {"x":1,"y":193,"w":64,"h":64},
+	"rotated": false,
+	"trimmed": false,
+	"spriteSourceSize": {"x":0,"y":0,"w":64,"h":64},
+	"sourceSize": {"w":64,"h":64}
+},
+"piedras.png":
+{
+	"frame": {"x":131,"y":34,"w":120,"h":121},
+	"rotated": true,
+	"trimmed": true,
+	"spriteSourceSize": {"x":6,"y":5,"w":120,"h":121},
+	"sourceSize": {"w":128,"h":128}
+},
+"telaraña.png":
+{
+	"frame": {"x":1,"y":1,"w":128,"h":109},
+	"rotated": false,
+	"trimmed": true,
+	"spriteSourceSize": {"x":0,"y":16,"w":128,"h":109},
+	"sourceSize": {"w":128,"h":128}
+},
+"wall_down.jpg":
+{
+	"frame": {"x":125,"y":156,"w":64,"h":64},
+	"rotated": false,
+	"trimmed": false,
+	"spriteSourceSize": {"x":0,"y":0,"w":64,"h":64},
+	"sourceSize": {"w":64,"h":64}
+},
+"wall_left.jpg":
+{
+	"frame": {"x":191,"y":156,"w":64,"h":64},
+	"rotated": false,
+	"trimmed": false,
+	"spriteSourceSize": {"x":0,"y":0,"w":64,"h":64},
+	"sourceSize": {"w":64,"h":64}
+},
+"wall_right.jpg":
+{
+	"frame": {"x":117,"y":222,"w":64,"h":64},
+	"rotated": false,
+	"trimmed": false,
+	"spriteSourceSize": {"x":0,"y":0,"w":64,"h":64},
+	"sourceSize": {"w":64,"h":64}
+},
+"wall_up.jpg":
+{
+	"frame": {"x":183,"y":222,"w":64,"h":64},
+	"rotated": false,
+	"trimmed": false,
+	"spriteSourceSize": {"x":0,"y":0,"w":64,"h":64},
+	"sourceSize": {"w":64,"h":64}
+}},
+"meta": {
+	"app": "https://www.codeandweb.com/texturepacker",
+	"version": "1.0",
+	"image": "maps_1.png",
+	"format": "RGBA8888",
+	"size": {"w":256,"h":287},
+	"scale": "1",
+	"smartupdate": "$TexturePacker:SmartUpdate:58c6bfc1fcd734ad09b137bda1074ecc:b62e0ad4a1f19330ec6038b6d48e97cd:07e40c9dd099da2d5361c2a7dc759a82$"
+}
+}
