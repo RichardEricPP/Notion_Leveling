@@ -86,18 +86,37 @@ async function loadAllSprites() {
     sprites.minion = createMinionSprite(sprites.player); // Create minion sprite here, after player is created
 
     return new Promise(resolve => {
-        // Now, imagesToLoad will correctly include all sprites, including minion
-        let imagesToLoad = Object.keys(sprites).length;
+        let imagesToLoad = 0;
+        const keysToLoad = [];
+
+        // Identify which sprites need to be loaded as actual images
+        Object.keys(sprites).forEach(key => {
+            const spriteValue = sprites[key];
+            // If it's a Data URL or a file path (contains '/'), it needs to be loaded as an image
+            if (spriteValue.startsWith('data:') || spriteValue.includes('/')) {
+                imagesToLoad++;
+                keysToLoad.push(key);
+            } else {
+                // If it's an atlas sprite name, it's not loaded as a separate image
+                // We can optionally store its name in loadedImages for consistency, but it won't be an Image object
+                loadedImages[key] = spriteValue; // Store the sprite name directly
+            }
+        });
+
         if (imagesToLoad === 0) {
             resolve();
             return;
         }
+
+        let loadedCount = 0;
         const checkAllLoaded = () => {
-            if (Object.keys(loadedImages).length === imagesToLoad) {
+            loadedCount++;
+            if (loadedCount === imagesToLoad) {
                 resolve();
             }
         };
-        Object.keys(sprites).forEach(key => {
+
+        keysToLoad.forEach(key => {
             const img = new Image();
             img.src = sprites[key];
             img.onload = () => {
@@ -105,7 +124,7 @@ async function loadAllSprites() {
                 checkAllLoaded();
             };
             img.onerror = () => {
-                console.error(`Failed to load sprite: ${key}`);
+                console.error(`Failed to load sprite: ${key} from ${sprites[key]}`);
                 checkAllLoaded(); // Still call checkAllLoaded even on error to prevent deadlock
             };
         });

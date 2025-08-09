@@ -309,51 +309,7 @@ export function createGolemMiniBossSprite() {
     return canvas.toDataURL();
 }
 export function createBossSprite() { const c = document.createElement('canvas'); c.width=64;c.height=64; const x=c.getContext('2d'); x.fillStyle = '#990000';x.fillRect(12,12,40,40);x.fillStyle = '#cc0000';x.beginPath();x.ellipse(32,20,16,10,0,0,Math.PI*2);x.fill();x.fillStyle = '#ffff00';x.beginPath();x.ellipse(24,18,5,5,0,0,Math.PI*2);x.fill();x.beginPath();x.ellipse(40,18,5,5,0,0,Math.PI*2);x.fill();x.fillStyle = '#000';x.beginPath();x.ellipse(24,18,2,3,0,0,Math.PI*2);x.fill();x.beginPath();x.ellipse(40,18,2,3,0,0,Math.PI*2);x.fill();x.beginPath();x.ellipse(32,26,10,4,0,0,Math.PI);x.fill();x.fillStyle = '#fff';for(let i=0;i<5;i++){x.beginPath();x.moveTo(24+i*4,26);x.lineTo(26+i*4,26);x.lineTo(25+i*4,30);x.fill();}x.fillStyle = '#660000';x.fillRect(12,32,40,4);x.fillRect(12,42,40,4);x.fillStyle = '#000';x.fillRect(52,20,4,24);x.fillStyle = '#a0a0a0';x.beginPath();x.moveTo(54,12);x.lineTo(60,20);x.lineTo(48,20);x.fill(); return c.toDataURL(); }
-export function createArachnidBossSprite() { 
-    const canvas = document.createElement('canvas');
-    canvas.width = 64; canvas.height = 64; 
-    const ctx = canvas.getContext('2d');
-    const bodyColor = '#3A1E00'; 
-    const legColor = '#2A1B00';
-    const eyeColor = '#FF0000'; 
-    const highlightColor = '#5C3601';
-    ctx.fillStyle = bodyColor;
-    ctx.beginPath();
-    ctx.ellipse(32, 32, 20, 15, 0, 0, Math.PI * 2); 
-    ctx.fill();
-    ctx.fillStyle = highlightColor;
-    ctx.beginPath();
-    ctx.ellipse(32, 30, 18, 12, 0, 0, Math.PI * 2); 
-    ctx.fill();
-    ctx.fillStyle = bodyColor;
-    ctx.beginPath();
-    ctx.ellipse(32, 18, 10, 7, 0, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.fillStyle = eyeColor;
-    ctx.beginPath(); ctx.arc(28, 17, 3, 0, Math.PI*2); ctx.fill();
-    ctx.beginPath(); ctx.arc(36, 17, 3, 0, Math.PI*2); ctx.fill();
-    ctx.beginPath(); ctx.arc(25, 21, 2.5, 0, Math.PI*2); ctx.fill();
-    ctx.beginPath(); ctx.arc(39, 21, 2.5, 0, Math.PI*2); ctx.fill();
-    ctx.beginPath(); ctx.arc(32, 22, 2.5, 0, Math.PI*2); ctx.fill();
-    ctx.strokeStyle = legColor;
-    ctx.lineWidth = 6;
-    const legSegments = (startX, startY, midX, midY, endX, endY) => {
-        ctx.beginPath();
-        ctx.moveTo(startX, startY);
-        ctx.quadraticCurveTo(midX, midY, endX, endY);
-        ctx.stroke();
-    };
-    legSegments(25, 30, 10, 20, 5, 10);
-    legSegments(22, 35, 5, 35, 0, 38);
-    legSegments(22, 40, 5, 45, 0, 50);
-    legSegments(25, 45, 10, 55, 5, 60);
-    legSegments(39, 30, 54, 20, 59, 10);
-    legSegments(42, 35, 59, 35, 64, 38);
-    legSegments(42, 40, 59, 45, 64, 50);
-    legSegments(39, 45, 54, 55, 59, 60);
-    
-    return canvas.toDataURL();
-}
+
 export function createSpiderlingSprite() {
     const canvas = document.createElement('canvas');
     canvas.width = 64; canvas.height = 64;
@@ -600,6 +556,6 @@ export function loadSprites() {
         sprites.miniBoss = createWhiteWolfSprite();
     }
     if (!sprites.boss) sprites.boss = createGolemMiniBossSprite();
-    if (!sprites.finalBoss) sprites.finalBoss = createArachnidBossSprite();
+    if (!sprites.finalBoss) sprites.finalBoss = 'araña.png';
     if (!sprites.spiderling) sprites.spiderling = createSpiderlingSprite();
 }

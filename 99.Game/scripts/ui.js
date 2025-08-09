@@ -272,27 +272,30 @@ function drawMonster(m, screenX, screenY) {
         else if (m.attackDirectionY < 0) drawY -= lunge;
     }
 
-    let monsterImage;
-    if (m.type === 'duende') monsterImage = loadedImages.duende; 
-    else if (m.type === 'lobo') monsterImage = loadedImages.lobo;
-    else if (m.type === 'skeleton') monsterImage = loadedImages.skeleton;
-    else if (m.type === 'miniBoss') monsterImage = loadedImages.miniBoss;
-    else if (m.type === 'boss') monsterImage = loadedImages.boss;
-    else if (m.type === 'finalBoss') monsterImage = loadedImages.finalBoss; 
-    else if (m.type === 'spiderling') monsterImage = loadedImages.spiderling;
-    else if (m.type === 'minion') { 
-        monsterImage = loadedImages.minion; 
-    }
+    if (m.type === 'finalBoss') {
+        drawSprite('araña.png', drawX, drawY, tileSize * m.width, tileSize * m.height);
+    } else {
+        let monsterImage;
+        if (m.type === 'duende') monsterImage = loadedImages.duende; 
+        else if (m.type === 'lobo') monsterImage = loadedImages.lobo;
+        else if (m.type === 'skeleton') monsterImage = loadedImages.skeleton;
+        else if (m.type === 'miniBoss') monsterImage = loadedImages.miniBoss;
+        else if (m.type === 'boss') monsterImage = loadedImages.boss;
+        else if (m.type === 'spiderling') monsterImage = loadedImages.spiderling;
+        else if (m.type === 'minion') { 
+            monsterImage = loadedImages.minion; 
+        }
 
-    if (monsterImage && monsterImage.complete) {
-        let drawWidth = tileSize * (m.width || 1);
-        let drawHeight = tileSize * (m.height || 1);
-        ctx.drawImage(monsterImage, 0,0,64,64, drawX, drawY, drawWidth, drawHeight);
-        
-    } else { 
-        ctx.fillStyle = m.type === 'duende' ? '#5C6B00' : (m.type === 'lobo' ? '#8C0000' : (m.type === 'finalBoss' ? '#3A1E00' : (m.type === 'spiderling' ? '#4A2A05' : 'gray'))); 
-        ctx.fillRect(drawX, drawY, tileSize * (m.width || 1), tileSize * (m.height || 1));
-        
+        if (monsterImage && monsterImage.complete) {
+            let drawWidth = tileSize * (m.width || 1);
+            let drawHeight = tileSize * (m.height || 1);
+            ctx.drawImage(monsterImage, 0,0,64,64, drawX, drawY, drawWidth, drawHeight);
+            
+        } else { 
+            ctx.fillStyle = m.type === 'duende' ? '#5C6B00' : (m.type === 'lobo' ? '#8C0000' : (m.type === 'finalBoss') ? '#3A1E00' : (m.type === 'spiderling' ? '#4A2A05' : 'gray')); 
+            ctx.fillRect(drawX, drawY, tileSize * (m.width || 1), tileSize * (m.height || 1));
+            
+        }
     }
     if (m.hitFrame > 0) { ctx.fillStyle = 'rgba(255,0,0,0.5)'; ctx.fillRect(drawX, drawY, tileSize * (m.width || 1), tileSize * (m.height || 1)); }
     if (m.isFrozen && Date.now() < m.frozenEndTime) {
