@@ -330,265 +330,58 @@ export function checkLevelUp() {
 }
 
 export function createPlayerSprite(options = {}) {
-    const { pose = 'idle', frame = 0, equipped = {} } = options;
+    const { pose = 'idle', frame = 0, equipped = {}, images = {} } = options;
 
-    const finalSize = 70; // The desired final size
-    const baseSize = 96;  // The size the drawing logic is based on
-
+    const finalSize = 70;
     const canvas = document.createElement('canvas');
     canvas.width = finalSize;
     canvas.height = finalSize;
     const ctx = canvas.getContext('2d');
 
-    // Calculate the scale factor
-    const scaleFactor = finalSize / baseSize;
-    ctx.scale(scaleFactor, scaleFactor);
-
-    // Paleta de colores base
-    const hairColor = '#1a1a1a';
-    const skinColor = '#f2d3b8';
-    const eyeColor = '#9400D3'; 
-    const shirtColor = '#cccccc';
-    const pantsColor = '#222222';
-    const facialDetailColor = '#4a2e2a';
-
-    // Colores de armadura dinámicos
-    const defaultArmorColor = '#7f8c8d'; // Gris por defecto
-    const defaultHighlightColor = '#bdc3c7';
-    const defaultShineColor = '#f0f0f0';
-    const defaultShadowColor = '#596263';
-
-    const helmetColor = equipped.helmet?.color || defaultArmorColor;
-    const armorColor = equipped.armor?.color || defaultArmorColor;
-    const glovesColor = equipped.gloves?.color || defaultArmorColor;
-    const bootsColor = equipped.boots?.color || defaultArmorColor;
-
-    // Parámetros de animación
-    let leg1_X_offset = 0;
-    let leg2_X_offset = 0;
+    // Animation offsets
     let body_Y_offset = 0;
-    let arm1_Y_offset = 0;
-    let arm2_Y_offset = 0;
-
     if (pose === 'walk') {
         const walkCycleBody = [0, 1, 2, 3, 2, 1, 0, 1];
-        const walkCycleLegs = [0, 4, 8, 4, 0, -4, -8, -4];
         body_Y_offset = walkCycleBody[frame % 8];
-        leg1_X_offset = walkCycleLegs[frame % 8];
-        leg2_X_offset = walkCycleLegs[(frame + 4) % 8];
-
-        const walkCycleArms = [0, -1, -2, -1, 0, 1, 2, 1];
-        arm1_Y_offset = walkCycleArms[frame % 8];
-        arm2_Y_offset = walkCycleArms[(frame + 4) % 8];
     }
 
-    const cx = baseSize / 2;
-    const cy = baseSize / 2;
+    ctx.clearRect(0, 0, finalSize, finalSize);
 
-    ctx.clearRect(0, 0, baseSize, baseSize);
+    const partSize = 35; // 50% of the canvas size
+    const armHeight = 18;
+    const armWidth = 5; // Wider arms
+    const armorHeight = 34;
+    const armorWidth = 43; // Stretched armor
+    const helmetSize = 32; // A bit smaller helmet
+    const bootsHeight = 33;
+    const bootsWidth = 40; // Wider boots
 
-    // Piernas
-    ctx.fillStyle = pantsColor;
-    ctx.fillRect(cx - 14 + leg1_X_offset, cy + 22 + body_Y_offset, 12, 12);
-    ctx.fillRect(cx + 2 + leg2_X_offset, cy + 22 + body_Y_offset, 12, 12);
-    
-    // Botas
-    ctx.fillStyle = bootsColor;
-    ctx.fillRect(cx - 15 + leg1_X_offset, cy + 34 + body_Y_offset, 14, 10);
-    ctx.fillRect(cx + 1 + leg2_X_offset, cy + 34 + body_Y_offset, 14, 10);
-    ctx.fillStyle = defaultHighlightColor;
-    ctx.fillRect(cx - 15 + leg1_X_offset, cy + 34 + body_Y_offset, 14, 3);
-    ctx.fillStyle = defaultShineColor;
-    ctx.fillRect(cx - 13 + leg1_X_offset, cy + 35 + body_Y_offset, 4, 1);
-
-    // Torso
-    ctx.fillStyle = shirtColor;
-    ctx.fillRect(cx - 18, cy - 8 + body_Y_offset, 36, 30);
-
-    // Pechera
-    ctx.fillStyle = defaultShadowColor;
-    ctx.fillRect(cx - 16, cy - 8 + body_Y_offset, 32, 30);
-    ctx.fillStyle = armorColor;
-    ctx.fillRect(cx - 14, cy - 7 + body_Y_offset, 28, 28);
-    ctx.fillStyle = defaultHighlightColor;
-    ctx.fillRect(cx - 14, cy - 7 + body_Y_offset, 28, 4);
-    ctx.fillStyle = defaultShineColor;
-    ctx.fillRect(cx - 12, cy - 6 + body_Y_offset, 5, 2);
-    ctx.fillStyle = defaultShadowColor;
-    ctx.fillRect(cx - 4, cy + 3 + body_Y_offset, 8, 8);
-    ctx.fillStyle = eyeColor; 
-    ctx.fillRect(cx - 3, cy + 4 + body_Y_offset, 6, 6);
-    
-    // Brazos
-    ctx.fillStyle = skinColor;
-    ctx.fillRect(cx - 24, cy + body_Y_offset + arm1_Y_offset, 8, 13);
-    ctx.fillRect(cx + 16, cy + body_Y_offset + arm2_Y_offset, 8, 13);
-    
-    // Guantes
-    ctx.fillStyle = defaultShadowColor;
-    ctx.fillRect(cx - 27, cy + 12 + body_Y_offset + arm1_Y_offset, 14, 12);
-    ctx.fillRect(cx + 13, cy + 12 + body_Y_offset + arm2_Y_offset, 14, 12);
-    ctx.fillStyle = glovesColor;
-    ctx.fillRect(cx - 26, cy + 13 + body_Y_offset + arm1_Y_offset, 12, 10);
-    ctx.fillRect(cx + 14, cy + 13 + body_Y_offset + arm2_Y_offset, 12, 10);
-    ctx.fillStyle = defaultHighlightColor;
-    ctx.fillRect(cx - 26, cy + 13 + body_Y_offset + arm1_Y_offset, 12, 3);
-    ctx.fillRect(cx + 14, cy + 13 + body_Y_offset + arm2_Y_offset, 12, 3);
-    ctx.fillStyle = defaultShineColor;
-    ctx.fillRect(cx - 25, cy + 14 + body_Y_offset + arm1_Y_offset, 4, 1);
-    ctx.fillRect(cx + 21, cy + 14 + body_Y_offset + arm2_Y_offset, 4, 1);
-
-    // Hombreras
-    ctx.fillStyle = defaultShadowColor;
-    ctx.fillRect(cx - 27, cy - 11 + body_Y_offset + arm1_Y_offset, 12, 16);
-    ctx.fillRect(cx + 15, cy - 11 + body_Y_offset + arm2_Y_offset, 12, 16);
-    ctx.fillStyle = armorColor;
-    ctx.fillRect(cx - 26, cy - 10 + body_Y_offset + arm1_Y_offset, 10, 14);
-    ctx.fillRect(cx + 16, cy - 10 + body_Y_offset + arm2_Y_offset, 10, 14);
-    ctx.fillStyle = defaultHighlightColor;
-    ctx.fillRect(cx - 26, cy - 10 + body_Y_offset + arm1_Y_offset, 10, 3);
-    ctx.fillRect(cx + 16, cy - 10 + body_Y_offset + arm2_Y_offset, 10, 3);
-    ctx.fillStyle = defaultShineColor;
-    ctx.fillRect(cx - 25, cy - 9 + body_Y_offset + arm1_Y_offset, 4, 1);
-    ctx.fillRect(cx + 21, cy - 9 + body_Y_offset + arm2_Y_offset, 4, 1);
-
-    // Cabeza
-    ctx.fillStyle = skinColor;
-    ctx.fillRect(cx - 12, cy - 29 + body_Y_offset, 24, 22);
-
-    // Ojos
-    ctx.fillStyle = eyeColor;
-    ctx.fillRect(cx - 7, cy - 23 + body_Y_offset, 4, 4);
-    ctx.fillRect(cx + 3, cy - 23 + body_Y_offset, 4, 4);
-
-    // Boca
-    ctx.fillStyle = facialDetailColor;
-    ctx.fillRect(cx - 2, cy - 14 + body_Y_offset, 4, 1);
-
-    // Pelo
-    ctx.fillStyle = hairColor;
-    ctx.fillRect(cx - 16, cy - 36 + body_Y_offset, 32, 11);  
-    ctx.beginPath();
-    ctx.moveTo(cx - 16, cy - 29 + body_Y_offset);
-    ctx.lineTo(cx - 13, cy - 21 + body_Y_offset);
-    ctx.lineTo(cx - 9, cy - 29 + body_Y_offset);
-    ctx.lineTo(cx - 5, cy - 19 + body_Y_offset);
-    ctx.lineTo(cx - 1, cy - 29 + body_Y_offset);
-    ctx.lineTo(cx + 4, cy - 21 + body_Y_offset);
-    ctx.lineTo(cx + 8, cy - 29 + body_Y_offset);
-    ctx.lineTo(cx + 12, cy - 23 + body_Y_offset);
-    ctx.lineTo(cx + 16, cy - 29 + body_Y_offset);
-    ctx.closePath();
-    ctx.fill();
-
-    // Casco
-    ctx.fillStyle = helmetColor;
-    ctx.fillRect(cx - 16, cy - 36 + body_Y_offset, 32, 7);
-    ctx.fillRect(cx - 16, cy - 30 + body_Y_offset, 4, 15);
-    ctx.fillRect(cx + 12, cy - 30 + body_Y_offset, 4, 15);
-    ctx.fillStyle = defaultHighlightColor;
-    ctx.fillRect(cx - 16, cy - 36 + body_Y_offset, 32, 3);
-    ctx.fillStyle = defaultShineColor;
-    ctx.fillRect(cx - 10, cy - 35 + body_Y_offset, 5, 1);
-
-    // Dibujar Arma y Escudo
-    const weapon = equipped.weapon;
-    if (weapon) {
-        if (weapon.name === 'Escudo Colosal') {
-            ctx.save();
-            // Posicionar el escudo en la mano izquierda
-            ctx.translate(cx - 25, cy + 10 + body_Y_offset + arm1_Y_offset);
-
-            // Sombra
-            ctx.fillStyle = 'rgba(0, 0, 0, 0.3)';
-            ctx.fillRect(-1, -1, 22, 32);
-
-            // Cuerpo del escudo (Azul Gólem)
-            ctx.fillStyle = '#00BFFF';
-            ctx.fillRect(0, 0, 20, 30);
-            
-            // Borde dorado
-            ctx.strokeStyle = '#FFD700';
-            ctx.lineWidth = 2;
-            ctx.strokeRect(0, 0, 20, 30);
-
-            // Emblema dorado
-            ctx.fillStyle = '#FFD700';
-            ctx.fillRect(7, 10, 6, 10); // Vertical bar
-            ctx.fillRect(4, 14, 12, 2); // Horizontal bar
-
-            ctx.restore();
-        } else {
-            ctx.save();
-            // Posicionar el arma en la mano derecha
-            // Ajuste para la Espada de Luz para que no se salga del sprite al rotar
-            const translateX = (weapon.name === 'Espada de Luz') ? cx + 10 : cx + 35;
-            ctx.translate(translateX, cy + 5 + body_Y_offset + arm2_Y_offset);
-
-            // Rotar el arma según la pose de ataque
-            if (pose === 'attack') {
-                ctx.rotate(Math.PI / 4); // Rotar 45 grados al atacar
-            }
-
-            ctx.fillStyle = weapon.color || '#8B4513'; // Color del arma o marrón por defecto
-
-            // Dibujar formas simples basadas en el nombre del arma
-            if (weapon.name === 'Espada de Luz') {
-                ctx.rotate(Math.PI / 2); // Rotar 90 grados horario para que apunte al otro lado
-
-                // Hoja (Light Blue) con punta
-                ctx.fillStyle = '#ADD8E6';
-                ctx.beginPath();
-                ctx.moveTo(0, -35); // Punta de la espada (centro superior, más corta)
-                ctx.lineTo(-4, -5); // Base izquierda de la hoja (más estrecha)
-                ctx.lineTo(4, -5);  // Base derecha de la hoja (más estrecha)
-                ctx.closePath();
-                ctx.fill();
-
-                // Guarda (White)
-                ctx.fillStyle = '#FFFFFF'; ctx.fillRect(-7, -5, 14, 2); 
-                // Empuñadura (Dark Blue)
-                ctx.fillStyle = '#4682B4'; ctx.fillRect(-2, -3, 4, 6); 
-            } else if (weapon.name.includes('Espada') || weapon.name.includes('Daga')) {
-                ctx.fillRect(-2, -20, 4, 25); // Hoja
-                ctx.fillRect(-4, 5, 8, 3);   // Guarda
-            } else if (weapon.name.includes('Maza')) {
-                ctx.fillStyle = '#FFD700'; // Dorado
-                ctx.fillRect(-2, -18, 4, 20); // Mango
-                ctx.fillStyle = '#00BFFF'; // Azul
-                ctx.beginPath(); ctx.arc(0, -22, 8, 0, Math.PI * 2); ctx.fill(); 
-                ctx.fillStyle = '#FFD700';
-                ctx.beginPath(); ctx.arc(0, -22, 4, 0, Math.PI * 2); ctx.fill();
-                ctx.fillStyle = '#00008B';
-                ctx.beginPath(); ctx.moveTo(-4, -30); ctx.lineTo(0, -36); ctx.lineTo(4, -30); ctx.closePath(); ctx.fill();
-                ctx.beginPath(); ctx.moveTo(-4, -14); ctx.lineTo(0, -8); ctx.lineTo(4, -14); ctx.closePath(); ctx.fill();
-                ctx.beginPath(); ctx.moveTo(-12, -22); ctx.lineTo(-6, -26); ctx.lineTo(-6, -18); ctx.closePath(); ctx.fill();
-                ctx.beginPath(); ctx.moveTo(12, -22); ctx.lineTo(6, -26); ctx.lineTo(6, -18); ctx.closePath(); ctx.fill();
-            } else if (weapon.name.includes('Guadaña')) {
-                ctx.fillRect(-1, -25, 3, 30); // Mango
-                ctx.beginPath();
-                ctx.moveTo(2, -25);
-                ctx.quadraticCurveTo(15, -15, 2, -5);
-                ctx.fill();
-            } else if (weapon.name.includes('Arco')) {
-                ctx.beginPath();
-                ctx.moveTo(0, -15);
-                ctx.quadraticCurveTo(15, 0, 0, 15);
-                ctx.quadraticCurveTo(-5, 0, 0, -15);
-                ctx.fill();
-            } else if (weapon.name.includes('Libro')) {
-                ctx.fillRect(-8, -10, 16, 20); // Libro
-                ctx.fillStyle = '#FFFFFF';
-                ctx.fillRect(-7, -9, 6, 18); // Página izquierda
-                ctx.fillRect(1, -9, 6, 18);  // Página derecha
-            } else {
-                // Arma por defecto (palo)
-                ctx.fillRect(-2, -15, 4, 20);
-            }
-
-            ctx.restore();
+    const drawPart = (image, x, y, width, height) => {
+        if (image && image.complete) {
+            ctx.drawImage(image, x, y + body_Y_offset, width, height);
         }
-    }
+    };
+
+    const center_x_part = (finalSize - partSize) / 2;
+    const center_x_armor = (finalSize - armorWidth) / 2;
+    const center_x_helmet = (finalSize - helmetSize) / 2;
+    const center_x_boots = (finalSize - bootsWidth) / 2;
+    const left_arm_x = (finalSize / 2) - 17 - (armWidth / 2);
+    const right_arm_x = (finalSize / 2) + 17 - (armWidth / 2);
+
+    // Layout as requested by the user
+    // Boots at the bottom center
+    drawPart(images.botas_1, center_x_boots, 35, bootsWidth, bootsHeight);
+
+    // Arms on the sides of the armor
+    drawPart(images.brazos_1, left_arm_x, 28.5, armWidth, armHeight); // Left
+    drawPart(images.brazos_1, right_arm_x, 28.5, armWidth, armHeight); // Right
+
+    // Armor in the center, over the arms
+    drawPart(images.armadura_1, center_x_armor, 20.5, armorWidth, armorHeight);
+
+    // Helmet at the top center
+    drawPart(images.casco_1, center_x_helmet, 0, helmetSize, helmetSize);
 
     return canvas.toDataURL();
 }

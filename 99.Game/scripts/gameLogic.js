@@ -82,8 +82,12 @@ async function loadAllSprites() {
     delete loadedImages.floor;
 
     loadSprites(); // This populates the 'sprites' object with static sprites
-    sprites.player = createPlayerSprite({ equipped: player.equipped }); // Create player sprite
-    sprites.minion = createMinionSprite(sprites.player); // Create minion sprite here, after player is created
+
+    // Add player assets
+    sprites.casco_1 = 'assets/casco_1.png';
+    sprites.armadura_1 = 'assets/armadura_1.png';
+    sprites.brazos_1 = 'assets/brazos_1.png';
+    sprites.botas_1 = 'assets/botas_1.png';
 
     return new Promise(resolve => {
         let imagesToLoad = 0;
@@ -104,6 +108,14 @@ async function loadAllSprites() {
         });
 
         if (imagesToLoad === 0) {
+            const playerImages = {
+                casco_1: loadedImages.casco_1,
+                armadura_1: loadedImages.armadura_1,
+                brazos_1: loadedImages.brazos_1,
+                botas_1: loadedImages.botas_1,
+            };
+            sprites.player = createPlayerSprite({ equipped: player.equipped, images: playerImages });
+            sprites.minion = createMinionSprite(sprites.player);
             resolve();
             return;
         }
@@ -112,6 +124,14 @@ async function loadAllSprites() {
         const checkAllLoaded = () => {
             loadedCount++;
             if (loadedCount === imagesToLoad) {
+                const playerImages = {
+                    casco_1: loadedImages.casco_1,
+                    armadura_1: loadedImages.armadura_1,
+                    brazos_1: loadedImages.brazos_1,
+                    botas_1: loadedImages.botas_1,
+                };
+                sprites.player = createPlayerSprite({ equipped: player.equipped, images: playerImages });
+                sprites.minion = createMinionSprite(sprites.player);
                 resolve();
             }
         };
@@ -219,9 +239,16 @@ function updateGame(timestamp) {
         }
     }
 
+    const playerImages = {
+        casco_1: loadedImages.casco_1,
+        armadura_1: loadedImages.armadura_1,
+        brazos_1: loadedImages.brazos_1,
+        botas_1: loadedImages.botas_1,
+    };
+
     if (player.isMoving) {
                     player.walkAnimFrame = (player.walkAnimFrame + 1) % 8; // Ciclo de 8 fotogramas
-        const newSprite = createPlayerSprite({ pose: 'walk', frame: player.walkAnimFrame, equipped: player.equipped });
+        const newSprite = createPlayerSprite({ pose: 'walk', frame: player.walkAnimFrame, equipped: player.equipped, images: playerImages });
         if (sprites.player !== newSprite) {
             sprites.player = newSprite;
             const img = new Image();
@@ -232,7 +259,7 @@ function updateGame(timestamp) {
         }
     } else if (player.walkAnimFrame !== 0) { // Regenerate idle sprite only once when stopping
         player.walkAnimFrame = 0;
-        sprites.player = createPlayerSprite({ pose: 'idle', frame: 0, equipped: player.equipped });
+        sprites.player = createPlayerSprite({ pose: 'idle', frame: 0, equipped: player.equipped, images: playerImages });
         const img = new Image();
         img.src = sprites.player;
         img.onload = () => {
