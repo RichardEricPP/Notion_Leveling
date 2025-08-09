@@ -350,11 +350,11 @@ export function createPlayerSprite(options = {}) {
     const partSize = 35; // 50% of the canvas size
     const armHeight = 18;
     const armWidth = 5; // Wider arms
-    const armorHeight = 34;
-    const armorWidth = 43; // Stretched armor
+    const armorHeight = 30;
+    const armorWidth = 41; // Stretched armor
     const helmetSize = 32; // A bit smaller helmet
-    const bootsHeight = 33;
-    const bootsWidth = 40; // Wider boots
+    const bootsHeight = 27;
+    const bootsWidth = 34; // Wider boots
 
     const drawPart = (image, x, y, width, height) => {
         if (image && image.complete) {
@@ -366,19 +366,23 @@ export function createPlayerSprite(options = {}) {
     const center_x_armor = (finalSize - armorWidth) / 2;
     const center_x_helmet = (finalSize - helmetSize) / 2;
     const center_x_boots = (finalSize - bootsWidth) / 2;
-    const left_arm_x = (finalSize / 2) - 17 - (armWidth / 2);
-    const right_arm_x = (finalSize / 2) + 17 - (armWidth / 2);
+    const left_arm_x = (finalSize / 2) - 15 - (armWidth / 2);
+    const right_arm_x = (finalSize / 2) + 16 - (armWidth / 2);
 
     // Layout as requested by the user
     // Boots at the bottom center
-    drawPart(images.botas_1, center_x_boots, 35, bootsWidth, bootsHeight);
-
-    // Arms on the sides of the armor
-    drawPart(images.brazos_1, left_arm_x, 28.5, armWidth, armHeight); // Left
-    drawPart(images.brazos_1, right_arm_x, 28.5, armWidth, armHeight); // Right
+    drawPart(images.botas_1, center_x_boots, 40, bootsWidth, bootsHeight);
 
     // Armor in the center, over the arms
     drawPart(images.armadura_1, center_x_armor, 20.5, armorWidth, armorHeight);
+
+    // Arms on the sides of the armor
+    // Arms on the sides of the armor
+    drawPart(images.brazos_1, left_arm_x, 30.5, armWidth, armHeight); // Left
+    drawPart(images.brazos_1, right_arm_x, 30.5, armWidth, armHeight); // Right
+
+    // Armor in the center, over the arms
+    drawPart(images.armadura_1, center_x_armor, 22.5, armorWidth, armorHeight);
 
     // Helmet at the top center
     drawPart(images.casco_1, center_x_helmet, 0, helmetSize, helmetSize);
