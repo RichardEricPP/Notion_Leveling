@@ -612,7 +612,12 @@ export function drawMap() {
                     if (tile.decor.isLarge) {
                         drawSprite(tile.decor.name, screenX, screenY, tileSize * tile.decor.width, tileSize * tile.decor.height);
                     } else {
-                        drawSprite(tile.decor.name, screenX, screenY);
+                        // Check if it's calaveras.png
+                        if (tile.decor.name === 'calaveras.png') {
+                            drawSprite(tile.decor.name, screenX, screenY, tileSize * 0.85, tileSize * 0.85);
+                        } else {
+                            drawSprite(tile.decor.name, screenX, screenY);
+                        }
                     }
                 }
                 if (x === stairLocation.x && y === stairLocation.y && stairLocation.active) { 
