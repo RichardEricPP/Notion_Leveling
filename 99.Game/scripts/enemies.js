@@ -314,8 +314,8 @@ export function createSpiderlingSprite() {
     const canvas = document.createElement('canvas');
     canvas.width = 64; canvas.height = 64;
     const ctx = canvas.getContext('2d');
-    const bodyColor = '#4A2A05'; 
-    const legColor = '#3B2304';
+    const bodyColor = '#0E0B1C'; 
+    const legColor = '#0E0B1C';
     const eyeColor = '#FF4500';
     ctx.fillStyle = bodyColor;
     ctx.beginPath();
