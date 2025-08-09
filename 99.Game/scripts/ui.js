@@ -67,32 +67,36 @@ export async function loadAtlas() {
 // --- Drawing Functions ---
 // --- Drawing Functions ---
 function drawSprite(spriteName, x, y, width = tileSize, height = tileSize) {
-    if (!atlasData || !atlasImage) {
-        ctx.fillStyle = 'magenta'; // Draw a bright color to indicate an error
-        ctx.fillRect(x, y, width, height);
-        return;
-    }
-
-    const sprite = atlasData.frames[spriteName];
-    if (!sprite) {
+    const spriteData = atlasData.frames[spriteName];
+    if (!spriteData) {
         console.warn(`Sprite '${spriteName}' not found in atlas.`);
         return;
     }
 
-    const { frame, rotated, sourceSize } = sprite;
+    const { frame, rotated, trimmed, spriteSourceSize, sourceSize } = spriteData;
     const { x: sx, y: sy, w: sw, h: sh } = frame;
+
+    let destX = x;
+    let destY = y;
+    let destWidth = width;
+    let destHeight = height;
+
+    if (trimmed) {
+        const scaleX = width / sourceSize.w;
+        const scaleY = height / sourceSize.h;
+        destX = x + spriteSourceSize.x * scaleX;
+        destY = y + spriteSourceSize.y * scaleY;
+        destWidth = sw * scaleX;
+        destHeight = sh * scaleY;
+    }
 
     ctx.save();
     if (rotated) {
-        // Translate to the center of the destination rectangle
-        ctx.translate(x + width / 2, y + height / 2);
-        // Rotate the canvas
+        ctx.translate(destX + destWidth / 2, destY + destHeight / 2);
         ctx.rotate(-90 * Math.PI / 180);
-        // Draw the image, swapping width and height, and adjusting coordinates
-        ctx.drawImage(atlasImage, sx, sy, sh, sw, -height / 2, -width / 2, height, width);
+        ctx.drawImage(atlasImage, sx, sy, sh, sw, -destHeight / 2, -destWidth / 2, destHeight, destWidth);
     } else {
-        // Draw the image normally
-        ctx.drawImage(atlasImage, sx, sy, sw, sh, x, y, width, height);
+        ctx.drawImage(atlasImage, sx, sy, sw, sh, destX, destY, destWidth, destHeight);
     }
     ctx.restore();
 }
@@ -543,6 +547,7 @@ export function drawMap() {
     ctx.fillStyle = '#000000'; ctx.fillRect(0, 0, gameCanvas.width, gameCanvas.height);
     ctx.save(); ctx.translate(shakeOffsetX, shakeOffsetY);
 
+    // First loop: draw base tiles
     for (let y = startY; y <= endY; y++) {
         for (let x = startX; x <= endX; x++) {
             const screenX = x * tileSize - offsetX; const screenY = y * tileSize - offsetY;
@@ -550,7 +555,6 @@ export function drawMap() {
                 const tile = map[y][x];
                 let baseTileType = tile.base;
 
-                // Draw Base Tile
                 if (baseTileType === 0) { // It's a wall
                     let wallType = null;
 
@@ -594,28 +598,30 @@ export function drawMap() {
                     ctx.fillStyle = '#000000';
                     ctx.fillRect(screenX, screenY, tileSize, tileSize);
                 }
+            }
+        }
+    }
 
-                // Draw Decoration
+    // Second loop: draw decorations
+    for (let y = startY; y <= endY; y++) {
+        for (let x = startX; x <= endX; x++) {
+            const screenX = x * tileSize - offsetX; const screenY = y * tileSize - offsetY;
+            if (map[y] && map[y][x] !== undefined) { 
+                const tile = map[y][x];
                 if (tile.decor && !tile.isDecorSubTile) {
-                    // For large decorations, only draw if this is the top-left tile of the object
                     if (tile.decor.isLarge) {
-                        // Check if this is the top-left tile of the large object
-                        // This assumes the 'decor' property is only set on the top-left tile in gameLogic.js
                         drawSprite(tile.decor.name, screenX, screenY, tileSize * tile.decor.width, tileSize * tile.decor.height);
                     } else {
                         drawSprite(tile.decor.name, screenX, screenY);
                     }
                 }
-
                 if (x === stairLocation.x && y === stairLocation.y && stairLocation.active) { 
                     drawStairs(screenX, screenY);
                 }
-            } else { 
-                ctx.fillStyle = '#000000'; // Draw black for areas outside the defined map
-                ctx.fillRect(screenX, screenY, tileSize, tileSize);
             }
         }
     }
+
     monsters.forEach(m => {
         const screenX = m.tileX * tileSize - offsetX; const screenY = m.tileY * tileSize - offsetY;
         drawMonster(m, screenX, screenY);
