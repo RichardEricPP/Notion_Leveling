@@ -479,7 +479,10 @@ function updateMonsters(currentTime) {
                 for (let i = 0; i < 15 && spawned < 4; i++) {
                     let spawnX = m.tileX + (Math.floor(Math.random() * 7) - 3);
                     let spawnY = m.tileY + (Math.floor(Math.random() * 7) - 3);
-                    if (isPassable(spawnX, spawnY, false, m)) {
+                    if (m.arena &&
+                        spawnX >= m.arena.x && spawnX < m.arena.x + m.arena.width &&
+                        spawnY >= m.arena.y && spawnY < m.arena.y + m.arena.height &&
+                        isPassable(spawnX, spawnY, false, m)) {
                         monsters.push(createMonster('spiderling', spawnX, spawnY, currentFloor));
                         spawned++;
                     }
@@ -618,6 +621,11 @@ async function generateFloor() {
             }
         }
 
+        player.tileX = arenaX + Math.floor(arenaWidth / 2);
+        player.tileY = arenaY + arenaHeight - 2;
+        const bossSpawnX = arenaX + Math.floor(arenaWidth / 2) - 1;
+        const bossSpawnY = arenaY + 1;
+
         // Place boss decorations
         const placeDecor = (name, x, y, w, h) => {
             for (let i = 0; i < w; i++) {
@@ -633,17 +641,46 @@ async function generateFloor() {
                 }
             }
         };
-        placeDecor('piedras.png', arenaX + 2, arenaY + 2, 2, 2);
-        placeDecor('telaraña.png', arenaX + arenaWidth - 4, arenaY + 2, 2, 2);
 
+        const decorationsToPlace = [
+            { name: 'telaraña.png', w: 2, h: 2, count: 2 },
+            { name: 'piedras.png', w: 2, h: 2, count: 4 }
+        ];
 
-        player.tileX = arenaX + Math.floor(arenaWidth / 2);
-        player.tileY = arenaY + arenaHeight - 2;
+        const occupiedAreas = [
+            { x: player.tileX, y: player.tileY, w: 1, h: 1 },
+            { x: bossSpawnX, y: bossSpawnY, w: 2, h: 2 }
+        ];
+
+        decorationsToPlace.forEach(decor => {
+            for (let i = 0; i < decor.count; i++) {
+                let attempts = 0;
+                let placed = false;
+                while (attempts < 50 && !placed) {
+                    const x = arenaX + Math.floor(Math.random() * (arenaWidth - decor.w));
+                    const y = arenaY + Math.floor(Math.random() * (arenaHeight - decor.h));
+                    const newArea = { x: x, y: y, w: decor.w, h: decor.h };
+
+                    const overlaps = occupiedAreas.some(area =>
+                        newArea.x < area.x + area.w &&
+                        newArea.x + newArea.w > area.x &&
+                        newArea.y < area.y + area.h &&
+                        newArea.y + newArea.h > area.y
+                    );
+
+                    if (!overlaps) {
+                        placeDecor(decor.name, x, y, decor.w, decor.h);
+                        occupiedAreas.push(newArea);
+                        placed = true;
+                    }
+                    attempts++;
+                }
+            }
+        });
+
         stairLocation.x = player.tileX;
         stairLocation.y = player.tileY;
-        const bossSpawnX = arenaX + Math.floor(arenaWidth / 2) - 1;
-        const bossSpawnY = arenaY + 1;
-        monsters.push(createMonster('finalBoss', bossSpawnX, bossSpawnY, currentFloor));
+        monsters.push(createMonster('finalBoss', bossSpawnX, bossSpawnY, currentFloor, { x: arenaX, y: arenaY, width: arenaWidth, height: arenaHeight }));
         for (let r = 0; r < 2; r++) {
             for (let c = 0; c < 2; c++) map[bossSpawnY + r][bossSpawnX + c].base = 1;
         }
@@ -845,7 +882,7 @@ function findOptimalAttackPosition(monster, target) {
     return attackPositions.find(pos => !monsters.some(m => m !== monster && m.tileX === pos.x && m.tileY === pos.y)) || null;
 }
 
-function createMonster(type, x, y, floor) {
+function createMonster(type, x, y, floor, arena = null) {
     let monster = {
         id: Date.now() + Math.random(), // ID único para el monstruo
         tileX: x, tileY: y, type: type, isMinion: false,
@@ -917,6 +954,7 @@ function createMonster(type, x, y, floor) {
             monster.attackRange = 1.5;
             monster.aggroRange = 12;
             monster.abilityCooldowns = { webShot: 0, summon: 0 };
+            monster.arena = arena;
             break;
         case 'spiderling':
             monster.maxHp = Math.floor((15 + floor * 2) * hpMultiplier * floorMultiplier);
