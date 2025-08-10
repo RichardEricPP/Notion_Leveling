@@ -393,12 +393,29 @@ export function createPlayerSprite(options = {}) {
     const left_arm_x = (finalSize / 2) - 15 - (armWidth / 2);
     const right_arm_x = (finalSize / 2) + 16 - (armWidth / 2);
 
-    // Usar el equipo equipado para obtener los nombres de los sprites.
-    // Se proporciona un sprite por defecto si no hay nada equipado.
-    const helmetSprite = equipped.helmet?.spriteName || 'casco_1.png';
-    const armorSprite = equipped.armor?.spriteName || 'armadura_1.png';
-    const bootsSprite = equipped.boots?.spriteName || 'botas_1.png';
-    const armsSprite = 'brazos_1.png'; // Los brazos son constantes por ahora
+    // Mapeo de nombres de set a números de sprite
+    const setMapping = {
+        'Hierro': 1,
+        'Caballero': 2,
+        'Demonio': 3,
+        'León': 4,
+        'Asesinato': 5,
+        'Noble': 6,
+        'Mago': 7,
+        'Caos': 8
+    };
+
+    const getSpriteName = (type, part) => {
+        const item = equipped[part];
+        const set = item?.set;
+        const number = setMapping[set] || 1; // Por defecto, Hierro (1)
+        return `${type}_${number}.png`;
+    };
+
+    const helmetSprite = getSpriteName('casco', 'helmet');
+    const armorSprite = getSpriteName('armadura', 'armor');
+    const bootsSprite = getSpriteName('botas', 'boots');
+    const armsSprite = 'brazos_1.png'; // Siempre usar brazos_1 para guantes
 
     // Replicando el orden de dibujado y capas original para mantener el aspecto visual
     drawPart(bootsSprite, center_x_boots, 40, bootsWidth, bootsHeight);

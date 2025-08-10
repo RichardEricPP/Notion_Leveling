@@ -82,18 +82,46 @@ async function loadAllSprites() {
     delete sprites.floor;
     delete loadedImages.floor;
 
-    loadSprites(); // This populates the 'sprites' object with static sprites
+    loadSprites(); // This populates the 'sprites' object with procedural enemies
 
-    // Create the initial player sprite using the pre-loaded data.
+    // Create the player sprite from the pre-loaded spritesheet data
     sprites.player = createPlayerSprite({ equipped: player.equipped, ...playerSpriteData });
     sprites.minion = createMinionSprite(sprites.player);
 
-    // Ensure loadedImages.player is populated for the UI to draw.
-    const img = new Image();
-    img.src = sprites.player;
-    img.onload = () => {
-        loadedImages.player = img;
-    };
+    return new Promise(resolve => {
+        const keysToLoad = Object.keys(sprites);
+        if (keysToLoad.length === 0) {
+            resolve();
+            return;
+        }
+
+        let loadedCount = 0;
+        const checkAllLoaded = () => {
+            loadedCount++;
+            if (loadedCount === keysToLoad.length) {
+                resolve();
+            }
+        };
+
+        keysToLoad.forEach(key => {
+            const spriteValue = sprites[key];
+            if (spriteValue.startsWith('data:') || spriteValue.includes('/')) {
+                const img = new Image();
+                img.src = spriteValue;
+                img.onload = () => {
+                    loadedImages[key] = img;
+                    checkAllLoaded();
+                };
+                img.onerror = () => {
+                    console.error(`Failed to load sprite: ${key} from ${spriteValue}`);
+                    checkAllLoaded();
+                };
+            } else {
+                loadedImages[key] = spriteValue;
+                checkAllLoaded();
+            }
+        });
+    });
 }
 
 // --- Core Game Functions ---
