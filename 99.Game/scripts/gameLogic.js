@@ -2,7 +2,7 @@
 // Contiene la lógica principal del juego: bucle, combate, generación de niveles y estado.
 
 // --- IMPORTS ---
-import { player, updateStats, checkLevelUp, createPlayerSprite, createMinionSprite } from './player.js';
+import { player, updateStats, checkLevelUp, createPlayerSprite, createMinionSprite, loadPlayerSprites } from './player.js';
 import * as ui from './ui.js';
 import { monsters, chests, sprites, loadedImages, loadSprites } from './enemies.js';
 import { gearList, skills } from './data.js';
@@ -41,6 +41,7 @@ export let warMaceShockwave = null;
 export let skillCooldowns = {};
 export const fixedProjectileSpeed = 0.15;
 
+let playerSpriteData = {};
 let lastMoveTime = 0;
 let lastAttackTime = 0;
 
@@ -83,72 +84,16 @@ async function loadAllSprites() {
 
     loadSprites(); // This populates the 'sprites' object with static sprites
 
-    // Add player assets
-    sprites.casco_1 = 'assets/casco_1.png';
-    sprites.armadura_1 = 'assets/armadura_1.png';
-    sprites.brazos_1 = 'assets/brazos_1.png';
-    sprites.botas_1 = 'assets/botas_1.png';
+    // Create the initial player sprite using the pre-loaded data.
+    sprites.player = createPlayerSprite({ equipped: player.equipped, ...playerSpriteData });
+    sprites.minion = createMinionSprite(sprites.player);
 
-    return new Promise(resolve => {
-        let imagesToLoad = 0;
-        const keysToLoad = [];
-
-        // Identify which sprites need to be loaded as actual images
-        Object.keys(sprites).forEach(key => {
-            const spriteValue = sprites[key];
-            // If it's a Data URL or a file path (contains '/'), it needs to be loaded as an image
-            if (spriteValue.startsWith('data:') || spriteValue.includes('/')) {
-                imagesToLoad++;
-                keysToLoad.push(key);
-            } else {
-                // If it's an atlas sprite name, it's not loaded as a separate image
-                // We can optionally store its name in loadedImages for consistency, but it won't be an Image object
-                loadedImages[key] = spriteValue; // Store the sprite name directly
-            }
-        });
-
-        if (imagesToLoad === 0) {
-            const playerImages = {
-                casco_1: loadedImages.casco_1,
-                armadura_1: loadedImages.armadura_1,
-                brazos_1: loadedImages.brazos_1,
-                botas_1: loadedImages.botas_1,
-            };
-            sprites.player = createPlayerSprite({ equipped: player.equipped, images: playerImages });
-            sprites.minion = createMinionSprite(sprites.player);
-            resolve();
-            return;
-        }
-
-        let loadedCount = 0;
-        const checkAllLoaded = () => {
-            loadedCount++;
-            if (loadedCount === imagesToLoad) {
-                const playerImages = {
-                    casco_1: loadedImages.casco_1,
-                    armadura_1: loadedImages.armadura_1,
-                    brazos_1: loadedImages.brazos_1,
-                    botas_1: loadedImages.botas_1,
-                };
-                sprites.player = createPlayerSprite({ equipped: player.equipped, images: playerImages });
-                sprites.minion = createMinionSprite(sprites.player);
-                resolve();
-            }
-        };
-
-        keysToLoad.forEach(key => {
-            const img = new Image();
-            img.src = sprites[key];
-            img.onload = () => {
-                loadedImages[key] = img;
-                checkAllLoaded();
-            };
-            img.onerror = () => {
-                console.error(`Failed to load sprite: ${key} from ${sprites[key]}`);
-                checkAllLoaded(); // Still call checkAllLoaded even on error to prevent deadlock
-            };
-        });
-    });
+    // Ensure loadedImages.player is populated for the UI to draw.
+    const img = new Image();
+    img.src = sprites.player;
+    img.onload = () => {
+        loadedImages.player = img;
+    };
 }
 
 // --- Core Game Functions ---
@@ -199,10 +144,11 @@ export async function setDifficultyAndStart(difficulty, startFloor = 1, baseLeve
     gameStarted = true;
     gameOver = false;
 
+    // Load all sprite data before generating the level and starting the loop
+    playerSpriteData = await loadPlayerSprites();
     await ui.loadAtlas();
     await generateFloor();
     revealMapAroundPlayer();
-    await loadAllSprites();
     
     ui.difficultyScreen.style.display = 'none';
     ui.gameCanvas.style.display = 'block';
@@ -239,16 +185,9 @@ function updateGame(timestamp) {
         }
     }
 
-    const playerImages = {
-        casco_1: loadedImages.casco_1,
-        armadura_1: loadedImages.armadura_1,
-        brazos_1: loadedImages.brazos_1,
-        botas_1: loadedImages.botas_1,
-    };
-
     if (player.isMoving) {
-                    player.walkAnimFrame = (player.walkAnimFrame + 1) % 8; // Ciclo de 8 fotogramas
-        const newSprite = createPlayerSprite({ pose: 'walk', frame: player.walkAnimFrame, equipped: player.equipped, images: playerImages });
+        player.walkAnimFrame = (player.walkAnimFrame + 1) % 8; // Ciclo de 8 fotogramas
+        const newSprite = createPlayerSprite({ pose: 'walk', frame: player.walkAnimFrame, equipped: player.equipped, ...playerSpriteData });
         if (sprites.player !== newSprite) {
             sprites.player = newSprite;
             const img = new Image();
@@ -259,7 +198,7 @@ function updateGame(timestamp) {
         }
     } else if (player.walkAnimFrame !== 0) { // Regenerate idle sprite only once when stopping
         player.walkAnimFrame = 0;
-        sprites.player = createPlayerSprite({ pose: 'idle', frame: 0, equipped: player.equipped, images: playerImages });
+        sprites.player = createPlayerSprite({ pose: 'idle', frame: 0, equipped: player.equipped, ...playerSpriteData });
         const img = new Image();
         img.src = sprites.player;
         img.onload = () => {

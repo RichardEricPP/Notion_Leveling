@@ -330,7 +330,15 @@ export function checkLevelUp() {
 }
 
 export function createPlayerSprite(options = {}) {
-    const { pose = 'idle', frame = 0, equipped = {}, images = {} } = options;
+    const { pose = 'idle', frame = 0, equipped = {}, spritesheet, spriteData } = options;
+
+    // Si el spritesheet o los datos no están listos, devuelve un canvas vacío.
+    if (!spritesheet || !spriteData) {
+        const canvas = document.createElement('canvas');
+        canvas.width = 70;
+        canvas.height = 70;
+        return canvas.toDataURL();
+    }
 
     const finalSize = 70;
     const canvas = document.createElement('canvas');
@@ -338,7 +346,7 @@ export function createPlayerSprite(options = {}) {
     canvas.height = finalSize;
     const ctx = canvas.getContext('2d');
 
-    // Animation offsets
+    // Desplazamientos para la animación de caminar
     let body_Y_offset = 0;
     if (pose === 'walk') {
         const walkCycleBody = [0, 1, 2, 3, 2, 1, 0, 1];
@@ -347,45 +355,58 @@ export function createPlayerSprite(options = {}) {
 
     ctx.clearRect(0, 0, finalSize, finalSize);
 
-    const partSize = 35; // 50% of the canvas size
-    const armHeight = 18;
-    const armWidth = 5; // Wider arms
     const armorHeight = 30;
-    const armorWidth = 41; // Stretched armor
-    const helmetSize = 32; // A bit smaller helmet
+    const armorWidth = 41;
+    const helmetSize = 32;
     const bootsHeight = 27;
-    const bootsWidth = 34; // Wider boots
+    const bootsWidth = 34;
+    const armHeight = 18;
+    const armWidth = 5;
 
-    const drawPart = (image, x, y, width, height) => {
-        if (image && image.complete) {
-            ctx.drawImage(image, x, y + body_Y_offset, width, height);
+    const drawPart = (partName, x, y, dWidth, dHeight) => {
+        if (!partName) return; // No dibujar si la parte es nula
+        const frameData = spriteData.frames[partName];
+        if (spritesheet && spritesheet.complete && frameData) {
+            const { frame: { x: sx, y: sy, w: sWidth, h: sHeight }, rotated } = frameData;
+
+            ctx.save();
+            // Aplicar el offset de la animación de caminar antes de cualquier transformación
+            ctx.translate(0, body_Y_offset);
+
+            if (rotated) {
+                // Mover el origen al centro del destino, rotar, y dibujar la imagen rotada
+                ctx.translate(x + dWidth / 2, y + dHeight / 2);
+                ctx.rotate(-Math.PI / 2); // Rotar -90 grados
+                // Dibujar la imagen con ancho/alto intercambiados, centrada en el nuevo origen
+                ctx.drawImage(spritesheet, sx, sy, sHeight, sWidth, -dHeight / 2, -dWidth / 2, dHeight, dWidth);
+            } else {
+                // Dibujar normalmente en la posición x, y
+                ctx.drawImage(spritesheet, sx, sy, sWidth, sHeight, x, y, dWidth, dHeight);
+            }
+            ctx.restore();
         }
     };
 
-    const center_x_part = (finalSize - partSize) / 2;
     const center_x_armor = (finalSize - armorWidth) / 2;
     const center_x_helmet = (finalSize - helmetSize) / 2;
     const center_x_boots = (finalSize - bootsWidth) / 2;
     const left_arm_x = (finalSize / 2) - 15 - (armWidth / 2);
     const right_arm_x = (finalSize / 2) + 16 - (armWidth / 2);
 
-    // Layout as requested by the user
-    // Boots at the bottom center
-    drawPart(images.botas_1, center_x_boots, 40, bootsWidth, bootsHeight);
+    // Usar el equipo equipado para obtener los nombres de los sprites.
+    // Se proporciona un sprite por defecto si no hay nada equipado.
+    const helmetSprite = equipped.helmet?.spriteName || 'casco_1.png';
+    const armorSprite = equipped.armor?.spriteName || 'armadura_1.png';
+    const bootsSprite = equipped.boots?.spriteName || 'botas_1.png';
+    const armsSprite = 'brazos_1.png'; // Los brazos son constantes por ahora
 
-    // Armor in the center, over the arms
-    drawPart(images.armadura_1, center_x_armor, 20.5, armorWidth, armorHeight);
-
-    // Arms on the sides of the armor
-    // Arms on the sides of the armor
-    drawPart(images.brazos_1, left_arm_x, 30.5, armWidth, armHeight); // Left
-    drawPart(images.brazos_1, right_arm_x, 30.5, armWidth, armHeight); // Right
-
-    // Armor in the center, over the arms
-    drawPart(images.armadura_1, center_x_armor, 22.5, armorWidth, armorHeight);
-
-    // Helmet at the top center
-    drawPart(images.casco_1, center_x_helmet, 0, helmetSize, helmetSize);
+    // Replicando el orden de dibujado y capas original para mantener el aspecto visual
+    drawPart(bootsSprite, center_x_boots, 40, bootsWidth, bootsHeight);
+    drawPart(armorSprite, center_x_armor, 20.5, armorWidth, armorHeight);
+    drawPart(armsSprite, left_arm_x, 30.5, armWidth, armHeight); // Izquierdo
+    drawPart(armsSprite, right_arm_x, 30.5, armWidth, armHeight); // Derecho
+    drawPart(armorSprite, center_x_armor, 22.5, armorWidth, armorHeight);
+    drawPart(helmetSprite, center_x_helmet, 0, helmetSize, helmetSize);
 
     return canvas.toDataURL();
 }
@@ -458,3 +479,39 @@ export function calculatePlayerSkillEffectResourceGenerationBonus() { return 0; 
 export function calculatePlayerSkillEffectCastSpeedBonus() { return 0; }
 export function calculatePlayerSkillEffectCritChanceBonus() { return 0; }
 export function calculatePlayerSkillEffectCritDamageBonus() { return 0; }
+
+// --- HELPER FUNCTIONS ---
+
+/**
+ * Carga el spritesheet del jugador y los datos JSON correspondientes.
+ * @returns {Promise<Object>} Una promesa que se resuelve con el spritesheet y los datos del sprite.
+ */
+export async function loadPlayerSprites() {
+    try {
+        // Cargar la imagen del spritesheet
+        const spritesheetPromise = new Promise((resolve, reject) => {
+            const img = new Image();
+            img.onload = () => resolve(img);
+            img.onerror = () => reject(new Error("No se pudo cargar el spritesheet de armaduras."));
+            img.src = './assets/armaduras.png';
+        });
+
+        // Cargar los datos del JSON
+        const spriteDataPromise = fetch('./assets/armaduras.json')
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('No se pudo cargar armaduras.json');
+                }
+                return response.json();
+            });
+
+        // Esperar a que ambas promesas se completen
+        const [spritesheet, spriteData] = await Promise.all([spritesheetPromise, spriteDataPromise]);
+
+        return { spritesheet, spriteData };
+    } catch (error) {
+        console.error("Error al cargar los sprites del jugador:", error);
+        // Devolver un objeto vacío o nulo para que el juego pueda continuar sin los sprites
+        return { spritesheet: null, spriteData: null };
+    }
+}
