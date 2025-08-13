@@ -349,7 +349,7 @@ export function createPlayerSprite(options = {}) {
     // Desplazamientos para la animación de caminar
     let body_Y_offset = 0;
     if (pose === 'walk') {
-        const walkCycleBody = [0, 1, 2, 3, 2, 1, 0, 1];
+        const walkCycleBody = [0, 2, 3, 4, 3, 2, 1, 0];
         body_Y_offset = walkCycleBody[frame % 8];
     }
 

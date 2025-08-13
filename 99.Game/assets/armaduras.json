@@ -10,7 +10,7 @@
 },
 "armadura_2.png":
 {
-	"frame": {"x":1,"y":359,"w":127,"h":115},
+	"frame": {"x":1,"y":492,"w":127,"h":115},
 	"rotated": false,
 	"trimmed": true,
 	"spriteSourceSize": {"x":1,"y":6,"w":127,"h":115},
@@ -18,15 +18,15 @@
 },
 "armadura_3.png":
 {
-	"frame": {"x":131,"y":118,"w":126,"h":122},
-	"rotated": true,
+	"frame": {"x":1,"y":609,"w":126,"h":122},
+	"rotated": false,
 	"trimmed": true,
 	"spriteSourceSize": {"x":1,"y":1,"w":126,"h":122},
 	"sourceSize": {"w":128,"h":128}
 },
 "armadura_4.png":
 {
-	"frame": {"x":130,"y":359,"w":125,"h":110},
+	"frame": {"x":1,"y":1042,"w":125,"h":110},
 	"rotated": false,
 	"trimmed": true,
 	"spriteSourceSize": {"x":2,"y":7,"w":125,"h":110},
@@ -34,7 +34,7 @@
 },
 "armadura_5.png":
 {
-	"frame": {"x":1,"y":691,"w":120,"h":101},
+	"frame": {"x":130,"y":557,"w":120,"h":101},
 	"rotated": false,
 	"trimmed": true,
 	"spriteSourceSize": {"x":3,"y":15,"w":120,"h":101},
@@ -42,23 +42,23 @@
 },
 "armadura_6.png":
 {
-	"frame": {"x":1,"y":577,"w":120,"h":112},
-	"rotated": false,
+	"frame": {"x":1,"y":129,"w":126,"h":128},
+	"rotated": true,
 	"trimmed": true,
-	"spriteSourceSize": {"x":4,"y":8,"w":120,"h":112},
+	"spriteSourceSize": {"x":2,"y":0,"w":126,"h":128},
 	"sourceSize": {"w":128,"h":128}
 },
 "armadura_7.png":
 {
-	"frame": {"x":1,"y":239,"w":127,"h":118},
-	"rotated": false,
+	"frame": {"x":131,"y":205,"w":127,"h":118},
+	"rotated": true,
 	"trimmed": true,
 	"spriteSourceSize": {"x":0,"y":0,"w":127,"h":118},
 	"sourceSize": {"w":128,"h":128}
 },
 "armadura_8.png":
 {
-	"frame": {"x":130,"y":246,"w":125,"h":111},
+	"frame": {"x":1,"y":929,"w":125,"h":111},
 	"rotated": false,
 	"trimmed": true,
 	"spriteSourceSize": {"x":1,"y":3,"w":125,"h":111},
@@ -66,7 +66,7 @@
 },
 "botas_1.png":
 {
-	"frame": {"x":1,"y":129,"w":128,"h":108},
+	"frame": {"x":1,"y":257,"w":128,"h":108},
 	"rotated": false,
 	"trimmed": true,
 	"spriteSourceSize": {"x":0,"y":12,"w":128,"h":108},
@@ -74,7 +74,7 @@
 },
 "botas_2.png":
 {
-	"frame": {"x":129,"y":565,"w":126,"h":93},
+	"frame": {"x":1,"y":834,"w":126,"h":93},
 	"rotated": false,
 	"trimmed": true,
 	"spriteSourceSize": {"x":0,"y":24,"w":126,"h":93},
@@ -82,7 +82,7 @@
 },
 "botas_3.png":
 {
-	"frame": {"x":1,"y":1197,"w":109,"h":97},
+	"frame": {"x":1,"y":1271,"w":109,"h":97},
 	"rotated": false,
 	"trimmed": true,
 	"spriteSourceSize": {"x":9,"y":14,"w":109,"h":97},
@@ -90,7 +90,7 @@
 },
 "botas_4.png":
 {
-	"frame": {"x":1,"y":476,"w":126,"h":99},
+	"frame": {"x":1,"y":733,"w":126,"h":99},
 	"rotated": false,
 	"trimmed": true,
 	"spriteSourceSize": {"x":1,"y":17,"w":126,"h":99},
@@ -98,7 +98,7 @@
 },
 "botas_5.png":
 {
-	"frame": {"x":131,"y":1,"w":124,"h":115},
+	"frame": {"x":1,"y":1154,"w":124,"h":115},
 	"rotated": false,
 	"trimmed": true,
 	"spriteSourceSize": {"x":2,"y":5,"w":124,"h":115},
@@ -106,15 +106,15 @@
 },
 "botas_6.png":
 {
-	"frame": {"x":120,"y":1108,"w":112,"h":109},
+	"frame": {"x":1,"y":367,"w":127,"h":123},
 	"rotated": false,
 	"trimmed": true,
-	"spriteSourceSize": {"x":7,"y":8,"w":112,"h":109},
+	"spriteSourceSize": {"x":0,"y":0,"w":127,"h":123},
 	"sourceSize": {"w":128,"h":128}
 },
 "botas_7.png":
 {
-	"frame": {"x":1,"y":794,"w":119,"h":93},
+	"frame": {"x":131,"y":110,"w":119,"h":93},
 	"rotated": false,
 	"trimmed": true,
 	"spriteSourceSize": {"x":3,"y":15,"w":119,"h":93},
@@ -122,7 +122,7 @@
 },
 "botas_8.png":
 {
-	"frame": {"x":130,"y":471,"w":122,"h":92},
+	"frame": {"x":128,"y":1010,"w":122,"h":92},
 	"rotated": false,
 	"trimmed": true,
 	"spriteSourceSize": {"x":1,"y":20,"w":122,"h":92},
@@ -130,7 +130,7 @@
 },
 "brazos_1.png":
 {
-	"frame": {"x":1,"y":1296,"w":103,"h":58},
+	"frame": {"x":112,"y":1311,"w":103,"h":58},
 	"rotated": false,
 	"trimmed": false,
 	"spriteSourceSize": {"x":0,"y":0,"w":103,"h":58},
@@ -138,7 +138,7 @@
 },
 "casco_1.png":
 {
-	"frame": {"x":1,"y":889,"w":114,"h":118},
+	"frame": {"x":129,"y":778,"w":114,"h":118},
 	"rotated": true,
 	"trimmed": true,
 	"spriteSourceSize": {"x":6,"y":8,"w":114,"h":118},
@@ -146,7 +146,7 @@
 },
 "casco_2.png":
 {
-	"frame": {"x":121,"y":992,"w":114,"h":118},
+	"frame": {"x":129,"y":894,"w":114,"h":118},
 	"rotated": true,
 	"trimmed": true,
 	"spriteSourceSize": {"x":7,"y":3,"w":114,"h":118},
@@ -154,7 +154,7 @@
 },
 "casco_3.png":
 {
-	"frame": {"x":123,"y":767,"w":107,"h":119},
+	"frame": {"x":131,"y":1,"w":107,"h":119},
 	"rotated": true,
 	"trimmed": true,
 	"spriteSourceSize": {"x":10,"y":5,"w":107,"h":119},
@@ -162,7 +162,7 @@
 },
 "casco_4.png":
 {
-	"frame": {"x":1,"y":1005,"w":99,"h":117},
+	"frame": {"x":128,"y":1104,"w":99,"h":117},
 	"rotated": true,
 	"trimmed": true,
 	"spriteSourceSize": {"x":18,"y":6,"w":99,"h":117},
@@ -170,7 +170,7 @@
 },
 "casco_5.png":
 {
-	"frame": {"x":123,"y":660,"w":105,"h":120},
+	"frame": {"x":130,"y":450,"w":105,"h":120},
 	"rotated": true,
 	"trimmed": true,
 	"spriteSourceSize": {"x":13,"y":6,"w":105,"h":120},
@@ -178,23 +178,23 @@
 },
 "casco_6.png":
 {
-	"frame": {"x":1,"y":1106,"w":89,"h":117},
+	"frame": {"x":129,"y":660,"w":116,"h":121},
 	"rotated": true,
 	"trimmed": true,
-	"spriteSourceSize": {"x":18,"y":11,"w":89,"h":117},
+	"spriteSourceSize": {"x":4,"y":7,"w":116,"h":121},
 	"sourceSize": {"w":128,"h":128}
 },
 "casco_7.png":
 {
-	"frame": {"x":112,"y":1219,"w":104,"h":108},
-	"rotated": false,
+	"frame": {"x":127,"y":1205,"w":104,"h":108},
+	"rotated": true,
 	"trimmed": true,
 	"spriteSourceSize": {"x":12,"y":5,"w":104,"h":108},
 	"sourceSize": {"w":128,"h":128}
 },
 "casco_8.png":
 {
-	"frame": {"x":122,"y":876,"w":118,"h":114},
+	"frame": {"x":131,"y":334,"w":118,"h":114},
 	"rotated": false,
 	"trimmed": true,
 	"spriteSourceSize": {"x":7,"y":11,"w":118,"h":114},
@@ -205,8 +205,8 @@
 	"version": "1.0",
 	"image": "armaduras.png",
 	"format": "RGBA8888",
-	"size": {"w":256,"h":1355},
+	"size": {"w":251,"h":1370},
 	"scale": "1",
-	"smartupdate": "$TexturePacker:SmartUpdate:3f6d71a87fa3f5912528144445001b42:fdf53eb3271f3436e8e84972010f6d8f:8ba5b72d6e953695cae632d8c9a1b394$"
+	"smartupdate": "$TexturePacker:SmartUpdate:f10f509a878d500adb35f901f616dca3:7e7f601bbaee0ddcbfd9ef7a87cf8f2a:8ba5b72d6e953695cae632d8c9a1b394$"
 }
 }
