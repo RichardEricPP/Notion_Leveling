@@ -3,7 +3,7 @@
 // Configura los event listeners globales y arranca el juego.
 
 // --- IMPORTS ---
-import { player, loadPlayerDataFromLocalStorage, savePlayerDataToLocalStorage } from './player.js';
+import { player, loadPlayerDataFromLocalStorage, savePlayerDataToLocalStorage, updateStats } from './player.js';
 import { resetGame, setDifficultyAndStart, activateSkill, gameOver, gameStarted, keys } from './gameLogic.js';
 import { 
     toggleInventory, handleInventoryInput, isInventoryOpen,
@@ -11,8 +11,9 @@ import {
     toggleEquipmentMenu, isEquipmentOpen,
     showMessage, difficultyScreen, gameCanvas, minimapCanvas, equipmentMenu, showDifficultyScreen, playMusic
 } from './ui.js';
-import { createEquipoHTML } from './equipo.js';
+import { createEquipoHTML, character, items } from './equipo.js';
 import { todosLosMapas } from './maps/index.js';
+import { allItems } from './data.js';
 
 // --- MAIN EXECUTION ---
 
@@ -28,6 +29,32 @@ document.addEventListener('DOMContentLoaded', () => {
     showDifficultyScreen();
 
     const equipmentContainer = createEquipoHTML(toggleEquipmentMenu, () => {
+        const equippedItemKeys = {
+            helmet: character.equipped.helmet,
+            armor: character.equipped.armor,
+            gloves: character.equipped.gloves,
+            boots: character.equipped.boots,
+            weapon: character.equipped.weapon,
+        };
+
+        const findItemByName = (slot, key) => {
+            if (!key || key === 'none') return null;
+            const itemName = items[slot][key]?.text;
+            if (!itemName) return null;
+            return allItems.find(item => item.name === itemName) || null;
+        };
+
+        player.equipped.helmet = findItemByName('helmet', equippedItemKeys.helmet);
+        player.equipped.armor = findItemByName('armor', equippedItemKeys.armor);
+        player.equipped.gloves = findItemByName('gloves', equippedItemKeys.gloves);
+        player.equipped.boots = findItemByName('boots', equippedItemKeys.boots);
+        player.equipped.weapon = findItemByName('weapon', equippedItemKeys.weapon);
+
+        player.equipped.habilidad1 = character.selectedSkills[0] || null;
+        player.equipped.habilidad2 = character.selectedSkills[1] || null;
+        player.equipped.habilidad3 = character.selectedSkills[2] || null;
+        
+        updateStats();
         savePlayerDataToLocalStorage();
         showMessage("¡Equipo guardado!");
     });

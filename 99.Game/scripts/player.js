@@ -139,7 +139,7 @@ export function loadPlayerDataFromLocalStorage() {
         // Validate and load equipped items
         for (const slot in loadedPlayer.equipped) {
             if (slot.startsWith('habilidad')) {
-                const skillExists = skills.some(s => s.name === loadedPlayer.equipped[slot]);
+                const skillExists = skills.some(s => s.key === loadedPlayer.equipped[slot]);
                 player.equipped[slot] = skillExists ? loadedPlayer.equipped[slot] : null;
             } else if (loadedPlayer.equipped[slot]) {
                 const fullItem = allItems.find(aItem => aItem.name === loadedPlayer.equipped[slot].name);
@@ -150,11 +150,11 @@ export function loadPlayerDataFromLocalStorage() {
         }
 
         // Validate permanently learned skills
-        let currentLearnedSkills = new Set(getInitialSkills());
+        let currentLearnedSkills = new Set(getInitialSkillKeys());
         if (loadedPlayer.permanentlyLearnedSkills) {
-            loadedPlayer.permanentlyLearnedSkills.forEach(skillName => {
-                if (skills.some(s => s.name === skillName)) {
-                    currentLearnedSkills.add(skillName);
+            loadedPlayer.permanentlyLearnedSkills.forEach(skillKey => {
+                if (skills.some(s => s.key === skillKey)) {
+                    currentLearnedSkills.add(skillKey);
                 }
             });
         }
@@ -162,7 +162,7 @@ export function loadPlayerDataFromLocalStorage() {
 
         // If, after validation, no skills are equipped, set the default ones.
         if (!player.equipped.habilidad1 && !player.equipped.habilidad2 && !player.equipped.habilidad3) {
-            const initialSkills = getInitialSkills();
+            const initialSkills = getInitialSkillKeys();
             player.equipped.habilidad1 = initialSkills[0] || null;
             player.equipped.habilidad2 = initialSkills[1] || null;
             player.equipped.habilidad3 = initialSkills[2] || null;
@@ -184,15 +184,15 @@ function initializeNewPlayer() {
     player.equipped.boots = allItems.find(aItem => aItem.name === 'Botas de Hierro') || null;
     
     // Set initial skills
-    const initialSkills = getInitialSkills();
+    const initialSkills = getInitialSkillKeys();
     player.permanentlyLearnedSkills = initialSkills;
     player.equipped.habilidad1 = initialSkills[0] || null;
     player.equipped.habilidad2 = initialSkills[1] || null;
     player.equipped.habilidad3 = initialSkills[2] || null;
 }
 
-function getInitialSkills() {
-    return ['Sigilo', 'Golpe Crítico', 'Regeneración', 'Segundo Aliento', 'Tormenta de Cuchillas'];
+function getInitialSkillKeys() {
+    return ['stealth', 'critical_hit', 'regeneration', 'second_wind', 'blade_storm'];
 }
 
 /**

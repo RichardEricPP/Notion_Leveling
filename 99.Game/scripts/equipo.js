@@ -14,6 +14,34 @@ const character = {
     selectedSkills: []
 };
 
+let _updateCharacterDisplay = () => {};
+
+function findItemKeyByName(slot, itemName) {
+    if (!itemName) return 'none';
+    for (const key in items[slot]) {
+        if (items[slot][key].text === itemName) {
+            return key;
+        }
+    }
+    return 'none';
+}
+
+export function synchronizeCharacterWithPlayer(player) {
+    character.equipped.helmet = findItemKeyByName('helmet', player.equipped.helmet?.name);
+    character.equipped.armor = findItemKeyByName('armor', player.equipped.armor?.name);
+    character.equipped.gloves = findItemKeyByName('gloves', player.equipped.gloves?.name);
+    character.equipped.boots = findItemKeyByName('boots', player.equipped.boots?.name);
+    character.equipped.weapon = findItemKeyByName('weapon', player.equipped.weapon?.name);
+
+    character.selectedSkills = [
+        player.equipped.habilidad1,
+        player.equipped.habilidad2,
+        player.equipped.habilidad3
+    ].filter(Boolean);
+
+    _updateCharacterDisplay();
+}
+
 const setBonuses = {
     'Hierro': { def_percent: 0.05, message: "¡Bonificación de Conjunto de Hierro: +5% Defensa!" },
     'Caballero': { maxHp_percent: 0.05, message: "¡Bonificación de Conjunto de Caballero: +5% HP Máximo!" },
@@ -314,7 +342,7 @@ function createEquipoHTML(onBack, onSave) {
         }
     }
 
-    function updateCharacterDisplay() {
+    _updateCharacterDisplay = function() {
         equippedHelmetIcon.src = items.helmet[character.equipped.helmet].icon;
         highlightSelectedItem('helmet', character.equipped.helmet);
         equippedArmorIcon.src = items.armor[character.equipped.armor].icon;
@@ -409,7 +437,7 @@ function createEquipoHTML(onBack, onSave) {
                     character.equipped.weapon = item;
                     showMessage(`¡${items.weapon[item].text} equipado!`);
                 }
-                updateCharacterDisplay();
+                _updateCharacterDisplay();
             });
 
         } else { // For armor, skills, etc.
@@ -436,7 +464,7 @@ function createEquipoHTML(onBack, onSave) {
                         showMessage(`¡${items[slot][item].text} equipado!`);
                     }
                 }
-                updateCharacterDisplay();
+                _updateCharacterDisplay();
             });
         }
     });
@@ -460,7 +488,7 @@ function createEquipoHTML(onBack, onSave) {
 
     saveButton.addEventListener('click', onSave);
 
-    document.addEventListener('DOMContentLoaded', updateCharacterDisplay);
+    document.addEventListener('DOMContentLoaded', _updateCharacterDisplay);
 
     return container;
 }

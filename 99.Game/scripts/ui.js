@@ -12,6 +12,7 @@ import {
     revealedMap, projectiles, damageTexts, criticalHitEffects, warMaceShockwave, skillCooldowns, mapWidth, mapHeight, tileSize, iceRayEffects,
     useItem, learnSkill, equipItem, equipSkill, activateSkill, torches, chests, monsters
 } from './gameLogic.js';
+import { synchronizeCharacterWithPlayer } from './equipo.js';
 
 
 // --- EXPORTS ---
@@ -744,25 +745,25 @@ function drawHUD() {
     
     const skillSlots = ['habilidad1', 'habilidad2', 'habilidad3'];
     skillSlots.forEach((slot, index) => {
-        const equippedSkillName = player.equipped[slot];
-        const equippedSkill = skills.find(s => s.name === equippedSkillName);
+        const equippedSkillKey = player.equipped[slot];
+        const equippedSkill = skills.find(s => s.key === equippedSkillKey);
         let skillText = equippedSkill ? equippedSkill.name : '(Ninguna)';
         let textColor = '#666'; 
         
         if (equippedSkill) {
-            if (equippedSkill.name === 'Segundo Aliento') {
+            if (equippedSkill.key === 'second_wind') { // Check by key
                 skillText += player.secondWindUsedThisRun ? ' (Usada)' : ' (Equipada)';
                 textColor = player.secondWindUsedThisRun ? '#909090' : '#00008B';
             } else {
                 const cooldownRemaining = Math.max(0, (skillCooldowns[equippedSkill.name] - currentTime));
                 let durationEndTime = 0;
                 let minion = monsters.find(m => m.isMinion);
-                switch(equippedSkill.name) {
-                    case 'Sigilo': durationEndTime = player.stealthEndTime; break;
-                    case 'Invencible': durationEndTime = player.invincibleEndTime; break;
-                    case 'Velocidad': durationEndTime = player.speedBoostEndTime; break;
-                    case 'Suerte': durationEndTime = player.luckBoostEndTime; break;
-                    case 'Invocar': if (minion) durationEndTime = minion.expirationTime; break;
+                switch(equippedSkill.key) { // Use key for switch
+                    case 'stealth': durationEndTime = player.stealthEndTime; break;
+                    case 'invincible': durationEndTime = player.invincibleEndTime; break;
+                    case 'speed': durationEndTime = player.speedBoostEndTime; break;
+                    case 'luck': durationEndTime = player.luckBoostEndTime; break;
+                    case 'summon': if (minion) durationEndTime = minion.expirationTime; break;
                 }
                 const durationRemaining = Math.max(0, (durationEndTime - currentTime));
 
@@ -890,11 +891,11 @@ function updateSkillDisplay() {
         let statusClass = 'locked';
         let statusText = '';
         
-        const isEquippedInSlot = player.equipped.habilidad1 === skill.name || 
-                                 player.equipped.habilidad2 === skill.name || 
-                                 player.equipped.habilidad3 === skill.name;
+        const isEquippedInSlot = player.equipped.habilidad1 === skill.key || 
+                                 player.equipped.habilidad2 === skill.key || 
+                                 player.equipped.habilidad3 === skill.key;
 
-        if (player.permanentlyLearnedSkills.includes(skill.name)) {
+        if (player.permanentlyLearnedSkills.includes(skill.key)) {
             statusClass = 'unlocked'; 
             statusText = isEquippedInSlot ? ' (Equipada)' : ' (Desbloqueada)';
         } else if (player.skillPoints >= skill.cost && (!skill.prereq || player.permanentlyLearnedSkills.includes(skill.prereq))) {
@@ -933,6 +934,7 @@ export function handleSkillInput(e) {
 export function toggleEquipmentMenu() {
     isEquipmentOpen = !isEquipmentOpen;
     if (isEquipmentOpen) {
+        synchronizeCharacterWithPlayer(player);
         isInventoryOpen = false;
         isSkillMenuOpen = false;
         difficultyScreen.style.display = 'none';

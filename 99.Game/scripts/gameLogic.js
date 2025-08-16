@@ -1296,8 +1296,7 @@ function takeDamage(target, damage, isCritical, attackerType = 'player') {
 
     if (target.hp <= 0) {
         if (target === player) {
-            const secondWindSkill = skills.find(s => s.name === 'Segundo Aliento');
-            const isSecondWindEquipped = [player.equipped.habilidad1, player.equipped.habilidad2, player.equipped.habilidad3].includes('Segundo Aliento');
+            const isSecondWindEquipped = [player.equipped.habilidad1, player.equipped.habilidad2, player.equipped.habilidad3].includes('second_wind');
             if (isSecondWindEquipped && !player.secondWindUsedThisRun) {
                 player.hp = Math.floor(player.maxHp * 0.25);
                 player.secondWindUsedThisRun = true;
@@ -1366,31 +1365,31 @@ function calculateScore() {
     return player.enemiesDefeatedThisRun * 10 + player.level * 100 + currentFloor * 50;
 }
 
-export function activateSkill(skillName) {
-    const skill = skills.find(s => s.name === skillName);
+export function activateSkill(skillKey) {
+    const skill = skills.find(s => s.key === skillKey);
     if (!skill || skill.type === 'passive') return;
 
-    if (player.skillUsageThisFloor[skillName]) {
+    if (player.skillUsageThisFloor[skill.name]) { // We can keep using name here as it's for display/logic, not lookup
         ui.showMessage("Ya has usado esta habilidad en este piso.");
         return;
     }
 
     const currentTime = Date.now();
     let skillUsed = false;
-    switch (skillName) {
-        case 'Sigilo':
+    switch (skill.key) { // Use key for switch
+        case 'stealth':
             player.isStealthed = true;
             player.stealthEndTime = currentTime + 7000;
             updateStats();
             ui.showMessage("¡Sigilo activado!");
             skillUsed = true;
             break;
-        case 'Golpe Crítico':
+        case 'critical_hit':
             player.nextAttackIsCritical = true;
             ui.showMessage("¡El próximo ataque será crítico!");
             skillUsed = true;
             break;
-        case 'Teletransportación':
+        case 'teleportation':
             let safe = false;
             let attempts = 0;
             while (!safe && attempts < 100) {
@@ -1407,7 +1406,7 @@ export function activateSkill(skillName) {
             }
             if (safe) skillUsed = true;
             break;
-        case 'Invocar':
+        case 'summon':
             const spawnX = player.tileX - 1;
             const spawnY = player.tileY;
             if (isPassable(spawnX, spawnY, false, null)) {
@@ -1435,7 +1434,7 @@ export function activateSkill(skillName) {
                 ui.showMessage("No hay espacio para invocar.");
             }
             break;
-        case 'Regeneración':
+        case 'regeneration':
             const healAmount = player.maxHp * 0.75;
             const oldHp = player.hp;
             player.hp = Math.min(player.maxHp, player.hp + healAmount);
@@ -1444,20 +1443,20 @@ export function activateSkill(skillName) {
             ui.showMessage("¡Salud restaurada!");
             skillUsed = true;
             break;
-        case 'Velocidad':
+        case 'speed':
             player.isSpeedBoosted = true;
             player.speedBoostEndTime = currentTime + 10000;
             updateStats();
             ui.showMessage("¡Velocidad aumentada!");
             skillUsed = true;
             break;
-        case 'Invencible':
+        case 'invincible':
             player.isInvincible = true;
             player.invincibleEndTime = currentTime + 3500;
             ui.showMessage("¡Invencible!");
             skillUsed = true;
             break;
-        case 'Rayo de Hielo':
+        case 'ice_ray':
             iceRayEffects.push({ x: player.tileX, y: player.tileY, radius: 5, life: 30 });
             monsters.forEach(m => {
                 if (getDistance(player.tileX, player.tileY, m.tileX, m.tileY) < 5) {
@@ -1468,13 +1467,13 @@ export function activateSkill(skillName) {
             ui.showMessage("¡Enemigos congelados!");
             skillUsed = true;
             break;
-        case 'Suerte':
+        case 'luck':
             player.luckBoostEndTime = currentTime + 10000;
             updateStats();
             ui.showMessage("¡Suerte aumentada!");
             skillUsed = true;
             break;
-        case 'Debilidad':
+        case 'weakness':
             monsters.forEach(m => {
                 if (getDistance(player.tileX, player.tileY, m.tileX, m.tileY) < 6) {
                     m.isWeakened = true;
@@ -1484,7 +1483,7 @@ export function activateSkill(skillName) {
             ui.showMessage("¡Enemigos debilitados!");
             skillUsed = true;
             break;
-        case 'Tormenta de Cuchillas':
+        case 'blade_storm':
             const bladeDirections = [
                 {dx: 1, dy: 0}, {dx: -1, dy: 0}, {dx: 0, dy: 1}, {dx: 0, dy: -1},
                 {dx: 1, dy: 1}, {dx: 1, dy: -1}, {dx: -1, dy: 1}, {dx: -1, dy: -1}
@@ -1523,11 +1522,11 @@ export function useItem(item) {
 }
 
 export function learnSkill(skill) {
-    if (player.permanentlyLearnedSkills.includes(skill.name)) {
+    if (player.permanentlyLearnedSkills.includes(skill.key)) { // Check by key
         ui.showMessage("Esta habilidad ya está desbloqueada.");
     } else if (player.skillPoints >= skill.cost) {
         player.skillPoints -= skill.cost;
-        player.permanentlyLearnedSkills.push(skill.name);
+        player.permanentlyLearnedSkills.push(skill.key); // Save key
         ui.showMessage(`¡Habilidad '${skill.name}' desbloqueada!`);
     } else {
         ui.showMessage("No tienes suficientes puntos de habilidad.");
@@ -1573,16 +1572,13 @@ export function equipItem(slotType, direction, specificItem = null) {
 }
 
 export function equipSkill(slotType, direction) {
-    const availableSkills = player.permanentlyLearnedSkills.filter(skillName => {
-        const skill = skills.find(s => s.name === skillName);
-        return skill && skill.type !== 'passive';
-    });
+    const availableSkills = player.permanentlyLearnedSkills.map(key => skills.find(s => s.key === key)).filter(Boolean);
 
     // Add 'None' option to be able to unequip
     const skillOptions = [null, ...availableSkills];
 
-    const currentSkillName = player.equipped[slotType];
-    let currentIndex = skillOptions.indexOf(currentSkillName);
+    const currentSkillKey = player.equipped[slotType];
+    let currentIndex = skillOptions.findIndex(s => s && s.key === currentSkillKey);
     if (currentIndex === -1) currentIndex = 0; // Default to 'None'
 
     let newIndex = currentIndex;
@@ -1595,14 +1591,15 @@ export function equipSkill(slotType, direction) {
             newIndex = (newIndex - 1 + skillOptions.length) % skillOptions.length;
         }
 
-        const newSkillName = skillOptions[newIndex];
+        const newSkill = skillOptions[newIndex];
+        const newSkillKey = newSkill ? newSkill.key : null;
 
         // Check if the new skill is already equipped in another slot
         let isAlreadyEquipped = false;
-        if (newSkillName !== null) {
+        if (newSkillKey !== null) {
             for (const slot in player.equipped) {
                 if (slot.startsWith('habilidad') && slot !== slotType) {
-                    if (player.equipped[slot] === newSkillName) {
+                    if (player.equipped[slot] === newSkillKey) {
                         isAlreadyEquipped = true;
                         break;
                     }
@@ -1611,7 +1608,7 @@ export function equipSkill(slotType, direction) {
         }
 
         if (!isAlreadyEquipped) {
-            player.equipped[slotType] = newSkillName;
+            player.equipped[slotType] = newSkillKey;
             updateStats();
             return; // Exit after finding a valid skill
         }
