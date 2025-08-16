@@ -3,14 +3,14 @@
 
 // --- IMPORTS ---
 import { player, activeSetBonusName, updateStats } from './player.js';
-import { skills, gearList, setBonuses, equipmentSlotsOrder, equipmentSlotNames } from './data.js';
-import { monsters, chests, loadedImages, sprites } from './enemies.js';
+import { skills, setBonuses, equipmentSlotsOrder, equipmentSlotNames } from './data.js';
+import { loadedImages, sprites } from './enemies.js';
 import { 
     currentFloor, maxFloors, map, stairLocation, selectedDifficulty, 
     gameStarted, gameOver, lastGameScore, lastEnemiesDefeated, 
     finalOutcomeMessage, finalOutcomeMessageLine2, keys, screenShake, 
     revealedMap, projectiles, damageTexts, criticalHitEffects, warMaceShockwave, skillCooldowns, mapWidth, mapHeight, tileSize, iceRayEffects,
-    useItem, learnSkill, equipItem, equipSkill, activateSkill, torches
+    useItem, learnSkill, equipItem, equipSkill, activateSkill, torches, chests, monsters
 } from './gameLogic.js';
 
 
@@ -24,6 +24,7 @@ export let offsetX = 0; // Export offsetX
 export let offsetY = 0; // Export offsetY
 export let atlasData = null;
 export let atlasImage = null;
+
 let selectedIndex = 0;
 let selectedSkillIndex = 0;
 let selectedEquipmentSlotIndex = 0; 
@@ -38,6 +39,7 @@ export const messageBox = document.getElementById('messageBox');
 const inventoryMenu = document.getElementById('inventoryMenu');
 const skillMenu = document.getElementById('skillMenu');
 export const equipmentMenu = document.getElementById('equipmentMenu');
+export const mapSelectionScreen = document.getElementById('mapSelectionScreen');
 
 export const difficultyTitleElement = document.getElementById('difficultyTitle');
 export const lastScoreDisplayElement = document.getElementById('lastScoreDisplay');
@@ -45,13 +47,13 @@ const ctx = gameCanvas.getContext('2d');
 const minimapCtx = minimapCanvas.getContext('2d');
 
 // --- Asset Loading ---
-export async function loadAtlas() {
+export async function loadAtlas(atlasPath, tilesetPath) {
     try {
-        const response = await fetch('assets/mapa_1.json');
+        const response = await fetch(atlasPath);
         atlasData = await response.json();
         
         atlasImage = new Image();
-        atlasImage.src = 'assets/mapa_1.png';
+        atlasImage.src = tilesetPath;
         
         await new Promise((resolve, reject) => {
             atlasImage.onload = () => resolve();

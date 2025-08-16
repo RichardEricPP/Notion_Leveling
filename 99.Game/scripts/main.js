@@ -12,11 +12,17 @@ import {
     showMessage, difficultyScreen, gameCanvas, minimapCanvas, equipmentMenu, showDifficultyScreen, playMusic
 } from './ui.js';
 import { createEquipoHTML } from './equipo.js';
+import { todosLosMapas } from './maps/index.js';
 
 // --- MAIN EXECUTION ---
 
 document.addEventListener('DOMContentLoaded', () => {
     
+    const mapSelectionScreen = document.getElementById('mapSelectionScreen');
+    const mapList = document.getElementById('mapList');
+    const btnSelectMap = document.getElementById('btnSelectMap');
+    const btnReturnToDifficultyFromMapSelection = document.getElementById('btnReturnToDifficultyFromMapSelection');
+
     loadPlayerDataFromLocalStorage();
 
     showDifficultyScreen();
@@ -27,20 +33,43 @@ document.addEventListener('DOMContentLoaded', () => {
     });
     equipmentMenu.appendChild(equipmentContainer);
 
-    const startGame = (difficulty) => {
+    const startGame = (difficulty, mapId) => {
         const levelInput = document.getElementById('levelInput');
         const baseLevel = parseInt(levelInput.value, 10) || 1;
-        const floorInput = document.getElementById('floorInput');
         const startFloor = parseInt(floorInput.value, 10) || 1;
-        setDifficultyAndStart(difficulty, startFloor, baseLevel);
+        setDifficultyAndStart(difficulty, startFloor, baseLevel, mapId);
         playMusic('dungeon');
     }
 
-    document.getElementById('btnFacil').addEventListener('click', () => startGame('facil'));
-    document.getElementById('btnMedio').addEventListener('click', () => startGame('medio'));
-    document.getElementById('btnDificil').addEventListener('click', () => startGame('dificil'));
+    // Populate map list
+    for (const mapId in todosLosMapas) {
+        const map = todosLosMapas[mapId];
+        const mapButton = document.createElement('button');
+        mapButton.textContent = map.nombre;
+        mapButton.addEventListener('click', () => {
+            mapSelectionScreen.style.display = 'none';
+            difficultyScreen.style.display = 'flex';
+            // This is a placeholder for difficulty selection for the chosen map
+            startGame('facil', mapId);
+        });
+        mapList.appendChild(mapButton);
+    }
+
+    document.getElementById('btnFacil').addEventListener('click', () => startGame('facil', 1));
+    document.getElementById('btnMedio').addEventListener('click', () => startGame('medio', 1));
+    document.getElementById('btnDificil').addEventListener('click', () => startGame('dificil', 1));
 
     document.getElementById('btnEquipment').addEventListener('click', toggleEquipmentMenu);
+
+    btnSelectMap.addEventListener('click', () => {
+        difficultyScreen.style.display = 'none';
+        mapSelectionScreen.style.display = 'block';
+    });
+
+    btnReturnToDifficultyFromMapSelection.addEventListener('click', () => {
+        mapSelectionScreen.style.display = 'none';
+        difficultyScreen.style.display = 'flex';
+    });
     
     document.addEventListener('keydown', (e) => {
         if (gameOver) {

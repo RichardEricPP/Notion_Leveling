@@ -6,15 +6,7 @@
 
 // --- EXPORTS ---
 
-/**
- * Array que contendrá las instancias de los monstruos activos en el piso actual.
- */
-export let monsters = [];
 
-/**
- * Array que contendrá las instancias de los cofres en el piso actual.
- */
-export let chests = [];
 
 /**
  * Objeto para almacenar las imágenes de los sprites generadas como Data URLs.
@@ -444,103 +436,7 @@ export function createTorchSprite() {
     return canvas.toDataURL();
 }
 
-export function createMonster(type, tileX, tileY, floor, dropsKey = false) {
-    const floorMultiplier = 1 + (floor - 1) * 0.2;
-    let monster = {
-        type: type,
-        tileX: tileX,
-        tileY: tileY,
-        hp: 0,
-        maxHp: 0,
-        atk: 0,
-        spd: 1,
-        xp: 0,
-        dropsKey: dropsKey,
-        lastMoveTime: 0,
-        lastAttackTime: 0,
-        hitFrame: 0,
-        isAttacking: false,
-        attackAnimFrame: 0,
-        attackAnimDuration: 5,
-        attackDirectionX: 0,
-        attackDirectionY: 0,
-        moveSpeed: 1000, // Slower base speed
-        attackSpeed: 1500,
-        attackRange: 1.5,
-        aggroRange: 5,
-        lastKnownTargetPosition: null,
-        isFrozen: false,
-        frozenEndTime: 0,
-        abilityCooldowns: {},
-    };
 
-    switch (type) {
-        case 'duende':
-            monster.hp = monster.maxHp = Math.floor(20 * floorMultiplier);
-            monster.atk = Math.floor(5 * floorMultiplier);
-            monster.xp = 10;
-            break;
-        case 'lobo':
-            monster.hp = monster.maxHp = Math.floor(30 * floorMultiplier);
-            monster.atk = Math.floor(8 * floorMultiplier);
-            monster.spd = 1.5;
-            monster.xp = 15;
-            monster.moveSpeed = 700;
-            break;
-        case 'skeleton':
-            monster.hp = monster.maxHp = Math.floor(25 * floorMultiplier);
-            monster.atk = Math.floor(10 * floorMultiplier);
-            monster.xp = 20;
-            break;
-        case 'miniBoss':
-            monster.hp = monster.maxHp = Math.floor(100 * floorMultiplier);
-            monster.atk = Math.floor(20 * floorMultiplier);
-            monster.spd = 1.2;
-            monster.xp = 100;
-            monster.dropsKey = true;
-            monster.attackRange = 2;
-            monster.aggroRange = 8;
-            break;
-        case 'boss':
-            monster.hp = monster.maxHp = Math.floor(200 * floorMultiplier);
-            monster.atk = Math.floor(35 * floorMultiplier);
-            monster.spd = 0.8;
-            monster.xp = 500;
-            monster.attackRange = 1.5;
-            monster.aggroRange = 10;
-            break;
-        case 'finalBoss':
-             monster.hp = monster.maxHp = Math.floor(350 * (1 + (floor - 1) * 0.6));
-             monster.atk = Math.floor(70 * (1 + (floor - 1) * 0.4));
-             monster.spd = 0.7;
-             monster.xp = 5000;
-             monster.width = 2;
-             monster.height = 2;
-             monster.moveSpeed = 800;
-             monster.attackSpeed = 1000;
-             monster.attackRange = 1.5;
-             monster.aggroRange = 8;
-             break;
-        case 'spiderling':
-            monster.hp = monster.maxHp = Math.floor(15 * floorMultiplier);
-            monster.atk = Math.floor(10 * floorMultiplier);
-            monster.spd = 2;
-            monster.xp = 5;
-            monster.moveSpeed = 500;
-            break;
-        case 'minion':
-            monster.isMinion = true;
-            monster.hp = monster.maxHp = 50 + Math.floor(player.level * 2);
-            monster.atk = 10 + Math.floor(player.atk * 0.3);
-            monster.spd = player.spd * 0.8;
-            monster.xp = 0;
-            monster.moveSpeed = 500;
-            monster.attackSpeed = 1200;
-            monster.aggroRange = 10;
-            break;
-    }
-    return monster;
-}
 
 
 

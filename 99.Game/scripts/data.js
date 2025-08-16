@@ -1,4 +1,4 @@
-export const gearList = [
+export const allItems = [
     // Potions
     { name: 'Poción de Vida Pequeña', type: 'potion', heal: 25 },
     { name: 'Poción de Vida Mediana', type: 'potion', heal: 50 },

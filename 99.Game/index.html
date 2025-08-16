@@ -15,12 +15,18 @@
         <button id="btnMedio">Medio</button>
         <button id="btnDificil">Difícil</button>
         <button id="btnEquipment">Equipo</button>
+        <button id="btnSelectMap">Seleccionar Mapa</button>
         <div id="debugControls">
             <label for="levelInput">Nivel Base:</label>
             <input type="number" id="levelInput" min="1" value="1">
             <label for="floorInput">Piso:</label>
             <input type="number" id="floorInput" min="1" max="4" value="1">
         </div>
+    </div>
+    <div id="mapSelectionScreen" style="display: none;">
+        <h2 id="mapSelectionTitle">Selecciona un Mapa</h2>
+        <div id="mapList"></div>
+        <button id="btnReturnToDifficultyFromMapSelection">Regresar</button>
     </div>
     <canvas id="gameCanvas" width="800" height="600"></canvas>
     <canvas id="minimapCanvas"></canvas>

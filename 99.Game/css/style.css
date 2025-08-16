@@ -82,7 +82,7 @@ body {
     z-index: 100;  
     display: none;
 }
-#inventoryMenu, #skillMenu {
+#inventoryMenu, #skillMenu, #mapSelectionScreen {
     display: none;
     position: absolute;
     top: 50%;
@@ -110,23 +110,30 @@ body {
     z-index: 10;
     overflow-y: auto;  
 }
-#inventoryMenu h2, #skillMenu h2, #equipmentMenu h2 {
+#inventoryMenu h2, #skillMenu h2, #equipmentMenu h2, #mapSelectionScreen h2 {
     margin-top: 0;
     text-align: center;
     color: #4a2f1b;
 }
-#inventoryMenu ul, #skillMenu ul {
+#inventoryMenu ul, #skillMenu ul, #mapList {
     list-style-type: none;
     padding: 0;
 }
-#inventoryMenu li, #skillMenu li {
+#inventoryMenu li, #skillMenu li, #mapList button {
     padding: 8px;
     margin-bottom: 5px;
     border-radius: 4px;
-    cursor: default;  
-    display: flex;  
-    justify-content: space-between;  
-    align-items: center;  
+    cursor: pointer;  
+    display: block;  
+    width: 100%;
+    background-color: #8B4513;
+    color: white;
+    border: 2px solid #4a2f1b;
+    font-size: 15px;
+    transition: background-color 0.3s;
+}
+#mapList button:hover {
+    background-color: #A0522D;
 }
 .selected { background-color: #ffd700; color: #000; }
 .unlocked { color: #000000; font-weight: normal; } 

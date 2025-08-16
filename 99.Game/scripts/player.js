@@ -2,7 +2,7 @@
 // Contiene la definición del objeto `player` y todas las funciones que gestionan su estado.
 
 // --- IMPORTS ---
-import { gearList, skills, setBonuses } from './data.js';
+import { allItems, skills, setBonuses } from './data.js';
 import { showMessage } from './ui.js';
 
 // --- EXPORTS ---
@@ -134,7 +134,7 @@ export function loadPlayerDataFromLocalStorage() {
         Object.assign(player, loadedPlayer);
 
         // Ensure inventory is always up-to-date with the master gear list
-        player.inventory = gearList.filter(item => item.type !== 'potion');
+        player.inventory = loadedPlayer.inventory.map(item => allItems.find(aItem => aItem.name === item.name)).filter(Boolean);
 
         // Validate and load equipped items
         for (const slot in loadedPlayer.equipped) {
@@ -142,7 +142,7 @@ export function loadPlayerDataFromLocalStorage() {
                 const skillExists = skills.some(s => s.name === loadedPlayer.equipped[slot]);
                 player.equipped[slot] = skillExists ? loadedPlayer.equipped[slot] : null;
             } else if (loadedPlayer.equipped[slot]) {
-                const fullItem = gearList.find(g => g.name === loadedPlayer.equipped[slot].name);
+                const fullItem = allItems.find(aItem => aItem.name === loadedPlayer.equipped[slot].name);
                 player.equipped[slot] = fullItem || null;
             } else {
                 player.equipped[slot] = null;
@@ -174,14 +174,14 @@ export function loadPlayerDataFromLocalStorage() {
 }
 
 function initializeNewPlayer() {
-    player.inventory = gearList.filter(item => item.type !== 'potion');
+    player.inventory = allItems.filter(item => item.type !== 'potion');
     
     // Equip initial gear
-    player.equipped.weapon = gearList.find(g => g.name === 'Daga de Poder') || null;
-    player.equipped.helmet = gearList.find(g => g.name === 'Casco de Hierro') || null;
-    player.equipped.armor = gearList.find(g => g.name === 'Armadura de Hierro') || null;
-    player.equipped.gloves = gearList.find(g => g.name === 'Guantes de Hierro') || null;
-    player.equipped.boots = gearList.find(g => g.name === 'Botas de Hierro') || null;
+    player.equipped.weapon = allItems.find(aItem => aItem.name === 'Daga de Poder') || null;
+    player.equipped.helmet = allItems.find(aItem => aItem.name === 'Casco de Hierro') || null;
+    player.equipped.armor = allItems.find(aItem => aItem.name === 'Armadura de Hierro') || null;
+    player.equipped.gloves = allItems.find(aItem => aItem.name === 'Guantes de Hierro') || null;
+    player.equipped.boots = allItems.find(aItem => aItem.name === 'Botas de Hierro') || null;
     
     // Set initial skills
     const initialSkills = getInitialSkills();

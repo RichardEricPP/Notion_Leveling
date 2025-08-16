@@ -4,12 +4,16 @@
 // --- IMPORTS ---
 import { player, updateStats, checkLevelUp, createPlayerSprite, createMinionSprite, loadPlayerSprites } from './player.js';
 import * as ui from './ui.js';
-import { monsters, chests, sprites, loadedImages, loadSprites } from './enemies.js';
-import { gearList, skills } from './data.js';
+import { sprites, loadedImages, loadSprites } from './enemies.js';
+import { skills } from './data.js';
 import { playMusic, gameCanvas } from './ui.js';
+import { todosLosMapas } from './maps/index.js';
 
 // --- EXPORTS (Game State Variables) ---
+export let monsters = [];
+export let chests = [];
 export let currentFloor = 1;
+export let currentMapId = 1;
 export const maxFloors = 4;
 export const mapWidth = 50, mapHeight = 50;
 export const tileSize = 70;
@@ -125,8 +129,9 @@ async function loadAllSprites() {
 }
 
 // --- Core Game Functions ---
-export async function setDifficultyAndStart(difficulty, startFloor = 1, baseLevel = 1) {
+export async function setDifficultyAndStart(difficulty, startFloor = 1, baseLevel = 1, mapId = 1) {
     selectedDifficulty = difficulty;
+    currentMapId = mapId;
     const savedEquipped = { ...player.equipped };
     const savedInventory = [ ...player.inventory];
     const savedSkills = [ ...player.permanentlyLearnedSkills];
@@ -174,11 +179,13 @@ export async function setDifficultyAndStart(difficulty, startFloor = 1, baseLeve
 
     // Load all sprite data before generating the level and starting the loop
     playerSpriteData = await loadPlayerSprites();
-    await ui.loadAtlas();
-    await generateFloor();
+    const mapData = todosLosMapas[currentMapId];
+    await ui.loadAtlas(mapData.atlas, mapData.tileset);
+    await generateFloor(currentMapId);
     revealMapAroundPlayer();
     
     ui.difficultyScreen.style.display = 'none';
+    ui.mapSelectionScreen.style.display = 'none';
     ui.gameCanvas.style.display = 'block';
     ui.minimapCanvas.style.display = 'block';
     ui.equipmentMenu.style.display = 'none';
@@ -603,7 +610,8 @@ function updateMonsters(currentTime) {
     });
 }
 
-async function generateFloor() {
+async function generateFloor(mapId) {
+    const mapData = todosLosMapas[mapId];
     map = Array(mapHeight).fill(0).map(() => Array(mapWidth).fill(null).map(() => ({ base: 9, decor: null }))); // Initialize with void objects
     stairLocation = { x: -1, y: -1, active: false, type: 4 };
     Object.keys(player.skillUsageThisFloor).forEach(key => delete player.skillUsageThisFloor[key]);
@@ -785,7 +793,7 @@ async function generateFloor() {
             placeMonster('miniBoss', false);
         }
         chests.length = 0;
-        spawnChests(monsterSpawnLocations);
+        spawnChests(monsterSpawnLocations, mapData.objetos);
     }
 
     // Colocar antorchas en las paredes
@@ -980,20 +988,24 @@ function createMonster(type, x, y, floor, arena = null) {
     return monster;
 }
 
-function spawnChests(spawnLocations) {
+function spawnChests(spawnLocations, items) {
     let numChestsToSpawn = selectedDifficulty === 'facil' ? 3 : selectedDifficulty === 'medio' ? Math.floor(Math.random() * 3) + 1 : Math.floor(Math.random() * 3);
-    const smallPotion = gearList.find(item => item.name === 'Poción de Vida Pequeña');
-    const mediumPotion = gearList.find(item => item.name === 'Poción de Vida Mediana');
-    const largePotion = gearList.find(item => item.name === 'Poción de Vida Grande');
-    const getWeightedRandomPotion = () => {
-        let potionsPool = selectedDifficulty === 'facil' ? [smallPotion, mediumPotion, mediumPotion, largePotion, largePotion, largePotion] : selectedDifficulty === 'medio' ? [smallPotion, smallPotion, mediumPotion, mediumPotion, largePotion] : [smallPotion, smallPotion, smallPotion, mediumPotion];
-        return potionsPool[Math.floor(Math.random() * potionsPool.length)];
+    const getWeightedRandomItem = () => {
+        const rand = Math.random();
+        let cumulativeProbability = 0;
+        for (const item of items) {
+            cumulativeProbability += item.probabilidad;
+            if (rand < cumulativeProbability) {
+                return item;
+            }
+        }
+        return items[items.length - 1];
     };
     for (let i = 0; i < numChestsToSpawn && spawnLocations.length > 0; i++) {
         const spawnIndex = Math.floor(Math.random() * spawnLocations.length);
         const loc = spawnLocations.splice(spawnIndex, 1)[0];
         map[loc.y][loc.x].base = 2;
-        chests.push({ tileX: loc.x, tileY: loc.y, opened: false, item: getWeightedRandomPotion() });
+        chests.push({ tileX: loc.x, tileY: loc.y, opened: false, item: getWeightedRandomItem() });
     }
 }
 
@@ -1038,7 +1050,7 @@ async function handleFloorTransition() {
     }
     currentFloor++;
     player.skillUsageThisFloor = {};
-    await generateFloor();
+    await generateFloor(currentMapId);
     ui.showMessage(`Has llegado al piso ${currentFloor}.`);
 }
 
