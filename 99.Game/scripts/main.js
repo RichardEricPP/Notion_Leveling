@@ -8,9 +8,10 @@ import { resetGame, setDifficultyAndStart, activateSkill, gameOver, gameStarted,
 import { 
     toggleInventory, handleInventoryInput, isInventoryOpen,
     toggleSkillMenu, handleSkillInput, isSkillMenuOpen,
-    toggleEquipmentMenu, handleEquipmentInput, isEquipmentOpen,
+    toggleEquipmentMenu, isEquipmentOpen,
     showMessage, difficultyScreen, gameCanvas, minimapCanvas, equipmentMenu, showDifficultyScreen, playMusic
 } from './ui.js';
+import { createEquipoHTML } from './equipo.js';
 
 // --- MAIN EXECUTION ---
 
@@ -19,6 +20,12 @@ document.addEventListener('DOMContentLoaded', () => {
     loadPlayerDataFromLocalStorage();
 
     showDifficultyScreen();
+
+    const equipmentContainer = createEquipoHTML(toggleEquipmentMenu, () => {
+        savePlayerDataToLocalStorage();
+        showMessage("¡Equipo guardado!");
+    });
+    equipmentMenu.appendChild(equipmentContainer);
 
     const startGame = (difficulty) => {
         const levelInput = document.getElementById('levelInput');
@@ -35,13 +42,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     document.getElementById('btnEquipment').addEventListener('click', toggleEquipmentMenu);
     
-    document.getElementById('btnSaveEquipment').addEventListener('click', () => {
-        savePlayerDataToLocalStorage();
-        showMessage("¡Equipo guardado!");
-    });
-
-    document.getElementById('btnReturnToDifficulty').addEventListener('click', toggleEquipmentMenu);
-
     document.addEventListener('keydown', (e) => {
         if (gameOver) {
             if (e.code === 'KeyR') {
@@ -57,7 +57,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 e.preventDefault(); 
                 if (isInventoryOpen) handleInventoryInput(e);
                 else if (isSkillMenuOpen) handleSkillInput(e);
-                else if (isEquipmentOpen) handleEquipmentInput(e);
             }
             return; 
         }
@@ -98,3 +97,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 });
+
+// --- GLOBAL FUNCTIONS ---
+
+window.addEventListener('beforeunload', savePlayerDataToLocalStorage);

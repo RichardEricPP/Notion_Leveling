@@ -38,8 +38,7 @@ export const messageBox = document.getElementById('messageBox');
 const inventoryMenu = document.getElementById('inventoryMenu');
 const skillMenu = document.getElementById('skillMenu');
 export const equipmentMenu = document.getElementById('equipmentMenu');
-const equippedSlotsDiv = document.getElementById('equippedSlots');
-const equipmentMenuInstructions = document.getElementById('equipmentMenuInstructions');
+
 export const difficultyTitleElement = document.getElementById('difficultyTitle');
 export const lastScoreDisplayElement = document.getElementById('lastScoreDisplay');
 const ctx = gameCanvas.getContext('2d');
@@ -941,103 +940,7 @@ export function toggleEquipmentMenu() {
         difficultyScreen.style.display = 'flex';
         equipmentMenu.style.display = 'none';
     }
-    if (isEquipmentOpen) updateEquipmentDisplay();
 }
-
-function updateEquipmentDisplay() {
-    equippedSlotsDiv.innerHTML = '';
-    equipmentMenuInstructions.textContent = ""; 
-
-    equipmentSlotsOrder.forEach((slotType, i) => {
-        const div = document.createElement('div');
-        div.classList.add('equipment-slot-row');
-        if (i === selectedEquipmentSlotIndex) {
-            div.classList.add('selected');
-        }
-
-        const leftButton = document.createElement('button');
-        leftButton.classList.add('nav-button', 'left-arrow');
-        leftButton.textContent = '<';
-        leftButton.dataset.direction = 'left';
-        leftButton.dataset.slotType = slotType;
-        div.appendChild(leftButton);
-
-        const itemNameSpan = document.createElement('span');
-        if (slotType.startsWith('habilidad')) { 
-            const equippedSkillName = player.equipped[slotType];
-            const allSkills = skills; // Use all skills from data.js
-            const currentSkillIndex = equippedSkillName ? allSkills.findIndex(s => s.name === equippedSkillName) : -1;
-            
-            let displaySkillName = equippedSkillName ? equippedSkillName : '(Ninguna)';
-            itemNameSpan.textContent = `${equipmentSlotNames[slotType]}: ${displaySkillName}`;
-        } else { 
-            const item = player.equipped[slotType];
-            let statsText = '';
-            if (item) {
-                const stats = [];
-                if (item.atk) stats.push(`ATK: ${Math.floor(item.atk)}`);
-                if (item.def) stats.push(`DEF: ${Math.floor(item.def)}`); 
-                if (item.spd) stats.push(`SPD: ${item.spd.toFixed(1)}`); 
-                if (item.hp) stats.push(`HP: ${Math.floor(item.hp)}`); 
-                if (item.critical) stats.push(`CRIT: ${(item.critical*100).toFixed(0)}%`);
-                statsText = stats.length > 0 ? ` (${stats.join(', ')})` : '';
-            }
-            let displayItemName = item ? item.name : '(Vacío)';
-            itemNameSpan.textContent = `${equipmentSlotNames[slotType]}: ${displayItemName}${statsText}`;
-        }
-        itemNameSpan.style.textAlign = 'center';
-        itemNameSpan.style.flexGrow = '1';
-        div.appendChild(itemNameSpan);
-
-        const rightButton = document.createElement('button');
-        rightButton.classList.add('nav-button', 'right-arrow');
-        rightButton.textContent = '>';
-        rightButton.dataset.direction = 'right';
-        rightButton.dataset.slotType = slotType;
-        div.appendChild(rightButton);
-
-        equippedSlotsDiv.appendChild(div);
-    });
-}
-
-
-export function handleEquipmentInput(e) {
-    e.preventDefault(); 
-    e.stopPropagation(); 
-
-    if (e.code === 'ArrowUp') selectedEquipmentSlotIndex = Math.max(0, selectedEquipmentSlotIndex - 1);
-    else if (e.code === 'ArrowDown') selectedEquipmentSlotIndex = Math.min(equipmentSlotsOrder.length - 1, selectedEquipmentSlotIndex + 1);
-    else if (e.code === 'ArrowLeft') {
-        const currentSlotType = equipmentSlotsOrder[selectedEquipmentSlotIndex];
-        navigateEquipment(currentSlotType, 'left');
-    } else if (e.code === 'ArrowRight') {
-        const currentSlotType = equipmentSlotsOrder[selectedEquipmentSlotIndex];
-        navigateEquipment(currentSlotType, 'right');
-    } else if (e.code === 'Escape') {
-        toggleEquipmentMenu(); 
-        return;
-    }
-    updateEquipmentDisplay();
-}
-
-function navigateEquipment(slotType, direction) {
-    if (slotType.startsWith('habilidad')) {
-        equipSkill(slotType, direction);
-    } else {
-        equipItem(slotType, direction);
-    }
-    updateEquipmentDisplay();
-}
-
-// Event listener para los botones de navegación de equipo
-equippedSlotsDiv.addEventListener('click', (e) => {
-    const target = e.target;
-    if (target.classList.contains('nav-button')) {
-        const direction = target.dataset.direction;
-        const slotType = target.dataset.slotType;
-        navigateEquipment(slotType, direction);
-    }
-});
 
 
 // --- Music and Sound ---

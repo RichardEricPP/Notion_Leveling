@@ -102,19 +102,13 @@ body {
 #equipmentMenu {
     display: none; 
     position: absolute;  
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    background: #f4e4bc;
-    padding: 20px;  
-    border: 4px solid #8B4513;
-    font-family: 'Georgia', serif;
-    color: #000;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: #111827; /* bg-gray-900 */
     z-index: 10;
-    min-width: 350px; 
-    max-height: 80vh;  
     overflow-y: auto;  
-    box-shadow: 0 0 15px rgba(0,0,0,0.5);  
 }
 #inventoryMenu h2, #skillMenu h2, #equipmentMenu h2 {
     margin-top: 0;
@@ -142,7 +136,7 @@ body {
 .inventory-equipped { color: #008000; font-weight: bold; } 
 .inventory-unequipped { color: #808080; } 
 .skill-equipped { color: #008000; font-weight: bold; }
-#inventoryMenu p, #skillMenu p, #equipmentMenu p {
+#inventoryMenu p, #skillMenu p {
     font-size: 0.9em;
     text-align: center;
     margin-top: 15px;
@@ -221,4 +215,93 @@ body {
 }
 #equipmentMenuButtons button:last-child:hover {
     background-color: #EF5350;
+}
+
+/* Custom styles for character layers */
+.character-layer {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: contain; /* Ensure images fit within their container */
+    transition: opacity 0.3s ease-in-out;
+}
+
+/* Hide message box by default */
+#messageBox {
+    display: none;
+}
+
+/* Style for selected item button */
+.item-button.selected {
+    border: 3px solid #60a5fa; /* Blue-400 */
+    box-shadow: 0 0 15px rgba(96, 165, 250, 0.6); /* Glow effect */
+}
+
+/* Card Flip Effect (applies to both skills and equipment) */
+.card-container {
+    perspective: 1000px; /* Establishes the 3D context */
+    width: 100px; /* Fixed width for the card */
+    height: 120px; /* Fixed height for the card */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: relative; /* Needed for absolute positioning of inner elements */
+    background-color: #374151; /* gray-700 */
+    border-radius: 0.75rem; /* rounded-xl */
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06); /* shadow-md */
+    transition: transform 0.2s ease-in-out;
+    cursor: pointer;
+    padding: 0; /* Remove default button padding */
+}
+
+.card-container:hover {
+    transform: scale(1.05); /* hover:scale-105 */
+}
+
+.card-inner {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    text-align: center;
+    transition: transform 0.6s;
+    transform-style: preserve-3d;
+    border-radius: 0.75rem;
+}
+
+/* Class to trigger flip */
+.card-container.flipped .card-inner {
+    transform: rotateY(180deg);
+}
+
+.card-front, .card-back {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    -webkit-backface-visibility: hidden; /* Safari */
+    backface-visibility: hidden;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 0.5rem;
+    border-radius: 0.75rem;
+    background-color: #374151; /* Match button background */
+}
+
+.card-back {
+    transform: rotateY(180deg);
+    background-color: #4b5563; /* Slightly different background for back */
+    color: #ffffff; /* White text */
+    font-size: 0.75rem; /* text-xs */
+    overflow: hidden; /* Hide overflow text */
+    text-overflow: ellipsis; /* Add ellipsis for long text */
+}
+
+/* Adjustments for item-button selected style for cards */
+.item-button.selected .card-front,
+.item-button.selected .card-back {
+    border: 3px solid #60a5fa; /* Blue-400 */
+    box-shadow: 0 0 15px rgba(96, 165, 250, 0.6); /* Glow effect */
 }
