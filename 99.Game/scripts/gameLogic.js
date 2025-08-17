@@ -14,7 +14,6 @@ export let monsters = [];
 export let chests = [];
 export let currentFloor = 1;
 export let currentMapId = 1;
-export const maxFloors = 4;
 export const mapWidth = 50, mapHeight = 50;
 export const tileSize = 70;
 export let map = Array(mapHeight).fill().map(() => Array(mapWidth).fill(0));
@@ -614,6 +613,7 @@ function updateMonsters(currentTime) {
 
 async function generateFloor(mapId) {
     const mapData = todosLosMapas[mapId];
+    const maxFloors = mapData.maxFloors;
     map = Array(mapHeight).fill(0).map(() => Array(mapWidth).fill(null).map(() => ({ base: 9, decor: null }))); // Initialize with void objects
     stairLocation = { x: -1, y: -1, active: false, type: 4 };
     Object.keys(player.skillUsageThisFloor).forEach(key => delete player.skillUsageThisFloor[key]);
@@ -623,28 +623,33 @@ async function generateFloor(mapId) {
     revealedMap = Array(mapHeight).fill(0).map(() => Array(mapWidth).fill(false));
 
     if (mapId == 2) { // CAVE GENERATION
+        const caveWidth = 35;
+        const caveHeight = 35;
+        const offsetX = Math.floor((mapWidth - caveWidth) / 2);
+        const offsetY = Math.floor((mapHeight - caveHeight) / 2);
+
         // Step 1: Randomly fill the map
-        for (let y = 0; y < mapHeight; y++) {
-            for (let x = 0; x < mapWidth; x++) {
-                if (y === 0 || y === mapHeight - 1 || x === 0 || x === mapWidth - 1) {
-                    map[y][x] = { base: 0, decor: null };
+        for (let y = 0; y < caveHeight; y++) {
+            for (let x = 0; x < caveWidth; x++) {
+                if (y === 0 || y === caveHeight - 1 || x === 0 || x === caveWidth - 1) {
+                    map[y + offsetY][x + offsetX] = { base: 0, decor: null };
                 } else {
-                    map[y][x] = { base: (Math.random() < 0.45) ? 0 : 1, decor: null };
+                    map[y + offsetY][x + offsetX] = { base: (Math.random() < 0.45) ? 0 : 1, decor: null };
                 }
             }
         }
 
         // Step 2: Cellular automata simulation
         for (let i = 0; i < 4; i++) {
-            let newMap = Array(mapHeight).fill(0).map(() => Array(mapWidth).fill(null));
-            for (let y = 1; y < mapHeight - 1; y++) {
-                for (let x = 1; x < mapWidth - 1; x++) {
+            let newMap = Array(caveHeight).fill(0).map(() => Array(caveWidth).fill(null));
+            for (let y = 1; y < caveHeight - 1; y++) {
+                for (let x = 1; x < caveWidth - 1; x++) {
                     let wallNeighbors = 0;
                     for (let dy = -1; dy <= 1; dy++) {
                         for (let dx = -1; dx <= 1; dx++) {
                             const nx = x + dx;
                             const ny = y + dy;
-                            if (map[ny][nx].base === 0) {
+                            if (map[ny + offsetY][nx + offsetX].base === 0) {
                                 wallNeighbors++;
                             }
                         }
@@ -652,9 +657,95 @@ async function generateFloor(mapId) {
                     newMap[y][x] = { base: (wallNeighbors > 4) ? 0 : 1, decor: null };
                 }
             }
-            for (let y = 1; y < mapHeight - 1; y++) {
-                for (let x = 1; x < mapWidth - 1; x++) {
-                    map[y][x] = newMap[y][x];
+            for (let y = 1; y < caveHeight - 1; y++) {
+                for (let x = 1; x < caveWidth - 1; x++) {
+                    map[y + offsetY][x + offsetX] = newMap[y][x];
+                }
+            }
+        }
+
+        // Step 3: Connect all areas
+        const regions = getRegions();
+        if (regions.length > 1) {
+            connectRegions(regions);
+        }
+
+        function getRegions() {
+            const regions = [];
+            const visited = Array(mapHeight).fill(false).map(() => Array(mapWidth).fill(false));
+
+            for (let y = 0; y < mapHeight; y++) {
+                for (let x = 0; x < mapWidth; x++) {
+                    if (map[y][x].base === 1 && !visited[y][x]) {
+                        const newRegion = [];
+                        const queue = [{x, y}];
+                        visited[y][x] = true;
+
+                        while (queue.length > 0) {
+                            const tile = queue.shift();
+                            newRegion.push(tile);
+
+                            const neighbors = [
+                                {x: tile.x + 1, y: tile.y},
+                                {x: tile.x - 1, y: tile.y},
+                                {x: tile.x, y: tile.y + 1},
+                                {x: tile.x, y: tile.y - 1}
+                            ];
+
+                            for (const neighbor of neighbors) {
+                                if (neighbor.x >= 0 && neighbor.x < mapWidth && neighbor.y >= 0 && neighbor.y < mapHeight &&
+                                    map[neighbor.y][neighbor.x].base === 1 && !visited[neighbor.y][neighbor.x]) {
+                                    visited[neighbor.y][neighbor.x] = true;
+                                    queue.push(neighbor);
+                                }
+                            }
+                        }
+                        regions.push(newRegion);
+                    }
+                }
+            }
+            return regions;
+        }
+
+        function connectRegions(regions) {
+            regions.sort((a, b) => b.length - a.length);
+            const mainRegion = regions[0];
+
+            for (let i = 1; i < regions.length; i++) {
+                const region = regions[i];
+                let bestDist = Infinity;
+                let bestPointA = null;
+                let bestPointB = null;
+
+                for (const tileA of region) {
+                    for (const tileB of mainRegion) {
+                        const dist = Math.sqrt(Math.pow(tileA.x - tileB.x, 2) + Math.pow(tileA.y - tileB.y, 2));
+                        if (dist < bestDist) {
+                            bestDist = dist;
+                            bestPointA = tileA;
+                            bestPointB = tileB;
+                        }
+                    }
+                }
+                
+                if (bestPointA && bestPointB) {
+                    carvePath(bestPointA, bestPointB);
+                }
+            }
+        }
+
+        function carvePath(pointA, pointB) {
+            let x = pointA.x;
+            let y = pointA.y;
+
+            while(x !== pointB.x || y !== pointB.y) {
+                if (x < pointB.x) x++;
+                else if (x > pointB.x) x--;
+                else if (y < pointB.y) y++;
+                else if (y > pointB.y) y--;
+
+                if (map[y][x].base === 0) {
+                    map[y][x].base = 1;
                 }
             }
         }
@@ -721,7 +812,7 @@ async function generateFloor(mapId) {
             }
         }
     } else { // ORIGINAL MAP GENERATION
-        var hpMultiplier = 1.0, atkMultiplier = 1.0;
+        let hpMultiplier = 1.0, atkMultiplier = 1.0;
         if (selectedDifficulty === 'facil') { hpMultiplier = 0.6; atkMultiplier = 0.7; }
         else if (selectedDifficulty === 'dificil') { hpMultiplier = 1.5; atkMultiplier = 1.35; }
 
@@ -1144,6 +1235,7 @@ function revealMapAroundPlayer() {
 }
 
 async function handleFloorTransition() {
+    const maxFloors = todosLosMapas[currentMapId].maxFloors;
     if (currentFloor >= maxFloors) {
         gameOver = true;
         finalOutcomeMessage = "¡Mazmorra completada!";

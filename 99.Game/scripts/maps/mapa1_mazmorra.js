@@ -1,5 +1,6 @@
 export const mapaMazmorra = {
     nombre: "Mazmorra de las Pruebas",
+    maxFloors: 5,
     tileset: "assets/mapa_1.png",
     atlas: "assets/mapa_1.json",
     enemigos: [

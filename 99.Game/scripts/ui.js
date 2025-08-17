@@ -5,8 +5,9 @@
 import { player, activeSetBonusName, updateStats } from './player.js';
 import { skills, setBonuses, equipmentSlotsOrder, equipmentSlotNames } from './data.js';
 import { loadedImages, sprites } from './enemies.js';
+import { todosLosMapas } from './maps/index.js';
 import { 
-    currentFloor, maxFloors, map, stairLocation, selectedDifficulty, 
+    currentFloor, currentMapId, map, stairLocation, selectedDifficulty, 
     gameStarted, gameOver, lastGameScore, lastEnemiesDefeated, 
     finalOutcomeMessage, finalOutcomeMessageLine2, keys, screenShake, 
     revealedMap, projectiles, damageTexts, criticalHitEffects, warMaceShockwave, skillCooldowns, mapWidth, mapHeight, tileSize, iceRayEffects,
@@ -728,12 +729,13 @@ function drawMinimap() {
 }
 
 function drawHUD() {
+    const maxFloors = todosLosMapas[currentMapId].maxFloors;
     ctx.fillStyle = 'rgba(244,228,188,0.7)'; ctx.fillRect(gameCanvas.width-170, 10, 160, 280);
     ctx.strokeStyle = '#8B4513'; ctx.lineWidth = 2; ctx.strokeRect(gameCanvas.width-170, 10, 160, 280);
     
     ctx.fillStyle = '#000'; ctx.font = '14px Georgia'; ctx.textAlign = 'left';
     const startX = gameCanvas.width - 162; let yPos = 30;
-    ctx.fillText(`Piso Actual: ${currentFloor}`, startX, yPos); yPos+=18; 
+    ctx.fillText(`Piso Actual: ${currentFloor}/${maxFloors}`, startX, yPos); yPos+=18; 
     ctx.fillText(`HP: ${Math.floor(player.hp)}/${Math.floor(player.maxHp)}`, startX, yPos); yPos+=18; 
     ctx.fillText(`ATK: ${Math.floor(player.atk)}`, startX, yPos); yPos+=18; 
     const defReduction = Math.min(75, player.def * 0.03); 

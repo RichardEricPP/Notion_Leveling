@@ -77,6 +77,9 @@ document.addEventListener('DOMContentLoaded', () => {
         mapButton.textContent = map.nombre;
         mapButton.addEventListener('click', () => {
             selectedMapId = mapId;
+            const floorInput = document.getElementById('floorInput');
+            floorInput.max = map.maxFloors;
+            floorInput.value = 1;
             mapSelectionScreen.style.display = 'none';
             difficultyScreen.style.display = 'flex';
         });

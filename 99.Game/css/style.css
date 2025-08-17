@@ -45,20 +45,28 @@ body {
     color: #4a2f1b;
 }
 #debugControls {
-    margin-top: 10px;  
-    padding: 8px;  
-    background-color: #333;
+    margin-top: 15px;  
+    padding: 10px;  
+    background-color: rgba(0,0,0,0.1); /* Fondo semitransparente */
     border-radius: 5px;
-    color: white;
-    font-size: 13px;
+    color: #4a2f1b; /* Color de texto oscuro */
+    font-size: 14px; /* Tamaño de fuente ligeramente más grande */
+    display: flex; /* Usar flexbox para alinear elementos */
+    align-items: center; /* Centrar verticalmente */
+    justify-content: center; /* Centrar horizontalmente */
 }
 #debugControls label {
-    margin-right: 3px;
+    margin-right: 5px;
+    font-weight: bold; /* Hacer etiquetas en negrita */
 }
 #debugControls input {
-    width: 35px;  
-    margin-right: 8px;
-    padding: 3px;
+    width: 50px;  /* Ancho aumentado */
+    margin-right: 15px; /* Más espacio a la derecha */
+    padding: 5px;
+    border: 1px solid #4a2f1b; /* Borde oscuro */
+    border-radius: 3px;
+    background-color: #fff; /* Fondo blanco */
+    color: #000; /* Color de texto negro */
 }
 #debugControls button {
     padding: 5px 10px;
