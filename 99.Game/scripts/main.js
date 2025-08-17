@@ -68,23 +68,24 @@ document.addEventListener('DOMContentLoaded', () => {
         playMusic('dungeon');
     }
 
+    let selectedMapId = 1;
+
     // Populate map list
     for (const mapId in todosLosMapas) {
         const map = todosLosMapas[mapId];
         const mapButton = document.createElement('button');
         mapButton.textContent = map.nombre;
         mapButton.addEventListener('click', () => {
+            selectedMapId = mapId;
             mapSelectionScreen.style.display = 'none';
             difficultyScreen.style.display = 'flex';
-            // This is a placeholder for difficulty selection for the chosen map
-            startGame('facil', mapId);
         });
         mapList.appendChild(mapButton);
     }
 
-    document.getElementById('btnFacil').addEventListener('click', () => startGame('facil', 1));
-    document.getElementById('btnMedio').addEventListener('click', () => startGame('medio', 1));
-    document.getElementById('btnDificil').addEventListener('click', () => startGame('dificil', 1));
+    document.getElementById('btnFacil').addEventListener('click', () => startGame('facil', selectedMapId));
+    document.getElementById('btnMedio').addEventListener('click', () => startGame('medio', selectedMapId));
+    document.getElementById('btnDificil').addEventListener('click', () => startGame('dificil', selectedMapId));
 
     document.getElementById('btnEquipment').addEventListener('click', toggleEquipmentMenu);
 

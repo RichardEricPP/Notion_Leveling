@@ -18,6 +18,8 @@ export let player = {
     atk: 5, 
     def: 5, 
     spd: 4, 
+    evasion: 0,
+    attackSpeedBonus: 0,
     xp: 0,
     level: 1,
     skillPoints: 0,
@@ -258,6 +260,8 @@ export function updateStats() {
     player.spd = player.baseSpd; 
     player.maxHp = 100 + (player.level - 1) * 20;
     player.criticalChanceBonus = 0.05; // Reset critical chance to base
+    player.evasion = 0; // Reset evasion to base
+    player.attackSpeedBonus = 0; // Reset attack speed bonus to base
 
     const currentTime = Date.now();
     if (player.luckBoostEndTime && currentTime < player.luckBoostEndTime) {
@@ -280,6 +284,8 @@ export function updateStats() {
             if (item.spd) player.spd += item.spd * 0.2; 
             if (item.hp) player.maxHp += item.hp;
             if (item.critical) player.criticalChanceBonus += item.critical;
+            if (item.evasion) player.evasion += item.evasion;
+            if (item.attackSpeedBonus) player.attackSpeedBonus += item.attackSpeedBonus;
         }
     }
 

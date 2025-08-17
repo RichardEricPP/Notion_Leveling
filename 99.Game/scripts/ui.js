@@ -728,8 +728,8 @@ function drawMinimap() {
 }
 
 function drawHUD() {
-    ctx.fillStyle = 'rgba(244,228,188,0.7)'; ctx.fillRect(gameCanvas.width-170, 10, 160, 210);
-    ctx.strokeStyle = '#8B4513'; ctx.lineWidth = 2; ctx.strokeRect(gameCanvas.width-170, 10, 160, 210);
+    ctx.fillStyle = 'rgba(244,228,188,0.7)'; ctx.fillRect(gameCanvas.width-170, 10, 160, 280);
+    ctx.strokeStyle = '#8B4513'; ctx.lineWidth = 2; ctx.strokeRect(gameCanvas.width-170, 10, 160, 280);
     
     ctx.fillStyle = '#000'; ctx.font = '14px Georgia'; ctx.textAlign = 'left';
     const startX = gameCanvas.width - 162; let yPos = 30;
@@ -738,6 +738,10 @@ function drawHUD() {
     ctx.fillText(`ATK: ${Math.floor(player.atk)}`, startX, yPos); yPos+=18; 
     const defReduction = Math.min(75, player.def * 0.03); 
     ctx.fillText(`DEF: ${Math.floor(player.def)} (${(defReduction * 100).toFixed(0)}%)`, startX, yPos); yPos+=18; 
+    ctx.fillText(`Velocidad: ${player.spd.toFixed(2)}`, startX, yPos); yPos+=18;
+    ctx.fillText(`Crítico: ${(player.criticalChanceBonus * 100).toFixed(0)}%`, startX, yPos); yPos+=18;
+    ctx.fillText(`Evasión: ${(player.evasion * 100).toFixed(0)}%`, startX, yPos); yPos+=18;
+    ctx.fillText(`Vel. Ataque: ${player.attackSpeedBonus}`, startX, yPos); yPos+=18;
     ctx.fillText(`Nivel: ${player.level} (XP: ${player.xp})`, startX, yPos); yPos+=18;
     
     ctx.fillText('Habilidades:', startX, yPos); yPos+=18;

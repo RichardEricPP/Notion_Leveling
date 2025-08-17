@@ -274,6 +274,8 @@ function handlePlayerInput(timestamp) {
     }
 
     let attackInterval = player.equipped.weapon?.attackSpeed || 400;
+    attackInterval /= (1 + player.attackSpeedBonus * 0.05); // 5% increase per point
+
     if (player.isStealthed && Date.now() < player.stealthEndTime) {
         attackInterval = 850; // 0.85 attacks per second
     }
@@ -620,161 +622,67 @@ async function generateFloor(mapId) {
     torches.length = 0; // Limpiar antorchas al generar nuevo piso
     revealedMap = Array(mapHeight).fill(0).map(() => Array(mapWidth).fill(false));
 
-    var hpMultiplier = 1.0, atkMultiplier = 1.0;
-    if (selectedDifficulty === 'facil') { hpMultiplier = 0.6; atkMultiplier = 0.7; }
-    else if (selectedDifficulty === 'dificil') { hpMultiplier = 1.5; atkMultiplier = 1.35; }
-
-    if (currentFloor === maxFloors) {
-        const arenaWidth = 15, arenaHeight = 15;
-        const arenaX = Math.floor((mapWidth - arenaWidth) / 2);
-        const arenaY = Math.floor((mapHeight - arenaHeight) / 2);
-        // Fill arena with floor
-        for (let y = arenaY; y < arenaY + arenaHeight; y++) {
-            for (let x = arenaX; x < arenaX + arenaWidth; x++) map[y][x].base = 1;
-        }
-        // Add walls around the arena
-        for (let y = arenaY - 1; y <= arenaY + arenaHeight; y++) {
-            for (let x = arenaX - 1; x <= arenaX + arenaWidth; x++) {
-                if (x < 0 || x >= mapWidth || y < 0 || y >= mapHeight) continue;
-                if (map[y][x].base === 9) { 
-                    map[y][x].base = 0;
-                }
-            }
-        }
-
-        player.tileX = arenaX + Math.floor(arenaWidth / 2);
-        player.tileY = arenaY + arenaHeight - 2;
-        const bossSpawnX = arenaX + Math.floor(arenaWidth / 2) - 1;
-        const bossSpawnY = arenaY + 1;
-
-        // Place boss decorations
-        const placeDecor = (name, x, y, w, h) => {
-            for (let i = 0; i < w; i++) {
-                for (let j = 0; j < h; j++) {
-                    if (map[y+j] && map[y+j][x+i]) {
-                        map[y+j][x+i].base = 1;
-                        if (i === 0 && j === 0) {
-                            map[y+j][x+i].decor = { name: name, isLarge: true, width: w, height: h };
-                        } else {
-                            map[y+j][x+i].isDecorSubTile = true;
-                        }
-                    }
-                }
-            }
-        };
-
-        const decorationsToPlace = [
-            { name: 'telaraña.png', w: 2, h: 2, count: 2 },
-            { name: 'piedras.png', w: 2, h: 2, count: 4 }
-        ];
-
-        const occupiedAreas = [
-            { x: player.tileX, y: player.tileY, w: 1, h: 1 },
-            { x: bossSpawnX, y: bossSpawnY, w: 2, h: 2 }
-        ];
-
-        decorationsToPlace.forEach(decor => {
-            for (let i = 0; i < decor.count; i++) {
-                let attempts = 0;
-                let placed = false;
-                while (attempts < 50 && !placed) {
-                    const x = arenaX + Math.floor(Math.random() * (arenaWidth - decor.w));
-                    const y = arenaY + Math.floor(Math.random() * (arenaHeight - decor.h));
-                    const newArea = { x: x, y: y, w: decor.w, h: decor.h };
-
-                    const overlaps = occupiedAreas.some(area =>
-                        newArea.x < area.x + area.w &&
-                        newArea.x + newArea.w > area.x &&
-                        newArea.y < area.y + area.h &&
-                        newArea.y + newArea.h > area.y
-                    );
-
-                    if (!overlaps) {
-                        placeDecor(decor.name, x, y, decor.w, decor.h);
-                        occupiedAreas.push(newArea);
-                        placed = true;
-                    }
-                    attempts++;
-                }
-            }
-        });
-
-        stairLocation.x = player.tileX;
-        stairLocation.y = player.tileY;
-        monsters.push(createMonster('finalBoss', bossSpawnX, bossSpawnY, currentFloor, { x: arenaX, y: arenaY, width: arenaWidth, height: arenaHeight }));
-        for (let r = 0; r < 2; r++) {
-            for (let c = 0; c < 2; c++) map[bossSpawnY + r][bossSpawnX + c].base = 1;
-        }
-    } else {
-        const rooms = [];
-        const numRooms = Math.floor(Math.random() * 5) + 12; // Generates between 12 and 16 rooms
-        const minRoomSize = 6, maxRoomSize = 10;
-        const roomSpacing = 5; // Minimum spacing between rooms
-        for (let i = 0; i < numRooms; i++) {
-            let roomW, roomH, roomX, roomY, newRoom, overlaps;
-            let attempts = 0;
-            do {
-                roomW = Math.floor(Math.random() * (maxRoomSize - minRoomSize + 1)) + minRoomSize;
-                roomH = Math.floor(Math.random() * (maxRoomSize - minRoomSize + 1)) + minRoomSize;
-                roomX = Math.floor(Math.random() * (mapWidth - roomW - 2)) + 1;
-                roomY = Math.floor(Math.random() * (mapHeight - roomH - 2)) + 1;
-                newRoom = { x: roomX, y: roomY, w: roomW, h: roomH, centerX: roomX + Math.floor(roomW / 2), centerY: roomY + Math.floor(roomH / 2) };
-                overlaps = rooms.some(otherRoom => 
-                    newRoom.x < otherRoom.x + otherRoom.w + roomSpacing && 
-                    newRoom.x + newRoom.w + roomSpacing > otherRoom.x && 
-                    newRoom.y < otherRoom.y + otherRoom.h + roomSpacing && 
-                    newRoom.y + newRoom.h + roomSpacing > otherRoom.y
-                );
-                attempts++;
-            } while (overlaps && attempts < 50);
-            if (!overlaps) rooms.push(newRoom);
-        }
-        if (rooms.length === 0) {
-            rooms.push({ x: Math.floor(mapWidth / 2) - 3, y: Math.floor(mapHeight / 2) - 3, w: 7, h: 7, centerX: Math.floor(mapWidth / 2), centerY: Math.floor(mapHeight / 2) });
-        }
-        rooms.forEach(room => {
-            for (let y = room.y; y < room.y + room.h; y++) {
-                for (let x = room.x; x < room.x + room.w; x++) {
-                    if (x >= 0 && x < mapWidth && y >= 0 && y < mapHeight) map[y][x].base = 1;
-                }
-            }
-        });
-        for (let i = 0; i < rooms.length - 1; i++) {
-            carvePathBetweenRooms(rooms[i], rooms[i + 1]);
-        }
-        // After carving paths, add walls (0) around floor (1) tiles
+    if (mapId == 2) { // CAVE GENERATION
+        // Step 1: Randomly fill the map
         for (let y = 0; y < mapHeight; y++) {
             for (let x = 0; x < mapWidth; x++) {
-                if (map[y][x].base === 1) { // If it's a floor tile
+                if (y === 0 || y === mapHeight - 1 || x === 0 || x === mapWidth - 1) {
+                    map[y][x] = { base: 0, decor: null };
+                } else {
+                    map[y][x] = { base: (Math.random() < 0.45) ? 0 : 1, decor: null };
+                }
+            }
+        }
+
+        // Step 2: Cellular automata simulation
+        for (let i = 0; i < 4; i++) {
+            let newMap = Array(mapHeight).fill(0).map(() => Array(mapWidth).fill(null));
+            for (let y = 1; y < mapHeight - 1; y++) {
+                for (let x = 1; x < mapWidth - 1; x++) {
+                    let wallNeighbors = 0;
                     for (let dy = -1; dy <= 1; dy++) {
                         for (let dx = -1; dx <= 1; dx++) {
-                            const checkX = x + dx;
-                            const checkY = y + dy;
-                            if (checkX >= 0 && checkX < mapWidth && checkY >= 0 && checkY < mapHeight) {
-                                if (map[checkY][checkX].base === 9) { // If adjacent to void, make it a wall
-                                    map[checkY][checkX].base = 0;
-                                }
+                            const nx = x + dx;
+                            const ny = y + dy;
+                            if (map[ny][nx].base === 0) {
+                                wallNeighbors++;
                             }
                         }
                     }
+                    newMap[y][x] = { base: (wallNeighbors > 4) ? 0 : 1, decor: null };
+                }
+            }
+            for (let y = 1; y < mapHeight - 1; y++) {
+                for (let x = 1; x < mapWidth - 1; x++) {
+                    map[y][x] = newMap[y][x];
                 }
             }
         }
-        player.tileX = rooms[0].centerX;
-        player.tileY = rooms[0].centerY;
-        let stairRoom = rooms[rooms.length - 1];
-        stairLocation.x = stairRoom.centerX;
-        stairLocation.y = stairRoom.centerY;
-        player.hasKey = false;
-        player.doorOpened = false;
-        const monsterSpawnLocations = [];
+
+        // Step 4: Place player, stairs, monsters, chests
+        const floorTiles = [];
         for (let y = 0; y < mapHeight; y++) {
             for (let x = 0; x < mapWidth; x++) {
-                if (map[y][x].base === 1 && !(x === player.tileX && y === player.tileY)) {
-                    monsterSpawnLocations.push({ x, y });
+                if (map[y][x].base === 1) {
+                    floorTiles.push({x, y});
                 }
             }
         }
+
+        if (floorTiles.length > 0) {
+            const playerStartIndex = Math.floor(Math.random() * floorTiles.length);
+            const playerStart = floorTiles.splice(playerStartIndex, 1)[0];
+            player.tileX = playerStart.x;
+            player.tileY = playerStart.y;
+
+            const stairIndex = Math.floor(Math.random() * floorTiles.length);
+            const stairStart = floorTiles.splice(stairIndex, 1)[0];
+            stairLocation.x = stairStart.x;
+            stairLocation.y = stairStart.y;
+            stairLocation.active = false;
+        }
+
+        const monsterSpawnLocations = [...floorTiles];
         const placeMonster = (type, dropsKey = false) => {
             if (monsterSpawnLocations.length === 0) return;
             let spawnIndex = Math.floor(Math.random() * monsterSpawnLocations.length);
@@ -783,50 +691,245 @@ async function generateFloor(mapId) {
             if (dropsKey) monster.dropsKey = true;
             monsters.push(monster);
         };
-        for (let i = 0; i < 6 + (currentFloor - 1) * 2; i++) placeMonster('duende');
-        for (let i = 0; i < 2 + currentFloor; i++) placeMonster('lobo');
-        for (let i = 0; i < 3 + Math.floor((currentFloor - 1) * 1.5); i++) placeMonster('skeleton');
-        if (rooms.length > 1) {
-            // Place the main boss (Golem), which drops the key
-            placeMonster('boss', true);
-            // Place the mini-boss (White Wolf) as well
-            placeMonster('miniBoss', false);
-        }
+
+        mapData.enemigos.forEach(enemyInfo => {
+            const count = Math.floor(Math.random() * (enemyInfo.cantidad.max - enemyInfo.cantidad.min + 1)) + enemyInfo.cantidad.min;
+            for (let i = 0; i < count; i++) {
+                placeMonster(enemyInfo.tipo, enemyInfo.dropsKey);
+            }
+        });
+
         chests.length = 0;
         spawnChests(monsterSpawnLocations, mapData.objetos);
-    }
 
-    // Colocar antorchas en las paredes
-    const torchDensity = 0.05; // 5% de probabilidad de que un muro con piso adyacente tenga una antorcha
-    for (let y = 0; y < mapHeight; y++) {
-        for (let x = 0; x < mapWidth; x++) {
-            if (map[y][x].base === 0) { // Es un muro
-                const hasFloorBelow = (y + 1 < mapHeight && map[y + 1][x].base === 1);
-                const hasFloorAbove = (y - 1 >= 0 && map[y - 1][x].base === 1);
+        // Step 5: Add decorations
+        const floorDecorations = ['piedras.png'];
+        const wallDecorations = ['calaveras.png']; // "Pinchos"
+        for (let y = 0; y < mapHeight; y++) {
+            for (let x = 0; x < mapWidth; x++) {
+                if (map[y][x].base === 1 && Math.random() < 0.1) { // 10% chance for floor decor (piedras)
+                    map[y][x].decor = { name: floorDecorations[0] };
+                } else if (map[y][x].base === 0) { // If it's a wall
+                     const hasFloorNearby = (y + 1 < mapHeight && map[y+1][x].base === 1) ||
+                                         (y - 1 >= 0 && map[y-1][x].base === 1) ||
+                                         (x + 1 < mapWidth && map[y][x+1].base === 1) ||
+                                         (x - 1 >= 0 && map[y][x-1].base === 1);
+                    if (hasFloorNearby && Math.random() < 0.4) { // 40% chance for wall decor (calaveras as spikes)
+                        map[y][x].decor = { name: wallDecorations[0] };
+                    }
+                }
+            }
+        }
+    } else { // ORIGINAL MAP GENERATION
+        var hpMultiplier = 1.0, atkMultiplier = 1.0;
+        if (selectedDifficulty === 'facil') { hpMultiplier = 0.6; atkMultiplier = 0.7; }
+        else if (selectedDifficulty === 'dificil') { hpMultiplier = 1.5; atkMultiplier = 1.35; }
 
-                if ((hasFloorBelow || hasFloorAbove) && Math.random() < torchDensity) {
-                    torches.push({ x, y });
+        if (currentFloor === maxFloors) {
+            const arenaWidth = 15, arenaHeight = 15;
+            const arenaX = Math.floor((mapWidth - arenaWidth) / 2);
+            const arenaY = Math.floor((mapHeight - arenaHeight) / 2);
+            // Fill arena with floor
+            for (let y = arenaY; y < arenaY + arenaHeight; y++) {
+                for (let x = arenaX; x < arenaX + arenaWidth; x++) map[y][x].base = 1;
+            }
+            // Add walls around the arena
+            for (let y = arenaY - 1; y <= arenaY + arenaHeight; y++) {
+                for (let x = arenaX - 1; x <= arenaX + arenaWidth; x++) {
+                    if (x < 0 || x >= mapWidth || y < 0 || y >= mapHeight) continue;
+                    if (map[y][x].base === 9) { 
+                        map[y][x].base = 0;
+                    }
+                }
+            }
+
+            player.tileX = arenaX + Math.floor(arenaWidth / 2);
+            player.tileY = arenaY + arenaHeight - 2;
+            const bossSpawnX = arenaX + Math.floor(arenaWidth / 2) - 1;
+            const bossSpawnY = arenaY + 1;
+
+            // Place boss decorations
+            const placeDecor = (name, x, y, w, h) => {
+                for (let i = 0; i < w; i++) {
+                    for (let j = 0; j < h; j++) {
+                        if (map[y+j] && map[y+j][x+i]) {
+                            map[y+j][x+i].base = 1;
+                            if (i === 0 && j === 0) {
+                                map[y+j][x+i].decor = { name: name, isLarge: true, width: w, height: h };
+                            } else {
+                                map[y+j][x+i].isDecorSubTile = true;
+                            }
+                        }
+                    }
+                }
+            };
+
+            const decorationsToPlace = [
+                { name: 'telaraña.png', w: 2, h: 2, count: 2 },
+                { name: 'piedras.png', w: 2, h: 2, count: 4 }
+            ];
+
+            const occupiedAreas = [
+                { x: player.tileX, y: player.tileY, w: 1, h: 1 },
+                { x: bossSpawnX, y: bossSpawnY, w: 2, h: 2 }
+            ];
+
+            decorationsToPlace.forEach(decor => {
+                for (let i = 0; i < decor.count; i++) {
+                    let attempts = 0;
+                    let placed = false;
+                    while (attempts < 50 && !placed) {
+                        const x = arenaX + Math.floor(Math.random() * (arenaWidth - decor.w));
+                        const y = arenaY + Math.floor(Math.random() * (arenaHeight - decor.h));
+                        const newArea = { x: x, y: y, w: decor.w, h: decor.h };
+
+                        const overlaps = occupiedAreas.some(area =>
+                            newArea.x < area.x + area.w &&
+                            newArea.x + newArea.w > area.x &&
+                            newArea.y < area.y + area.h &&
+                            newArea.y + newArea.h > area.y
+                        );
+
+                        if (!overlaps) {
+                            placeDecor(decor.name, x, y, decor.w, decor.h);
+                            occupiedAreas.push(newArea);
+                            placed = true;
+                        }
+                        attempts++;
+                    }
+                }
+            });
+
+            stairLocation.x = player.tileX;
+            stairLocation.y = player.tileY;
+            monsters.push(createMonster('finalBoss', bossSpawnX, bossSpawnY, currentFloor, { x: arenaX, y: arenaY, width: arenaWidth, height: arenaHeight }));
+            for (let r = 0; r < 2; r++) {
+                for (let c = 0; c < 2; c++) map[bossSpawnY + r][bossSpawnX + c].base = 1;
+            }
+        } else {
+            const rooms = [];
+            const numRooms = Math.floor(Math.random() * 5) + 12; // Generates between 12 and 16 rooms
+            const minRoomSize = 6, maxRoomSize = 10;
+            const roomSpacing = 5; // Minimum spacing between rooms
+            for (let i = 0; i < numRooms; i++) {
+                let roomW, roomH, roomX, roomY, newRoom, overlaps;
+                let attempts = 0;
+                do {
+                    roomW = Math.floor(Math.random() * (maxRoomSize - minRoomSize + 1)) + minRoomSize;
+                    roomH = Math.floor(Math.random() * (maxRoomSize - minRoomSize + 1)) + minRoomSize;
+                    roomX = Math.floor(Math.random() * (mapWidth - roomW - 2)) + 1;
+                    roomY = Math.floor(Math.random() * (mapHeight - roomH - 2)) + 1;
+                    newRoom = { x: roomX, y: roomY, w: roomW, h: roomH, centerX: roomX + Math.floor(roomW / 2), centerY: roomY + Math.floor(roomH / 2) };
+                    overlaps = rooms.some(otherRoom => 
+                        newRoom.x < otherRoom.x + otherRoom.w + roomSpacing && 
+                        newRoom.x + newRoom.w + roomSpacing > otherRoom.x && 
+                        newRoom.y < otherRoom.y + otherRoom.h + roomSpacing && 
+                        newRoom.y + newRoom.h + roomSpacing > otherRoom.y
+                    );
+                    attempts++;
+                } while (overlaps && attempts < 50);
+                if (!overlaps) rooms.push(newRoom);
+            }
+            if (rooms.length === 0) {
+                rooms.push({ x: Math.floor(mapWidth / 2) - 3, y: Math.floor(mapHeight / 2) - 3, w: 7, h: 7, centerX: Math.floor(mapWidth / 2), centerY: Math.floor(mapHeight / 2) });
+            }
+            rooms.forEach(room => {
+                for (let y = room.y; y < room.y + room.h; y++) {
+                    for (let x = room.x; x < room.x + room.w; x++) {
+                        if (x >= 0 && x < mapWidth && y >= 0 && y < mapHeight) map[y][x].base = 1;
+                    }
+                }
+            });
+            for (let i = 0; i < rooms.length - 1; i++) {
+                carvePathBetweenRooms(rooms[i], rooms[i + 1]);
+            }
+            // After carving paths, add walls (0) around floor (1) tiles
+            for (let y = 0; y < mapHeight; y++) {
+                for (let x = 0; x < mapWidth; x++) {
+                    if (map[y][x].base === 1) { // If it's a floor tile
+                        for (let dy = -1; dy <= 1; dy++) {
+                            for (let dx = -1; dx <= 1; dx++) {
+                                const checkX = x + dx;
+                                const checkY = y + dy;
+                                if (checkX >= 0 && checkX < mapWidth && checkY >= 0 && checkY < mapHeight) {
+                                    if (map[checkY][checkX].base === 9) { // If adjacent to void, make it a wall
+                                        map[checkY][checkX].base = 0;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            player.tileX = rooms[0].centerX;
+            player.tileY = rooms[0].centerY;
+            let stairRoom = rooms[rooms.length - 1];
+            stairLocation.x = stairRoom.centerX;
+            stairLocation.y = stairRoom.centerY;
+            player.hasKey = false;
+            player.doorOpened = false;
+            const monsterSpawnLocations = [];
+            for (let y = 0; y < mapHeight; y++) {
+                for (let x = 0; x < mapWidth; x++) {
+                    if (map[y][x].base === 1 && !(x === player.tileX && y === player.tileY)) {
+                        monsterSpawnLocations.push({ x, y });
+                    }
+                }
+            }
+            const placeMonster = (type, dropsKey = false) => {
+                if (monsterSpawnLocations.length === 0) return;
+                let spawnIndex = Math.floor(Math.random() * monsterSpawnLocations.length);
+                let loc = monsterSpawnLocations.splice(spawnIndex, 1)[0];
+                const monster = createMonster(type, loc.x, loc.y, currentFloor);
+                if (dropsKey) monster.dropsKey = true;
+                monsters.push(monster);
+            };
+            for (let i = 0; i < 6 + (currentFloor - 1) * 2; i++) placeMonster('duende');
+            for (let i = 0; i < 2 + currentFloor; i++) placeMonster('lobo');
+            for (let i = 0; i < 3 + Math.floor((currentFloor - 1) * 1.5); i++) placeMonster('skeleton');
+            if (rooms.length > 1) {
+                // Place the main boss (Golem), which drops the key
+                placeMonster('boss', true);
+                // Place the mini-boss (White Wolf) as well
+                placeMonster('miniBoss', false);
+            }
+            chests.length = 0;
+            spawnChests(monsterSpawnLocations, mapData.objetos);
+        }
+
+        // Colocar antorchas en las paredes
+        const torchDensity = 0.05; // 5% de probabilidad de que un muro con piso adyacente tenga una antorcha
+        for (let y = 0; y < mapHeight; y++) {
+            for (let x = 0; x < mapWidth; x++) {
+                if (map[y][x].base === 0) { // Es un muro
+                    const hasFloorBelow = (y + 1 < mapHeight && map[y + 1][x].base === 1);
+                    const hasFloorAbove = (y - 1 >= 0 && map[y - 1][x].base === 1);
+
+                    if ((hasFloorBelow || hasFloorAbove) && Math.random() < torchDensity) {
+                        torches.push({ x, y });
+                    }
+                }
+            }
+        }
+
+        // Add random decorations
+        const floorDecorations = ['agua_1.png', 'agua_2.png', 'calaveras.png'];
+        const wallDecorations = ['cadenas.PNG']; // Chains
+        for (let y = 0; y < mapHeight; y++) {
+            for (let x = 0; x < mapWidth; x++) {
+                if (map[y][x].base === 1 && Math.random() < 0.02) { // 2% chance for floor decor
+                    map[y][x].decor = { name: floorDecorations[Math.floor(Math.random() * floorDecorations.length)] };
+                } else if (map[y][x].base === 0) { // If it's a wall
+                    const hasFloorBelow = (y + 1 < mapHeight && map[y + 1][x].base === 1);
+                    const isTorch = torches.some(t => t.x === x && t.y === y);
+                    if (hasFloorBelow && !isTorch && Math.random() < 0.2) { // 20% chance for wall decor on walls with floor below and no torch
+                        map[y][x].decor = { name: wallDecorations[0] };
+                    }
                 }
             }
         }
     }
 
-    // Add random decorations
-    const floorDecorations = ['agua_1.png', 'agua_2.png', 'calaveras.png'];
-    const wallDecorations = ['cadenas.PNG']; // Chains
-    for (let y = 0; y < mapHeight; y++) {
-        for (let x = 0; x < mapWidth; x++) {
-            if (map[y][x].base === 1 && Math.random() < 0.02) { // 2% chance for floor decor
-                map[y][x].decor = { name: floorDecorations[Math.floor(Math.random() * floorDecorations.length)] };
-            } else if (map[y][x].base === 0) { // If it's a wall
-                const hasFloorBelow = (y + 1 < mapHeight && map[y + 1][x].base === 1);
-                const isTorch = torches.some(t => t.x === x && t.y === y);
-                if (hasFloorBelow && !isTorch && Math.random() < 0.2) { // 20% chance for wall decor on walls with floor below and no torch
-                    map[y][x].decor = { name: wallDecorations[0] };
-                }
-            }
-        }
-    }
 
     await loadAllSprites();
     playMusic(monsters.some(m => m.type === 'finalBoss') ? 'boss' : 'dungeon');
@@ -1238,6 +1341,11 @@ function getMonsterAt(x, y) {
 function takeDamage(target, damage, isCritical, attackerType = 'player') {
     // Minions cannot be damaged by the player
     if (target.isMinion && attackerType === 'player') {
+        return;
+    }
+
+    if (target === player && Math.random() < player.evasion) {
+        damageTexts.push({ text: 'Evasión!', x: target.tileX, y: target.tileY, life: 30, color: '#00ff00', size: 18, velY: -0.01 });
         return;
     }
 
