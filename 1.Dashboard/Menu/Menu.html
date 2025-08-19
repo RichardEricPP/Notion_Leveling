@@ -203,6 +203,7 @@
                 totalQuests: 0,
                 lastCompletionDate: null,
                 websites: [],
+                deletedDefaultWebsites: [], // Add this line
                 categoryCounts: { coding: 0, exercise: 0, study: 0, project: 0, exam: 0 }
             };
 
@@ -407,19 +408,58 @@
 
             function renderWebsites() {
                 elements.quickLinks.innerHTML = '';
-                const allLinks = [...defaultWebsites, ...playerState.websites];
+                const visibleDefaultWebsites = defaultWebsites.filter(site => !playerState.deletedDefaultWebsites.includes(site.id));
+                const allLinks = [...visibleDefaultWebsites, ...playerState.websites];
+                
                 allLinks.forEach(site => {
                     const iconSrc = site.icon || `https://www.google.com/s2/favicons?domain=${site.url}&sz=64`;
                     const linkEl = document.createElement('div');
-                    linkEl.className = 'container-bg-light p-4 rounded-lg task-item cursor-pointer flex flex-col items-center text-center';
-                    linkEl.onclick = () => window.open(site.url, '_blank');
-                    linkEl.innerHTML = `
+                    linkEl.className = 'relative container-bg-light p-4 rounded-lg task-item cursor-pointer flex flex-col items-center text-center';
+                    
+                    const linkContent = document.createElement('div');
+                    linkContent.onclick = () => window.open(site.url, '_blank');
+                    linkContent.innerHTML = `
                         <img src="${iconSrc}" class="w-8 h-8 mb-2 rounded" onerror="this.src='https://www.google.com/s2/favicons?domain=google.com&sz=64'">
                         <div class="font-bold text-slate-100 text-sm">${site.name}</div>
                         <div class="text-xs text-slate-400">${site.description}</div>
                     `;
+
+                    linkEl.appendChild(linkContent);
+
+                    const deleteBtn = document.createElement('button');
+                    deleteBtn.className = 'absolute top-1 right-1 w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center transition-opacity';
+                    deleteBtn.innerHTML = '<i class="fas fa-times text-xs"></i>';
+                    deleteBtn.style.opacity = '0'; // Initially hidden
+                    deleteBtn.onclick = (e) => {
+                        e.stopPropagation();
+                        deleteWebsite(site.id);
+                    };
+                    linkEl.appendChild(deleteBtn);
+
+                    linkEl.addEventListener('mouseenter', () => {
+                        deleteBtn.style.opacity = '1';
+                    });
+
+                    linkEl.addEventListener('mouseleave', () => {
+                        deleteBtn.style.opacity = '0';
+                    });
+
                     elements.quickLinks.appendChild(linkEl);
                 });
+            }
+
+            function deleteWebsite(id) {
+                const isDefault = defaultWebsites.some(site => site.id === id);
+                if (isDefault) {
+                    if (!playerState.deletedDefaultWebsites.includes(id)) {
+                        playerState.deletedDefaultWebsites.push(id);
+                    }
+                } else {
+                    playerState.websites = playerState.websites.filter(site => site.id !== id);
+                }
+                saveState();
+                renderWebsites();
+                addSystemMessage('Quick link removed.', 'success');
             }
         });
     </script>
