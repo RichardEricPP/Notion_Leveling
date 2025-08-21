@@ -9,882 +9,380 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght @400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Three.js Library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <!-- Three.js Addons -->
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/EffectComposer.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/RenderPass.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/shaders/CopyShader.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/ShaderPass.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/shaders/LuminosityHighPassShader.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/UnrealBloomPass.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
     <style>
-        /* Paleta de colores y estilos base del código original */
         body {
             font-family: 'Rajdhani', sans-serif;
             background-color: #0f172a;
             color: #e2e8f0;
-            background-image: radial-gradient(circle at 10% 20%, rgba(56, 189, 248, 0.05) 0%, rgba(56, 189, 248, 0) 25%),
-                              radial-gradient(circle at 90% 80%, rgba(56, 189, 248, 0.05) 0%, rgba(56, 189, 248, 0) 25%);
+            overflow-x: hidden;
         }
 
+        /* --- Welcome Screen Styles --- */
+        #world {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100vh; z-index: 1; transition: opacity 1.5s ease-out;
+        }
+        #welcome-wrapper {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 10; display: flex; align-items: center; justify-content: center; transition: opacity 0.5s ease-out;
+        }
+        .welcome-container {
+            font-family: 'Inter', sans-serif;
+            background-color: rgba(17, 24, 39, 0.7);
+            border: 1px solid #0ea5e9;
+            box-shadow: 0 0 25px rgba(14, 165, 233, 0.3);
+            backdrop-filter: blur(5px); -webkit-backdrop-filter: blur(5px);
+        }
+        .welcome-title { color: #67e8f9; text-shadow: 0 0 10px rgba(103, 232, 249, 0.5); }
+        .sync-button { background-color: #ffffff; color: #111827; }
+        .sync-button:hover { background-color: #e5e7eb; }
+        .fade-out { opacity: 0 !important; pointer-events: none; }
+        .fade-in { opacity: 1 !important; transition: opacity 0.8s ease-in; }
+
+        /* --- Dashboard Styles --- */
         .panel {
-            background-color: #1e293b; /* Primary container background */
+            background-color: #1e293b;
             border: 1px solid rgba(56, 189, 248, 0.2);
             border-radius: 0.5rem;
             box-shadow: 0 0 15px rgba(56, 189, 248, 0.1);
             position: relative;
             overflow: hidden;
         }
-
-        .panel-header {
-            background-color: rgba(15, 23, 42, 0.5);
-            border-bottom: 1px solid rgba(56, 189, 248, 0.2);
-            padding: 0.75rem 1rem;
-            font-weight: 600;
-            color: #cbd5e1;
-        }
-        
-        .accent-text {
-            color: #38bdf8;
-        }
-
-        .accent-gradient {
-            background: linear-gradient(90deg, #38bdf8 0%, #0ea5e9 100%);
-        }
-
-        /* Custom scrollbar */
+        .panel-header { background-color: rgba(15, 23, 42, 0.5); border-bottom: 1px solid rgba(56, 189, 248, 0.2); padding: 0.75rem 1rem; font-weight: 600; color: #cbd5e1; }
+        .accent-text { color: #38bdf8; }
+        .accent-gradient { background: linear-gradient(90deg, #38bdf8 0%, #0ea5e9 100%); }
         ::-webkit-scrollbar { width: 6px; }
         ::-webkit-scrollbar-track { background: #1e293b; }
         ::-webkit-scrollbar-thumb { background: #38bdf8; border-radius: 3px; }
-
-        /* Animación para la subida de nivel */
-        @keyframes level-up-glow {
-            0% { text-shadow: 0 0 5px #38bdf8, 0 0 10px #38bdf8; }
-            50% { text-shadow: 0 0 20px #38bdf8, 0 0 30px #38bdf8, 0 0 40px #0ea5e9; }
-            100% { text-shadow: 0 0 5px #38bdf8, 0 0 10px #38bdf8; }
-        }
-        .level-up-animation {
-            animation: level-up-glow 1.5s ease-in-out;
-        }
-
-        /* Estilos para el calendario */
-        .calendar-day-name {
-            font-size: 0.7rem;
-            color: #94a3b8; /* slate-400 */
-        }
-        .calendar-day {
-            font-size: 0.8rem;
-            color: #e2e8f0; /* slate-200 */
-        }
-        .calendar-day.today {
-            background-color: #38bdf8;
-            color: #0f172a;
-            border-radius: 9999px;
-            font-weight: bold;
-        }
-        .calendar-day.other-month {
-            color: #475569; /* slate-600 */
-        }
-
-        /* Estilos para el gráfico de barras animado */
-        @keyframes growBar {
-            from { transform: scaleY(0); }
-            to { transform: scaleY(1); }
-        }
-
-        .bar-container {
-            width: 1.5rem; /* 24px */
-            position: relative;
-            display: flex;
-            justify-content: center;
-            align-items: flex-end;
-        }
-
-        .bar {
-            width: 100%;
-            background-color: #475569; /* slate-600 */
-            border-radius: 4px 4px 0 0;
-            transition: background-color 0.3s ease, filter 0.3s ease;
-            animation: growBar 0.8s ease-out forwards;
-            transform-origin: bottom;
-        }
-
-        .bar:hover {
-            background-color: #64748b; /* slate-500 */
-        }
-        
-        .bar.accent-gradient {
-             background: linear-gradient(to top, #38bdf8 0%, #0ea5e9 100%);
-        }
-
-        .bar.accent-gradient:hover {
-            filter: brightness(1.2);
-        }
-
-        .day-label {
-            font-size: 0.75rem; /* 12px */
-            color: #94a3b8; /* slate-400 */
-            position: absolute;
-            bottom: -1.25rem; /* -bottom-5 */
-        }
-
-        /* Nuevos estilos para la sección de Proyectos */
-        .project-item {
-            background-color: rgba(15, 23, 42, 0.6);
-            border-radius: 0.5rem;
-            padding: 0.75rem;
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-            transition: background-color 0.3s ease;
-            border: 1px solid transparent;
-        }
-        .project-item:hover {
-            background-color: rgba(30, 41, 59, 0.8);
-            border-color: rgba(56, 189, 248, 0.2);
-        }
-        .project-icon {
-            width: 40px;
-            height: 40px;
-            border-radius: 9999px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background-color: #334155; /* slate-700 */
-            flex-shrink: 0;
-        }
-        .difficulty-hard { color: #ef4444; } /* red-500 */
-        .difficulty-insane { color: #f97316; } /* orange-500 */
-        .difficulty-medium { color: #eab308; } /* yellow-500 */
-
-        /* Nuevos estilos para el panel de logros */
-        .achievement-item {
-            background-color: rgba(15, 23, 42, 0.6);
-            border-radius: 0.5rem;
-            padding: 0.75rem;
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-        }
-        .achievement-icon {
-            width: 32px;
-            height: 32px;
-            flex-shrink: 0;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: 0.25rem;
-            background-color: rgba(56, 189, 248, 0.1);
-        }
-
-        /* Nuevos estilos para Category Breakdown */
-        .category-item {
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-        }
-        .category-icon {
-            width: 36px;
-            height: 36px;
-            border-radius: 9999px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background-color: #334155;
-            flex-shrink: 0;
-            border: 1px solid rgba(56, 189, 248, 0.3);
-        }
-        .category-progress-bg {
-            height: 6px;
-            background-color: #0f172a;
-            border-radius: 3px;
-            width: 100%;
-        }
-        .category-progress-bar {
-            height: 100%;
-            border-radius: 3px;
-        }
-        .progress-coding { background-color: #3b82f6; }
-        .progress-exercise { background-color: #10b981; }
-        .progress-study { background-color: #8b5cf6; }
-        .progress-project { background-color: #f59e0b; }
-        .progress-exam { background-color: #ec4899; }
-        .progress-creativity { background-color: #6366f1; } /* indigo-500 */
-
-        /* Estilos para el selector de día en System Messages */
-        .day-selector-tab {
-            padding: 0.5rem;
-            border-radius: 0.375rem;
-            cursor: pointer;
-            transition: background-color 0.3s, color 0.3s;
-            text-align: center;
-            flex-grow: 1;
-        }
-        .day-selector-tab.active {
-            background-color: #38bdf8;
-            color: #0f172a;
-        }
-        .day-selector-tab:not(.active):hover {
-            background-color: #334155;
-        }
-
+        @keyframes level-up-glow { 0% { text-shadow: 0 0 5px #38bdf8, 0 0 10px #38bdf8; } 50% { text-shadow: 0 0 20px #38bdf8, 0 0 30px #38bdf8, 0 0 40px #0ea5e9; } 100% { text-shadow: 0 0 5px #38bdf8, 0 0 10px #38bdf8; } } 
+        .level-up-animation { animation: level-up-glow 1.5s ease-in-out; }
+        .calendar-day-name { font-size: 0.7rem; color: #94a3b8; }
+        .calendar-day { font-size: 0.8rem; color: #e2e8f0; }
+        .calendar-day.today { background-color: #38bdf8; color: #0f172a; border-radius: 9999px; font-weight: bold; }
+        .project-item { background-color: rgba(15, 23, 42, 0.6); border-radius: 0.5rem; padding: 0.75rem; display: flex; align-items: center; gap: 0.75rem; transition: background-color 0.3s ease; border: 1px solid transparent; }
+        .project-item:hover { background-color: rgba(30, 41, 59, 0.8); border-color: rgba(56, 189, 248, 0.2); }
+        .project-icon { width: 40px; height: 40px; border-radius: 9999px; display: flex; align-items: center; justify-content: center; background-color: #334155; flex-shrink: 0; }
+        .day-selector-tab { padding: 0.5rem; border-radius: 0.375rem; cursor: pointer; transition: background-color 0.3s, color 0.3s; text-align: center; flex-grow: 1; }
+        .day-selector-tab.active { background-color: #38bdf8; color: #0f172a; }
+        .day-selector-tab:not(.active):hover { background-color: #334155; }
+        .achievement-item { background-color: rgba(15, 23, 42, 0.6); border-radius: 0.5rem; padding: 0.75rem; display: flex; align-items: center; gap: 0.75rem; }
+        .achievement-icon { width: 32px; height: 32px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; border-radius: 0.25rem; background-color: rgba(56, 189, 248, 0.1); }
+        .bar-container { width: 1.5rem; position: relative; display: flex; justify-content: center; align-items: flex-end; }
+        .bar { width: 100%; background-color: #475569; border-radius: 4px 4px 0 0; transition: background-color 0.3s ease, filter 0.3s ease; animation: growBar 0.8s ease-out forwards; transform-origin: bottom; }
+        .bar:hover { background-color: #64748b; }
+        .bar.accent-gradient { background: linear-gradient(to top, #38bdf8 0%, #0ea5e9 100%); }
+        .bar.accent-gradient:hover { filter: brightness(1.2); }
+        .day-label { font-size: 0.75rem; color: #94a3b8; position: absolute; bottom: -1.25rem; }
+        @keyframes growBar { from { transform: scaleY(0); } to { transform: scaleY(1); } }
     </style>
 </head>
 
-<body class="p-4 lg:p-6">
-    <div class="mb-4">
-        <div class="panel py-1 px-3 flex items-center gap-4">
-            <!-- Level Display -->
-            <div class="flex items-baseline gap-2">
-                <div class="text-xs text-slate-400 font-semibold">LEVEL</div>
-                <div id="top-bar-level" class="text-lg font-bold accent-text leading-none">1</div>
-            </div>
-            <!-- EXP Bar -->
-            <div class="flex-grow flex items-center gap-3 px-4">
-                <div class="w-full h-2 bg-slate-900 rounded-full flex-grow">
-                    <div id="top-bar-exp" class="accent-gradient h-full rounded-full" style="width: 45%"></div>
-                </div>
-                <div class="text-xs text-slate-400 whitespace-nowrap"><span id="top-bar-current-exp">450</span> / <span id="top-bar-max-exp">1000</span> EXP</div>
-            </div>
-            <!-- Rank -->
-            <div class="text-center bg-slate-700/50 px-2 py-0.5 rounded-md">
-                <div class="text-xs text-slate-400">RANK</div>
-                <div class="text-lg font-bold text-yellow-400 leading-none">E</div>
-            </div>
-            <!-- Streak -->
-            <div class="bg-slate-900/50 py-1 px-3 rounded-lg flex items-center gap-2">
-                <i class="fas fa-fire text-lg text-red-500"></i>
-                <div>
-                    <div class="text-xs text-slate-400">STREAK</div>
-                    <div class="font-bold text-base text-slate-100 leading-none"><span id="top-bar-streak">0</span> DAYS</div>
-                </div>
-            </div>
+<body>
+
+    <!-- Three.js Portal Container -->
+    <div id="world"></div>
+
+    <!-- Welcome Screen -->
+    <div id="welcome-wrapper">
+        <div class="welcome-container w-full max-w-md mx-auto rounded-2xl p-8 text-center">
+            <h1 class="welcome-title text-5xl font-bold mb-3">The System</h1>
+            <p class="text-slate-200 mb-8 leading-relaxed">
+                The System awaits your presence.<br>
+                If you do not register today, you are likely to die.<br><br>
+                Are you ready for synchronization? ⚡
+            </p>
+            <button id="sync-button" class="sync-button w-full font-bold py-3 px-8 rounded-lg transition-colors duration-300 flex items-center justify-center gap-3 text-lg">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+                SYNCHRONIZE
+            </button>
         </div>
     </div>
-
-    <div class="grid grid-cols-1 lg:grid-cols-12 gap-4">
-        
-        <!-- Columna 1: Perfil del Jugador -->
-        <div class="lg:col-span-2 flex flex-col gap-4">
-            <div class="panel flex-grow flex flex-col p-4 items-center">
-                <div class="w-24 h-24 rounded-full bg-[#0f172a] border-2 border-[#38bdf8] flex items-center justify-center mb-4">
-                    <i class="fas fa-user-astronaut text-4xl accent-text"></i>
+    
+    <!-- Main Dashboard Container (Initially Hidden) -->
+    <div id="dashboard-container" style="display: none; opacity: 0;" class="fade-in">
+        <div class="p-4 lg:p-6">
+            <div class="mb-4">
+                <div class="panel py-1 px-3 flex items-center gap-4">
+                    <div class="flex items-baseline gap-2">
+                        <div class="text-xs text-slate-400 font-semibold">LEVEL</div>
+                        <div id="top-bar-level" class="text-lg font-bold accent-text leading-none">1</div>
+                    </div>
+                    <div class="flex-grow flex items-center gap-3 px-4">
+                        <div class="w-full h-2 bg-slate-900 rounded-full flex-grow">
+                            <div id="top-bar-exp" class="accent-gradient h-full rounded-full" style="width: 45%"></div>
+                        </div>
+                        <div class="text-xs text-slate-400 whitespace-nowrap"><span id="top-bar-current-exp">450</span> / <span id="top-bar-max-exp">1000</span> EXP</div>
+                    </div>
+                    <div class="text-center bg-slate-700/50 px-2 py-0.5 rounded-md">
+                        <div class="text-xs text-slate-400">RANK</div>
+                        <div class="text-lg font-bold text-yellow-400 leading-none">E</div>
+                    </div>
+                    <div class="bg-slate-900/50 py-1 px-3 rounded-lg flex items-center gap-2">
+                        <i class="fas fa-fire text-lg text-red-500"></i>
+                        <div>
+                            <div class="text-xs text-slate-400">STREAK</div>
+                            <div class="font-bold text-base text-slate-100 leading-none"><span id="top-bar-streak">0</span> DAYS</div>
+                        </div>
+                    </div>
                 </div>
-                <h1 class="text-2xl font-bold text-slate-100 mb-4">CS Student</h1>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-4">
                 
-                <!-- Health and Gold -->
-                <div class="w-full space-y-4 text-sm">
-                    <!-- Health Bar -->
-                    <div>
-                        <div class="flex justify-between items-center mb-1">
-                            <span class="font-bold text-red-500">HEALTH</span>
-                            <span class="text-sm text-slate-400">100 / 100</span>
+                <div class="lg:col-span-2 flex flex-col gap-4">
+                    <div class="panel flex-grow flex flex-col p-4 items-center">
+                        <div class="w-24 h-24 rounded-full bg-[#0f172a] border-2 border-[#38bdf8] flex items-center justify-center mb-4">
+                            <i class="fas fa-user-astronaut text-4xl accent-text"></i>
                         </div>
-                        <div class="w-full h-2 bg-slate-900 rounded-full">
-                            <div id="health-bar" class="bg-red-500 h-full rounded-full" style="width: 100%"></div>
+                        <h1 class="text-2xl font-bold text-slate-100 mb-4">CS Student</h1>
+                        <div class="w-full space-y-4 text-sm">
+                            <div>
+                                <div class="flex justify-between items-center mb-1">
+                                    <span class="font-bold text-red-500">HEALTH</span>
+                                    <span class="text-sm text-slate-400">100 / 100</span>
+                                </div>
+                                <div class="w-full h-2 bg-slate-900 rounded-full">
+                                    <div id="health-bar" class="bg-red-500 h-full rounded-full" style="width: 100%"></div>
+                                </div>
+                            </div>
+                            <div class="flex items-center justify-between">
+                                <span class="font-bold text-yellow-400">GOLD</span>
+                                <div class="flex items-center gap-1">
+                                    <i class="fas fa-coins text-yellow-400"></i>
+                                    <span id="gold-count" class="text-lg font-bold">1,250</span>
+                                </div>
+                            </div>
                         </div>
                     </div>
-                    <!-- Gold Display -->
-                    <div class="flex items-center justify-between">
-                        <span class="font-bold text-yellow-400">GOLD</span>
-                        <div class="flex items-center gap-1">
-                            <i class="fas fa-coins text-yellow-400"></i>
-                            <span id="gold-count" class="text-lg font-bold">1,250</span>
+                    <div class="panel">
+                        <div class="panel-header flex justify-between items-center">
+                            <span>Quick Links</span>
+                            <button id="add-website-btn" class="w-7 h-7 bg-slate-700/50 hover:bg-slate-700 text-slate-300 rounded-md transition flex items-center justify-center">
+                                <i class="fas fa-plus"></i>
+                            </button>
+                        </div>
+                        <div id="quick-links" class="p-2 space-y-2 max-h-60 overflow-y-auto"></div>
+                         <div id="add-website-form" class="hidden p-4 bg-[#0f172a]">
+                            <input type="text" id="website-name" placeholder="Website Name" class="bg-slate-900 border border-slate-600 text-slate-200 p-2 rounded mb-2 w-full text-sm">
+                            <input type="url" id="website-url" placeholder="Website URL" class="bg-slate-900 border border-slate-600 text-slate-200 p-2 rounded mb-2 w-full text-sm">
+                            <div class="flex">
+                                <button id="save-website" class="accent-gradient hover:opacity-90 text-white font-bold px-3 py-1 rounded-md mr-2 text-sm">Save</button>
+                                <button id="cancel-website" class="bg-slate-600 hover:bg-slate-700 text-slate-200 font-bold px-3 py-1 rounded-md text-sm">Cancel</button>
+                            </div>
                         </div>
                     </div>
-                </div>
-            </div>
-            <div class="panel">
-                <div class="panel-header flex justify-between items-center">
-                    <span>Quick Links</span>
-                    <button id="add-website-btn" class="w-7 h-7 bg-slate-700/50 hover:bg-slate-700 text-slate-300 rounded-md transition flex items-center justify-center">
-                        <i class="fas fa-plus"></i>
-                    </button>
-                </div>
-                <div id="quick-links" class="p-2 space-y-2 max-h-60 overflow-y-auto"></div>
-                 <div id="add-website-form" class="hidden p-4 bg-[#0f172a]">
-                    <input type="text" id="website-name" placeholder="Website Name" class="bg-slate-900 border border-slate-600 text-slate-200 p-2 rounded mb-2 w-full text-sm">
-                    <input type="url" id="website-url" placeholder="Website URL" class="bg-slate-900 border border-slate-600 text-slate-200 p-2 rounded mb-2 w-full text-sm">
-                    <div class="flex">
-                        <button id="save-website" class="accent-gradient hover:opacity-90 text-white font-bold px-3 py-1 rounded-md mr-2 text-sm">Save</button>
-                        <button id="cancel-website" class="bg-slate-600 hover:bg-slate-700 text-slate-200 font-bold px-3 py-1 rounded-md text-sm">Cancel</button>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Columna 2: Reporte y Gráficos -->
-        <div class="lg:col-span-3 flex flex-col gap-4">
-            <div class="panel flex-grow p-4">
-                <h2 class="font-bold text-slate-100 mb-4">Category Breakdown</h2>
-                
-                <div class="flex justify-center items-center h-48 mb-4 bg-slate-900/50 rounded-md">
-                    <svg class="w-40 h-40" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M50 10L85 27.5V72.5L50 90L15 72.5V27.5L50 10Z" stroke="#38bdf8" stroke-opacity="0.2"/>
-                        <path d="M50 25L72.5 38.75V61.25L50 75L27.5 61.25V38.75L50 25Z" stroke="#38bdf8" stroke-opacity="0.4"/>
-                        <path d="M50 10V90" stroke="#38bdf8" stroke-opacity="0.1"/>
-                        <path d="M15 27.5L85 72.5" stroke="#38bdf8" stroke-opacity="0.1"/>
-                        <path d="M15 72.5L85 27.5" stroke="#38bdf8" stroke-opacity="0.1"/>
-                        <path d="M50 25L85 27.5L72.5 61.25L50 90L27.5 61.25L15 27.5L50 25Z" fill="#38bdf8" fill-opacity="0.2"/>
-                        <!-- Labels for Radar Chart -->
-                        <text x="50" y="5" font-family="Rajdhani, sans-serif" font-size="6" fill="#94a3b8" text-anchor="middle">18</text>
-                        <text x="90" y="27.5" font-family="Rajdhani, sans-serif" font-size="6" fill="#94a3b8" text-anchor="middle" dominant-baseline="middle">29</text>
-                        <text x="90" y="72.5" font-family="Rajdhani, sans-serif" font-size="6" fill="#94a3b8" text-anchor="middle" dominant-baseline="middle">32</text>
-                        <text x="50" y="95" font-family="Rajdhani, sans-serif" font-size="6" fill="#94a3b8" text-anchor="middle">43</text>
-                        <text x="10" y="72.5" font-family="Rajdhani, sans-serif" font-size="6" fill="#94a3b8" text-anchor="middle" dominant-baseline="middle">18</text>
-                        <text x="10" y="27.5" font-family="Rajdhani, sans-serif" font-size="6" fill="#94a3b8" text-anchor="middle" dominant-baseline="middle">44</text>
-                    </svg>
                 </div>
 
-                <div class="space-y-4">
-                    <!-- Category Item: Coding -->
-                    <div class="category-item">
-                        <div class="category-icon"><i class="fas fa-code text-lg" style="color: #3b82f6;"></i></div>
-                        <div class="w-full">
-                            <div class="flex justify-between items-center mb-1">
-                                <span class="font-semibold text-sm text-slate-200">Coding</span>
-                                <span class="text-xs text-slate-400" id="coding-count">0</span>
+                <div class="lg:col-span-3 flex flex-col gap-4">
+                    <div class="panel flex-grow p-4">
+                        <h2 class="font-bold text-slate-100 mb-4">Category Breakdown</h2>
+                        <div class="flex justify-center items-center h-48 mb-4 bg-slate-900/50 rounded-md">
+                            <svg class="w-40 h-40" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M50 10L85 27.5V72.5L50 90L15 72.5V27.5L50 10Z" stroke="#38bdf8" stroke-opacity="0.2"/>
+                                <path d="M50 25L72.5 38.75V61.25L50 75L27.5 61.25V38.75L50 25Z" stroke="#38bdf8" stroke-opacity="0.4"/>
+                                <path d="M50 10V90" stroke="#38bdf8" stroke-opacity="0.1"/>
+                                <path d="M15 27.5L85 72.5" stroke="#38bdf8" stroke-opacity="0.1"/>
+                                <path d="M15 72.5L85 27.5" stroke="#38bdf8" stroke-opacity="0.1"/>
+                                <path d="M50 25L85 27.5L72.5 61.25L50 90L27.5 61.25L15 27.5L50 25Z" fill="#38bdf8" fill-opacity="0.2"/>
+                                <text x="50" y="5" font-family="Rajdhani, sans-serif" font-size="6" fill="#94a3b8" text-anchor="middle">18</text>
+                                <text x="90" y="27.5" font-family="Rajdhani, sans-serif" font-size="6" fill="#94a3b8" text-anchor="middle" dominant-baseline="middle">29</text>
+                                <text x="90" y="72.5" font-family="Rajdhani, sans-serif" font-size="6" fill="#94a3b8" text-anchor="middle" dominant-baseline="middle">32</text>
+                                <text x="50" y="95" font-family="Rajdhani, sans-serif" font-size="6" fill="#94a3b8" text-anchor="middle">43</text>
+                                <text x="10" y="72.5" font-family="Rajdhani, sans-serif" font-size="6" fill="#94a3b8" text-anchor="middle" dominant-baseline="middle">18</text>
+                                <text x="10" y="27.5" font-family="Rajdhani, sans-serif" font-size="6" fill="#94a3b8" text-anchor="middle" dominant-baseline="middle">44</text>
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="lg:col-span-7 flex flex-col gap-4">
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                        <div class="flex flex-col gap-4">
+                            <div class="panel p-4 h-48 flex flex-col">
+                                <div class="flex justify-between items-center mb-2">
+                                    <div id="calendar-header" class="font-bold text-sm accent-text"></div>
+                                    <button id="expand-calendar-btn" class="text-slate-400 hover:text-white"><i class="fas fa-expand-arrows-alt"></i></button>
+                                </div>
+                                 <div id="calendar-grid" class="grid grid-cols-7 gap-1 text-center flex-grow"></div>
                             </div>
-                            <div class="category-progress-bg">
-                                <div class="category-progress-bar progress-coding" style="width: 60%;"></div>
+                             <div class="panel p-4 h-48 flex flex-col">
+                                <h3 class="font-bold text-sm mb-2 text-slate-300">Weekly Activity</h3>
+                                <div class="flex-grow flex items-end justify-around">
+                                    <div class="bar-container h-full"><div class="bar" style="height: 40%; animation-delay: 0.1s;"></div><span class="day-label">M</span></div>
+                                    <div class="bar-container h-full"><div class="bar" style="height: 60%; animation-delay: 0.2s;"></div><span class="day-label">T</span></div>
+                                    <div class="bar-container h-full"><div class="bar accent-gradient" style="height: 85%; animation-delay: 0.3s;"></div><span class="day-label">W</span></div>
+                                    <div class="bar-container h-full"><div class="bar" style="height: 50%; animation-delay: 0.4s;"></div><span class="day-label">T</span></div>
+                                    <div class="bar-container h-full"><div class="bar" style="height: 70%; animation-delay: 0.5s;"></div><span class="day-label">F</span></div>
+                                    <div class="bar-container h-full"><div class="bar" style="height: 20%; animation-delay: 0.6s;"></div><span class="day-label">S</span></div>
+                                    <div class="bar-container h-full"><div class="bar" style="height: 30%; animation-delay: 0.7s;"></div><span class="day-label">S</span></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="panel flex flex-col">
+                            <div class="panel-header flex justify-between items-center"><span>System Messages</span><i class="fas fa-terminal accent-text"></i></div>
+                            <div id="day-selector" class="flex justify-around p-2 bg-slate-900/50"></div>
+                            <div id="system-messages" class="p-2 space-y-2 flex-grow overflow-y-auto"></div>
+                            <div class="p-2 border-t border-slate-700/50"><button id="clear-messages" class="text-xs text-slate-400 hover:text-white transition w-full text-center"><i class="fas fa-trash mr-1"></i> Clear Messages</button></div>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                        <div class="grid grid-cols-2 gap-4">
+                            <div class="panel p-4 flex flex-col justify-center items-center text-center"><i class="fas fa-trophy text-2xl accent-text mb-2"></i><div class="text-slate-100 font-bold text-3xl" id="total-quests">0</div><div class="text-xs text-slate-400">Total Tasks</div></div>
+                            <div class="panel p-4 flex flex-col justify-center items-center text-center"><i class="fas fa-gem text-2xl accent-text mb-2"></i><div class="text-slate-100 font-bold text-3xl" id="next-reward-exp-display">1000</div><div class="text-xs text-slate-400">Next Reward</div></div>
+                            <div class="panel p-4 flex flex-col justify-center items-center text-center"><i class="fas fa-check-square text-2xl accent-text mb-2"></i><div class="text-slate-100 font-bold text-3xl" id="tasks-today">0</div><div class="text-xs text-slate-400">Tasks Today</div></div>
+                            <div class="panel p-4 flex flex-col justify-center items-center text-center"><i class="fas fa-star text-2xl accent-text mb-2"></i><div class="text-slate-100 font-bold text-3xl" id="best-streak">0</div><div class="text-xs text-slate-400">Best Streak</div></div>
+                        </div>
+                        <div class="panel p-4">
+                            <h3 class="font-bold text-center mb-4">This Month's Achievements</h3>
+                            <div class="space-y-3">
+                                <div class="achievement-item"><div class="achievement-icon"><i class="fas fa-gift accent-text"></i></div><div class="flex-grow"><div class="font-bold text-slate-200 text-sm">Treasure Box</div><div class="text-xs text-slate-400">Lottery unlocked</div></div><div class="font-bold accent-text">1</div></div>
+                                <div class="achievement-item"><div class="achievement-icon"><i class="fas fa-check-double accent-text"></i></div><div class="flex-grow"><div class="font-bold text-slate-200 text-sm">Daily Goals</div><div class="text-xs text-slate-400">Goals achieved</div></div><div class="font-bold accent-text">26</div></div>
+                                <div class="achievement-item"><div class="achievement-icon"><i class="fas fa-medal accent-text"></i></div><div class="flex-grow"><div class="font-bold text-slate-200 text-sm">Badge Earned</div><div class="text-xs text-slate-400">"LeetCoder" Badge</div></div><div class="font-bold accent-text">1</div></div>
                             </div>
                         </div>
                     </div>
-                    <!-- Category Item: Exercise -->
-                    <div class="category-item">
-                        <div class="category-icon"><i class="fas fa-dumbbell text-lg" style="color: #10b981;"></i></div>
-                        <div class="w-full">
-                            <div class="flex justify-between items-center mb-1">
-                                <span class="font-semibold text-sm text-slate-200">Exercise</span>
-                                <span class="text-xs text-slate-400" id="exercise-count">0</span>
-                            </div>
-                            <div class="category-progress-bg">
-                                <div class="category-progress-bar progress-exercise" style="width: 80%;"></div>
-                            </div>
-                        </div>
+                </div>
+                <div class="lg:col-span-12 panel">
+                     <div class="panel-header">Projects</div>
+                     <div class="p-2 space-y-2">
+                        <div class="project-item"><div class="project-icon flex-shrink-0"><i class="fas fa-atom text-xl accent-text"></i></div><div class="flex-grow min-w-0"><div class="font-bold text-slate-100 truncate">Nova Prospekt</div><div class="text-xs text-slate-400">Sunday, 12 November 2004</div></div><div class="w-28 flex-shrink-0 text-sm text-slate-300 hidden sm:block">20 Members</div><div class="w-32 flex-shrink-0 text-sm font-semibold hidden md:block"><span class="difficulty-hard">Difficult: Hard</span></div><div class="w-32 flex-shrink-0 text-sm text-slate-400 hidden lg:block">Antlion Horde</div><button class="flex-shrink-0 text-slate-500 hover:text-white w-8 text-center"><i class="fas fa-ellipsis-h"></i></button></div>
+                        <div class="project-item"><div class="project-icon flex-shrink-0"><i class="fas fa-biohazard text-xl accent-text"></i></div><div class="flex-grow min-w-0"><div class="font-bold text-slate-100 truncate">Black Mesa East</div><div class="text-xs text-slate-400">Friday, 06 December 2020</div></div><div class="w-28 flex-shrink-0 text-sm text-slate-300 hidden sm:block">75 Members</div><div class="w-32 flex-shrink-0 text-sm font-semibold hidden md:block"><span class="difficulty-insane">Difficult: Insane</span></div><div class="w-32 flex-shrink-0 text-sm text-slate-400 hidden lg:block">G-Man</div><button class="flex-shrink-0 text-slate-500 hover:text-white w-8 text-center"><i class="fas fa-ellipsis-h"></i></button></div>
+                     </div>
+                </div>
+                <div class="lg:col-span-12 text-center py-4">
+                    <div class="flex items-center justify-center gap-2 mb-1">
+                        <i class="fas fa-exclamation-triangle text-red-500 text-lg"></i>
+                        <h3 class="text-lg font-bold text-red-500">Warning</h3>
                     </div>
-                    <!-- Category Item: Study -->
-                    <div class="category-item">
-                        <div class="category-icon"><i class="fas fa-book-open text-lg" style="color: #8b5cf6;"></i></div>
-                        <div class="w-full">
-                            <div class="flex justify-between items-center mb-1">
-                                <span class="font-semibold text-sm text-slate-200">Study</span>
-                                <span class="text-xs text-slate-400" id="study-count">0</span>
-                            </div>
-                            <div class="category-progress-bg">
-                                <div class="category-progress-bar progress-study" style="width: 45%;"></div>
-                            </div>
-                        </div>
-                    </div>
-                    <!-- Category Item: Projects -->
-                    <div class="category-item">
-                        <div class="category-icon"><i class="fas fa-tasks text-lg" style="color: #f59e0b;"></i></div>
-                        <div class="w-full">
-                            <div class="flex justify-between items-center mb-1">
-                                <span class="font-semibold text-sm text-slate-200">Projects</span>
-                                <span class="text-xs text-slate-400" id="project-count">0</span>
-                            </div>
-                            <div class="category-progress-bg">
-                                <div class="category-progress-bar progress-project" style="width: 70%;"></div>
-                            </div>
-                        </div>
-                    </div>
-                    <!-- Category Item: Exams -->
-                    <div class="category-item">
-                        <div class="category-icon"><i class="fas fa-file-alt text-lg" style="color: #ec4899;"></i></div>
-                        <div class="w-full">
-                            <div class="flex justify-between items-center mb-1">
-                                <span class="font-semibold text-sm text-slate-200">Exams</span>
-                                <span class="text-xs text-slate-400" id="exam-count">0</span>
-                            </div>
-                            <div class="category-progress-bg">
-                                <div class="category-progress-bar progress-exam" style="width: 90%;"></div>
-                            </div>
-                        </div>
-                    </div>
-                     <!-- Category Item: Creativity -->
-                    <div class="category-item">
-                        <div class="category-icon"><i class="fas fa-lightbulb text-lg" style="color: #6366f1;"></i></div>
-                        <div class="w-full">
-                            <div class="flex justify-between items-center mb-1">
-                                <span class="font-semibold text-sm text-slate-200">Creativity</span>
-                                <span class="text-xs text-slate-400" id="creativity-count">0</span>
-                            </div>
-                            <div class="category-progress-bg">
-                                <div class="category-progress-bar progress-creativity" style="width: 55%;"></div>
-                            </div>
-                        </div>
-                    </div>
+                    <p class="text-sm text-slate-400 mb-2">Failure to complete the daily quest will result in an appropriate <span class="text-red-500 font-semibold">penalty</span>.</p>
+                    <div id="reset-timer-large" class="text-2xl font-bold text-slate-100 tracking-wider">23:59:59</div>
                 </div>
             </div>
         </div>
-
-        <!-- Columna 3: Mensajes y Progreso -->
-        <div class="lg:col-span-7 flex flex-col gap-4">
-            
-            <!-- Contenedor para Calendario, Gráfico y Mensajes -->
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                <!-- Columna Izquierda con Calendario y Gráfico -->
-                <div class="flex flex-col gap-4">
-                    <!-- Panel Calendario -->
-                    <div class="panel p-4 h-48 flex flex-col">
-                        <div class="flex justify-between items-center mb-2">
-                            <div id="calendar-header" class="font-bold text-sm accent-text"></div>
-                            <button id="expand-calendar-btn" class="text-slate-400 hover:text-white"><i class="fas fa-expand-arrows-alt"></i></button>
-                        </div>
-                         <div id="calendar-grid" class="grid grid-cols-7 gap-1 text-center flex-grow"></div>
-                    </div>
-                    <!-- Panel Gráfico de Barras -->
-                    <div class="panel p-4 h-48 flex flex-col">
-                        <h3 class="font-bold text-sm mb-2 text-slate-300">Weekly Activity</h3>
-                        <div class="flex-grow flex items-end justify-around">
-                            <div class="bar-container h-full">
-                                <div class="bar" style="height: 40%; animation-delay: 0.1s;"></div>
-                                <span class="day-label">M</span>
-                            </div>
-                            <div class="bar-container h-full">
-                                <div class="bar" style="height: 60%; animation-delay: 0.2s;"></div>
-                                <span class="day-label">T</span>
-                            </div>
-                            <div class="bar-container h-full">
-                                <div class="bar accent-gradient" style="height: 85%; animation-delay: 0.3s;"></div>
-                                <span class="day-label">W</span>
-                            </div>
-                            <div class="bar-container h-full">
-                                <div class="bar" style="height: 50%; animation-delay: 0.4s;"></div>
-                                <span class="day-label">T</span>
-                            </div>
-                            <div class="bar-container h-full">
-                                <div class="bar" style="height: 70%; animation-delay: 0.5s;"></div>
-                                <span class="day-label">F</span>
-                            </div>
-                            <div class="bar-container h-full">
-                                <div class="bar" style="height: 20%; animation-delay: 0.6s;"></div>
-                                <span class="day-label">S</span>
-                            </div>
-                            <div class="bar-container h-full">
-                                <div class="bar" style="height: 30%; animation-delay: 0.7s;"></div>
-                                <span class="day-label">S</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <!-- Panel System Messages -->
-                <div class="panel flex flex-col">
-                    <div class="panel-header flex justify-between items-center">
-                        <span>System Messages</span>
-                        <i class="fas fa-terminal accent-text"></i>
-                    </div>
-                    <div id="day-selector" class="flex justify-around p-2 bg-slate-900/50">
-                        <!-- Day tabs will be inserted here by JS -->
-                    </div>
-                    <div id="system-messages" class="p-2 space-y-2 flex-grow overflow-y-auto"></div>
-                    <div class="p-2 border-t border-slate-700/50">
-                        <button id="clear-messages" class="text-xs text-slate-400 hover:text-white transition w-full text-center">
-                            <i class="fas fa-trash mr-1"></i> Clear Messages
-                        </button>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Nuevo Contenedor para Tareas y Logros -->
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                <!-- Columna Izquierda con 4 Paneles -->
-                <div class="grid grid-cols-2 gap-4">
-                    <!-- Panel Total Tasks -->
-                    <div class="panel p-4 flex flex-col justify-center items-center text-center">
-                        <i class="fas fa-trophy text-2xl accent-text mb-2"></i>
-                        <div class="text-slate-100 font-bold text-3xl" id="total-quests">0</div>
-                        <div class="text-xs text-slate-400">Total Tasks</div>
-                    </div>
-                    <!-- Panel Next Reward -->
-                    <div class="panel p-4 flex flex-col justify-center items-center text-center">
-                        <i class="fas fa-gem text-2xl accent-text mb-2"></i>
-                        <div class="text-slate-100 font-bold text-3xl" id="next-reward-exp-display">1000</div>
-                        <div class="text-xs text-slate-400">Next Reward</div>
-                    </div>
-                    <!-- Panel Tasks Today -->
-                    <div class="panel p-4 flex flex-col justify-center items-center text-center">
-                        <i class="fas fa-check-square text-2xl accent-text mb-2"></i>
-                        <div class="text-slate-100 font-bold text-3xl" id="tasks-today">0</div>
-                        <div class="text-xs text-slate-400">Tasks Today</div>
-                    </div>
-                    <!-- Panel Best Streak -->
-                    <div class="panel p-4 flex flex-col justify-center items-center text-center">
-                        <i class="fas fa-star text-2xl accent-text mb-2"></i>
-                        <div class="text-slate-100 font-bold text-3xl" id="best-streak">0</div>
-                        <div class="text-xs text-slate-400">Best Streak</div>
-                    </div>
-                </div>
-                <!-- Panel de Logros (Columna Derecha) -->
-                <div class="panel p-4">
-                    <h3 class="font-bold text-center mb-4">This Month's Achievements</h3>
-                    <div class="space-y-3">
-                        <div class="achievement-item">
-                            <div class="achievement-icon"><i class="fas fa-gift accent-text"></i></div>
-                            <div class="flex-grow">
-                                <div class="font-bold text-slate-200 text-sm">Treasure Box</div>
-                                <div class="text-xs text-slate-400">Lottery unlocked</div>
-                            </div>
-                            <div class="font-bold accent-text">1</div>
-                        </div>
-                         <div class="achievement-item">
-                            <div class="achievement-icon"><i class="fas fa-check-double accent-text"></i></div>
-                            <div class="flex-grow">
-                                <div class="font-bold text-slate-200 text-sm">Daily Goals</div>
-                                <div class="text-xs text-slate-400">Goals achieved</div>
-                            </div>
-                            <div class="font-bold accent-text">26</div>
-                        </div>
-                        <div class="achievement-item">
-                            <div class="achievement-icon"><i class="fas fa-medal accent-text"></i></div>
-                            <div class="flex-grow">
-                                <div class="font-bold text-slate-200 text-sm">Badge Earned</div>
-                                <div class="text-xs text-slate-400">"LeetCoder" Badge</div>
-                            </div>
-                            <div class="font-bold accent-text">1</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        
-        <!-- Contenedor para los Proyectos -->
-        <div class="lg:col-span-12 panel">
-             <div class="panel-header">Projects</div>
-             <div class="p-2 space-y-2">
-                <!-- Project Item 1 -->
-                <div class="project-item">
-                    <div class="project-icon flex-shrink-0"><i class="fas fa-atom text-xl accent-text"></i></div>
-                    <div class="flex-grow min-w-0">
-                        <div class="font-bold text-slate-100 truncate">Nova Prospekt</div>
-                        <div class="text-xs text-slate-400">Sunday, 12 November 2004</div>
-                    </div>
-                    <div class="w-28 flex-shrink-0 text-sm text-slate-300 hidden sm:block">20 Members</div>
-                    <div class="w-32 flex-shrink-0 text-sm font-semibold hidden md:block"><span class="difficulty-hard">Difficult: Hard</span></div>
-                    <div class="w-32 flex-shrink-0 text-sm text-slate-400 hidden lg:block">Antlion Horde</div>
-                    <button class="flex-shrink-0 text-slate-500 hover:text-white w-8 text-center"><i class="fas fa-ellipsis-h"></i></button>
-                </div>
-                <!-- Project Item 2 -->
-                <div class="project-item">
-                    <div class="project-icon flex-shrink-0"><i class="fas fa-biohazard text-xl accent-text"></i></div>
-                    <div class="flex-grow min-w-0">
-                        <div class="font-bold text-slate-100 truncate">Black Mesa East</div>
-                        <div class="text-xs text-slate-400">Friday, 06 December 2020</div>
-                    </div>
-                    <div class="w-28 flex-shrink-0 text-sm text-slate-300 hidden sm:block">75 Members</div>
-                    <div class="w-32 flex-shrink-0 text-sm font-semibold hidden md:block"><span class="difficulty-insane">Difficult: Insane</span></div>
-                    <div class="w-32 flex-shrink-0 text-sm text-slate-400 hidden lg:block">G-Man</div>
-                    <button class="flex-shrink-0 text-slate-500 hover:text-white w-8 text-center"><i class="fas fa-ellipsis-h"></i></button>
-                </div>
-             </div>
-        </div>
-
-        <!-- Temporizador de Reseteo Diario -->
-        <div class="lg:col-span-12 text-center py-4">
-            <span class="text-slate-400 text-lg">Reset in: <span id="reset-timer" class="font-bold text-slate-200">23:59:59</span></span>
-        </div>
-
     </div>
 
     <script>
+        // --- THREE.JS SCENE SETUP ---
+        var scene, camera, renderer, composer, material, bloomPass;
+        var width = window.innerWidth;
+        var height = window.innerHeight;
+        var options = { exposure: 2.8, bloomStrength: 1.7, bloomThreshold: 0, bloomRadius: 0.5, color0: [10, 15, 30], color1: [20, 40, 90], color2: [40, 100, 200], color3: [103, 232, 249], color4: [255, 255, 255], color5: [5, 10, 20], };
+        const vert = `varying vec3 vNormal; varying vec3 camPos; varying vec2 vUv; void main() { vNormal = normal; vUv = uv; camPos = cameraPosition; gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 ); }`;
+        const frag = `#define NUM_OCTAVES 5
+#define M_PI 3.1415926535897932384626433832795
+uniform vec4 resolution; varying vec3 vNormal; uniform sampler2D perlinnoise; uniform sampler2D sparknoise; uniform sampler2D waterturbulence; uniform sampler2D noiseTex; uniform float time; uniform vec3 color0; uniform vec3 color1; uniform vec3 color2; uniform vec3 color3; uniform vec3 color4; uniform vec3 color5; varying vec3 camPos; varying vec2 vUv; float rand(vec2 n) { return fract(sin(dot(n, vec2(12.9898, 4.1414))) * 43758.5453); } float noise(vec2 p){ vec2 ip = floor(p); vec2 u = fract(p); u = u*u*(3.0-2.0*u); float res = mix(mix(rand(ip),rand(ip+vec2(1.0,0.0)),u.x), mix(rand(ip+vec2(0.0,1.0)),rand(ip+vec2(1.0,1.0)),u.x),u.y); return res*res; } float fbm(vec2 x) { float v = 0.0; float a = 0.5; vec2 shift = vec2(100); mat2 rot = mat2(cos(0.5), sin(0.5), -sin(0.5), cos(0.50)); for (int i = 0; i < NUM_OCTAVES; ++i) { v += a * noise(x); x = rot * x * 2.0 + shift; a *= 0.5; } return v; } float setOpacity(float r, float g, float b, float tonethreshold) { float tone = (r + g + b) / 3.0; float alpha = 1.0; if(tone<tonethreshold) { alpha = 0.0; } return alpha; } vec3 rgbcol(vec3 col) { return vec3(col.r/255.0,col.g/255.0,col.b/255.0); } vec2 rotate(vec2 v, float a) { float s = sin(a); float c = cos(a); mat2 m = mat2(c, -s, s, c); return m * v; } vec2 UnityPolarCoordinates (vec2 UV, vec2 Center, float RadialScale, float LengthScale){ vec2 delta = UV - Center; float radius = length(delta) * 2. * RadialScale; float angle = atan(delta.x, delta.y) * 1.0/6.28 * LengthScale; return vec2(radius, angle); } void main() { vec2 olduv = gl_FragCoord.xy/resolution.xy; vec2 uv = vUv; float scale = 1.; olduv *= 0.5 + time; vec2 p = olduv*scale; float pct = distance(vUv,vec2(0.5)); vec3 rgbcolor0 = rgbcol(color0); vec3 rgbcolor1 = rgbcol(color1); vec3 rgbcolor2 = rgbcol(color2); vec3 rgbcolor3 = rgbcol(color3); vec3 rgbcolor4 = rgbcol(color4); vec3 rgbcolor5 = rgbcol(color5); float y = smoothstep(0.16,0.525,pct); vec3 backcolor = mix(rgbcolor0, rgbcolor5, y); gl_FragColor = vec4(backcolor,1.); vec2 center = vec2(0.5); vec2 cor = UnityPolarCoordinates(vUv, center, 1., 1.); vec2 newvUv = vUv - 0.5; vec3 noisetexvUv = texture2D(perlinnoise,mod(rotate(newvUv*0.15 + vec2(sin(time*0.005),cos(time*0.005)),time),1.)).rgb; vec2 newUv = vec2(cor.x + time,cor.x+cor.y); vec3 noisetex = texture2D(perlinnoise,mod(newUv,1.)).rgb; vec3 noisetex2 = texture2D(sparknoise,mod(newUv,1.)).rgb; vec3 noisetex3 = texture2D(waterturbulence,mod(newUv,1.)).rgb; float tone0 = 1. - smoothstep(0.3,0.6,noisetex.r); float tone1 = smoothstep(0.3,0.6,noisetex2.r); float tone2 = smoothstep(0.3,0.6,noisetex3.r); float opacity0 = setOpacity(tone0,tone0,tone0,.29); float opacity1 = setOpacity(tone1,tone1,tone1,.49); float opacity2 = setOpacity(tone2,tone2,tone2,.69); float gradienttone = 1. - smoothstep(0.196,0.532,pct); vec4 circularnoise = vec4( vec3(gradienttone)*noisetexvUv*1.4, 1.0 ); float gradopacity = setOpacity(circularnoise.r,circularnoise.g,circularnoise.b,0.19); vec2 uv2 = uv; float iTime = time*0.004; uv.y += iTime / 10.0; uv.x -= (sin(iTime/10.0)/2.0); uv2.x += iTime / 14.0; uv2.x += (sin(iTime/10.0)/9.0); float result = 0.0; result += texture2D(noiseTex, mod(uv*0.5,1.) * 0.6 + vec2(iTime*-0.003)).r; result *= texture2D(noiseTex, mod(uv2*0.5,1.) * 0.9 + vec2(iTime*+0.002)).b; result = pow(result, 4.0); if(opacity2>0.0){ gl_FragColor = vec4(rgbcolor4,0.)*vec4(opacity2); } else if(opacity1>0.0){ gl_FragColor = vec4(rgbcolor2,0.)*vec4(opacity1); } else if(opacity0>0.0){ gl_FragColor = vec4(rgbcolor1,0.)*vec4(opacity0); } gl_FragColor += vec4(108.0)*result*(y*0.02); gl_FragColor *= vec4(gradopacity); }`;
+        
+        function isWebGLAvailable() { try { const canvas = document.createElement('canvas'); return !!(window.WebGLRenderingContext && (canvas.getContext('webgl') || canvas.getContext('experimental-webgl'))); } catch (e) { return false; } } function initThree() { scene = new THREE.Scene(); camera = new THREE.PerspectiveCamera(75, width / height, 0.1, 10000); camera.position.z = 5; renderer = new THREE.WebGLRenderer({ antialias: true }); renderer.setPixelRatio(window.devicePixelRatio); renderer.setSize(width, height); renderer.autoClear = false; document.getElementById("world").appendChild(renderer.domElement); material = new THREE.ShaderMaterial({ uniforms: { time: { value: 0.0 }, perlinnoise: { value: new THREE.TextureLoader().load('https://raw.githubusercontent.com/pizza3/asset/master/noise9.png') }, sparknoise: { value: new THREE.TextureLoader().load('https://raw.githubusercontent.com/pizza3/asset/master/sparklenoise.png') }, waterturbulence: { value: new THREE.TextureLoader().load('https://raw.githubusercontent.com/pizza3/asset/master/waterturbulence.png') }, noiseTex: { value: new THREE.TextureLoader().load('https://raw.githubusercontent.com/pizza3/asset/master/rgbnoise2.png') }, color5: { value: new THREE.Vector3(...options.color5) }, color4: { value: new THREE.Vector3(...options.color4) }, color3: { value: new THREE.Vector3(...options.color3) }, color2: { value: new THREE.Vector3(...options.color2) }, color1: { value: new THREE.Vector3(...options.color1) }, color0: { value: new THREE.Vector3(...options.color0) }, resolution: { value: new THREE.Vector2(width, height) }, }, fragmentShader: frag, vertexShader: vert, }); var planegeometry = new THREE.PlaneGeometry(10, 10, 1, 1); var plane = new THREE.Mesh(planegeometry, material); scene.add(plane); var renderScene = new THREE.RenderPass(scene, camera); bloomPass = new THREE.UnrealBloomPass(new THREE.Vector2(width, height), 1.5, 0.4, 0.85); bloomPass.threshold = options.bloomThreshold; bloomPass.strength = options.bloomStrength; bloomPass.radius = options.bloomRadius; composer = new THREE.EffectComposer(renderer); composer.addPass(renderScene); composer.addPass(bloomPass); window.addEventListener("resize", handleResize, false); }; function animateThree() { requestAnimationFrame(animateThree); material.uniforms.time.value += 0.005; composer.render(); }; function handleResize() { if (!camera) return; width = window.innerWidth; height = window.innerHeight; camera.aspect = width / height; camera.updateProjectionMatrix(); renderer.setSize(width, height); composer.setSize(width, height); };
+
         document.addEventListener('DOMContentLoaded', function () {
-            // --- DATA & STATE ---
-            let playerState = {
-                level: 1, currentExp: 0, websites: [],
-                deletedDefaultWebsites: [], categoryCounts: { coding: 0, exercise: 0, study: 0, project: 0, exam: 0, creativity: 0 },
-                tasksToday: 0, totalQuests: 0
+            const welcomeWrapperEl = document.getElementById('welcome-wrapper');
+            const worldEl = document.getElementById('world');
+            const dashboardContainerEl = document.getElementById('dashboard-container');
+            const syncButtonEl = document.getElementById('sync-button');
+
+            const lastSync = localStorage.getItem('lastSyncDate');
+            const today = new Date().toDateString();
+
+            const showDashboard = () => {
+                welcomeWrapperEl.style.display = 'none';
+                if (worldEl) worldEl.style.display = 'none';
+                dashboardContainerEl.style.display = 'block';
+                requestAnimationFrame(() => {
+                    dashboardContainerEl.classList.add('fade-in');
+                });
+                initializeDashboard();
             };
 
-            const defaultWebsites = [
-                { id: 'd1', name: 'GitHub', url: 'https://github.com', icon: 'https://github.githubassets.com/favicons/favicon.png' },
-                { id: 'd2', name: 'LeetCode', url: 'https://leetcode.com', icon: 'https://leetcode.com/favicon.ico' },
-                { id: 'd3', name: 'Stack Overflow', url: 'https://stackoverflow.com', icon: 'https://stackoverflow.com/favicon.ico' },
-                { id: 'd4', name: 'YouTube', url: 'https://www.youtube.com', icon: 'https://www.youtube.com/favicon.ico' }
-            ];
-
-            // --- DOM ELEMENTS ---
-            const elements = {
-                topBarLevel: document.getElementById('top-bar-level'), topBarExp: document.getElementById('top-bar-exp'),
-                topBarCurrentExp: document.getElementById('top-bar-current-exp'), topBarMaxExp: document.getElementById('top-bar-max-exp'),
-                topBarStreak: document.getElementById('top-bar-streak'),
-                totalQuests: document.getElementById('total-quests'),
-                nextRewardExpDisplay: document.getElementById('next-reward-exp-display'), 
-                tasksToday: document.getElementById('tasks-today'),
-                bestStreak: document.getElementById('best-streak'),
-                quickLinks: document.getElementById('quick-links'),
-                addWebsiteBtn: document.getElementById('add-website-btn'), addWebsiteForm: document.getElementById('add-website-form'),
-                saveWebsiteBtn: document.getElementById('save-website'), cancelWebsiteBtn: document.getElementById('cancel-website'),
-                websiteNameInput: document.getElementById('website-name'), websiteUrlInput: document.getElementById('website-url'),
-                systemMessages: document.getElementById('system-messages'), clearMessagesBtn: document.getElementById('clear-messages'),
-                codingCount: document.getElementById('coding-count'), exerciseCount: document.getElementById('exercise-count'),
-                studyCount: document.getElementById('study-count'), projectCount: document.getElementById('project-count'),
-                examCount: document.getElementById('exam-count'),
-                creativityCount: document.getElementById('creativity-count'),
-                calendarHeader: document.getElementById('calendar-header'), calendarGrid: document.getElementById('calendar-grid'),
-                resetTimer: document.getElementById('reset-timer'),
-                daySelector: document.getElementById('day-selector'),
-                expandCalendarBtn: document.getElementById('expand-calendar-btn'),
-            };
-
-            // --- INITIALIZATION ---
-            loadState();
-            renderUI();
-            renderCalendar();
-            renderDaySelector();
-            updateResetTimer();
-            setInterval(updateResetTimer, 1000);
-            
-            // --- EVENT LISTENERS ---
-            elements.addWebsiteBtn.addEventListener('click', () => toggleWebsiteForm(true));
-            elements.cancelWebsiteBtn.addEventListener('click', () => toggleWebsiteForm(false));
-            elements.saveWebsiteBtn.addEventListener('click', handleAddWebsite);
-            elements.clearMessagesBtn.addEventListener('click', clearMessages);
-            elements.expandCalendarBtn.addEventListener('click', () => {
-                window.location.href = 'calendar.html';
-            });
-            
-            // --- DAY SELECTOR LOGIC ---
-            function renderDaySelector() {
-                const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-                const now = new Date();
-                const todayIndex = (now.getDay() + 6) % 7; // Monday is 0
-
-                const mondayDate = new Date(now);
-                mondayDate.setDate(now.getDate() - todayIndex);
-
-                elements.daySelector.innerHTML = '';
-                days.forEach((day, index) => {
-                    const tab = document.createElement('div');
-                    tab.className = 'day-selector-tab';
-                    if (index === todayIndex) {
-                        tab.classList.add('active');
+            function updateStreakData() {
+                const dayStates = JSON.parse(localStorage.getItem('questLogDayStates')) || {};
+                const today = new Date();
+                today.setHours(0, 0, 0, 0);
+                let currentStreak = 0, recordStreak = 0, tempStreak = 0;
+                const sortedDates = Object.keys(dayStates)
+                    .filter(key => dayStates[key] === 'completed')
+                    .map(key => {
+                        const parts = key.split('-').map(Number);
+                        return new Date(parts[0], parts[1], parts[2]);
+                    })
+                    .sort((a, b) => a - b);
+                if (sortedDates.length > 0) {
+                    tempStreak = 1; recordStreak = 1;
+                    for (let i = 1; i < sortedDates.length; i++) {
+                        const diff = (sortedDates[i] - sortedDates[i-1]) / (1000 * 60 * 60 * 24);
+                        if (diff === 1) tempStreak++; else tempStreak = 1;
+                        if (tempStreak > recordStreak) recordStreak = tempStreak;
                     }
-
-                    const currentTabDate = new Date(mondayDate);
-                    currentTabDate.setDate(mondayDate.getDate() + index);
-                    const dateNumber = currentTabDate.getDate();
-
-                    tab.innerHTML = `
-                        <div class="text-xs">${day}</div>
-                        <div class="font-bold text-lg leading-none">${dateNumber}</div>
-                    `;
-                    tab.dataset.dayIndex = index;
-                    tab.addEventListener('click', () => selectDay(index));
-                    elements.daySelector.appendChild(tab);
-                });
-                selectDay(todayIndex); // Show today's messages by default
-            }
-
-            function selectDay(dayIndex) {
-                // Remove active class from all tabs
-                document.querySelectorAll('.day-selector-tab').forEach(tab => tab.classList.remove('active'));
-                // Add active class to the selected one
-                document.querySelector(`.day-selector-tab[data-day-index='${dayIndex}']`).classList.add('active');
-                // Clear current messages and show messages for the selected day
-                elements.systemMessages.innerHTML = '';
-                showMessagesForDay(dayIndex);
-            }
-
-            function showMessagesForDay(dayIndex) {
-                const messages = {
-                    0: ["Welcome to a new week! Let's start strong. Challenge: Solve one medium LeetCode problem.", "Reminder: Project meeting at 3 PM."],
-                    1: ["Today's focus: Data Structures. Review trees and graphs.", "SYSTEM: Dashboard loaded. Ready to tackle new quests!"],
-                    2: ["Mid-week check-in! How's your progress on Project Borealis?", "Don't forget your workout session."],
-                    3: ["Almost there! Prepare for tomorrow's quiz on algorithms.", "SYSTEM: New quick link 'Dev.to' added."],
-                    4: ["Friday! Time to wrap up weekly tasks and push to GitHub.", "SUCCESS: Task completed! +150 EXP in project."],
-                    5: ["Weekend coding session: Work on a personal project.", "ALERT: Streak of 12 broken! Complete a task to start anew."],
-                    6: ["Rest and recharge. Plan for the upcoming week."]
-                };
-                
-                if (messages[dayIndex] && messages[dayIndex].length > 0) {
-                    messages[dayIndex].forEach(msg => addSystemMessage(msg));
-                } else {
-                    addSystemMessage("No messages for this day.");
+                    const lastCompletedDate = sortedDates[sortedDates.length - 1];
+                    const diffFromToday = (today - lastCompletedDate) / (1000 * 60 * 60 * 24);
+                    if (diffFromToday <= 1) currentStreak = tempStreak; else currentStreak = 0;
                 }
+                localStorage.setItem('playerStreak', currentStreak);
+                localStorage.setItem('playerRecordStreak', recordStreak);
             }
 
-            // --- TIMER LOGIC ---
-            function updateResetTimer() {
-                const now = new Date();
-                const endOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1, 0, 0, 0);
-                const diff = endOfDay - now;
-
-                const h = Math.floor((diff / (1000 * 60 * 60)) % 24).toString().padStart(2, '0');
-                const m = Math.floor((diff / 1000 / 60) % 60).toString().padStart(2, '0');
-                const s = Math.floor((diff / 1000) % 60).toString().padStart(2, '0');
-
-                if (elements.resetTimer) {
-                    elements.resetTimer.textContent = `${h}:${m}:${s}`;
-                }
-            }
-
-            // --- CALENDAR LOGIC ---
-            function renderCalendar() {
-                const now = new Date();
-                const monthName = now.toLocaleString('default', { month: 'long' });
-                const capitalizedMonth = monthName.charAt(0).toUpperCase() + monthName.slice(1);
-                
-                elements.calendarHeader.textContent = `${capitalizedMonth} ${now.getFullYear()}`;
-                elements.calendarGrid.innerHTML = '';
-
-                const daysOfWeek = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
-                daysOfWeek.forEach(day => {
-                    elements.calendarGrid.innerHTML += `<div class="calendar-day-name">${day}</div>`;
-                });
-
-                const firstDayOfMonth = new Date(now.getFullYear(), now.getMonth(), 1).getDay();
-                const daysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
-                
-                // Adjust for Monday start
-                const startOffset = (firstDayOfMonth === 0) ? 6 : firstDayOfMonth - 1;
-
-                for (let i = 0; i < startOffset; i++) {
-                    elements.calendarGrid.innerHTML += `<div></div>`;
-                }
-
-                for (let day = 1; day <= daysInMonth; day++) {
-                    const dayClass = day === now.getDate() ? 'calendar-day today' : 'calendar-day';
-                    elements.calendarGrid.innerHTML += `<div class="${dayClass}">${day}</div>`;
-                }
-            }
-
-            // --- CORE FUNCTIONS ---
-            function completeTask(expGain, category) {
-                addExp(expGain);
-                updateTotalQuests(playerState.totalQuests + 1);
-                if (playerState.categoryCounts.hasOwnProperty(category)) {
-                    playerState.categoryCounts[category]++;
-                }
-                saveState();
-                renderUI();
-                addSystemMessage(`Task completed! +${expGain} EXP in ${category}.`, 'success');
-            }
-
-            function loadState() {
-                const savedState = JSON.parse(localStorage.getItem('csDungeonStateV3'));
-                if (savedState) playerState = { ...playerState, ...savedState };
-            }
-
-            function saveState() {
-                localStorage.setItem('csDungeonStateV3', JSON.stringify(playerState));
-            }
-
-            function calculateMaxExp(level) {
-                return level * 200 + 800;
-            }
-
-            function renderUI() {
-                const maxExp = calculateMaxExp(playerState.level);
-                // Top Bar
-                elements.topBarLevel.textContent = playerState.level;
-                elements.topBarCurrentExp.textContent = playerState.currentExp;
-                elements.topBarMaxExp.textContent = maxExp;
-                elements.topBarExp.style.width = `${(playerState.currentExp / maxExp) * 100}%`;
-                
-                // Get streak data from the new calendar system via localStorage
-                const savedStreak = localStorage.getItem('playerStreak') || 0;
-                const savedRecord = localStorage.getItem('playerRecordStreak') || 0;
-
-                elements.topBarStreak.textContent = savedStreak;
-                elements.bestStreak.textContent = savedRecord;
-
-                elements.totalQuests.textContent = playerState.totalQuests;
-                elements.nextRewardExpDisplay.textContent = maxExp;
-                elements.tasksToday.textContent = playerState.tasksToday || 0;
-                
-                for (const category in playerState.categoryCounts) {
-                    if (elements[`${category}Count`]) {
-                        elements[`${category}Count`].textContent = playerState.categoryCounts[category];
+            if (lastSync === today) {
+                showDashboard();
+            } else {
+                if (isWebGLAvailable()) {
+                    try { initThree(); animateThree(); } catch (e) {
+                        console.error("Three.js initialization failed:", e);
+                        if(worldEl) worldEl.style.display = 'none';
                     }
+                } else {
+                    console.warn("WebGL is not supported. 3D background is disabled.");
+                    if(worldEl) worldEl.style.display = 'none';
                 }
-                renderWebsites();
-            }
 
-            function addExp(amount) {
-                let maxExp = calculateMaxExp(playerState.level);
-                playerState.currentExp += amount;
-                while (playerState.currentExp >= maxExp) {
-                    playerState.currentExp -= maxExp;
-                    playerState.level++;
-                    maxExp = calculateMaxExp(playerState.level);
-                    levelUp(playerState.level);
-                }
-            }
-            
-            function levelUp(newLevel) {
-                elements.topBarLevel.classList.add('level-up-animation');
-                setTimeout(() => { elements.topBarLevel.classList.remove('level-up-animation'); }, 1500);
-                addSystemMessage(`Congratulations! You reached Level ${newLevel}!`, 'success');
-            }
+                syncButtonEl.addEventListener('click', () => {
+                    localStorage.setItem('lastSyncDate', today);
+                    const dayStates = JSON.parse(localStorage.getItem('questLogDayStates')) || {};
+                    const todayDate = new Date();
+                    const todayKey = `${todayDate.getFullYear()}-${todayDate.getMonth()}-${todayDate.getDate()}`;
+                    dayStates[todayKey] = 'completed';
+                    localStorage.setItem('questLogDayStates', JSON.stringify(dayStates));
+                    updateStreakData();
 
-            function updateTotalQuests(count) {
-                playerState.totalQuests = count;
-            }
-
-            function addSystemMessage(text, type = 'system') {
-                const message = document.createElement('div');
-                let icon = 'fa-info-circle', colorClass = 'accent-text';
-                if (text.startsWith('SUCCESS:')) { type = 'success'; text = text.replace('SUCCESS: ', ''); }
-                if (text.startsWith('ALERT:')) { type = 'danger'; text = text.replace('ALERT: ', ''); }
-                if (type === 'success') { icon = 'fa-check-circle'; colorClass = 'text-green-400'; } 
-                else if (type === 'danger') { icon = 'fa-exclamation-triangle'; colorClass = 'text-red-400'; }
-                message.className = `text-xs text-slate-300 flex items-start`;
-                message.innerHTML = `<i class="fas ${icon} ${colorClass} mr-2 mt-1"></i><span>${text}</span>`;
-                elements.systemMessages.appendChild(message);
-                elements.systemMessages.scrollTop = elements.systemMessages.scrollHeight;
-            }
-            
-            function clearMessages() {
-                const activeTab = document.querySelector('.day-selector-tab.active');
-                if (activeTab) {
-                    selectDay(parseInt(activeTab.dataset.dayIndex));
-                }
-            }
-
-            function toggleWebsiteForm(show) {
-                elements.addWebsiteForm.style.display = show ? 'block' : 'none';
-                if (!show) {
-                    elements.websiteNameInput.value = '';
-                    elements.websiteUrlInput.value = '';
-                }
-            }
-
-            function handleAddWebsite() {
-                const name = elements.websiteNameInput.value.trim();
-                let url = elements.websiteUrlInput.value.trim();
-                if (!name || !url) { addSystemMessage('Please enter both a name and URL.', 'danger'); return; }
-                if (!url.startsWith('http')) url = `https://${url}`;
-                playerState.websites.push({ id: Date.now(), name, url, icon: '' });
-                saveState();
-                renderWebsites();
-                toggleWebsiteForm(false);
-                addSystemMessage(`Added new quick link: ${name}`, 'success');
-            }
-
-            function renderWebsites() {
-                elements.quickLinks.innerHTML = '';
-                const visibleDefaultWebsites = defaultWebsites.filter(site => !playerState.deletedDefaultWebsites.includes(site.id));
-                const allLinks = [...visibleDefaultWebsites, ...playerState.websites];
-                
-                allLinks.forEach(site => {
-                    const iconSrc = site.icon || `https://www.google.com/s2/favicons?domain=${site.url}&sz=32`;
-                    const linkEl = document.createElement('div');
-                    linkEl.className = 'relative flex items-center p-2 rounded-md hover:bg-slate-700/50 cursor-pointer group';
-                    linkEl.innerHTML = `<img src="${iconSrc}" class="w-5 h-5 mr-2 rounded-sm" onerror="this.src='https://www.google.com/s2/favicons?domain=google.com&sz=32'"><span class="text-sm text-slate-200 flex-grow">${site.name}</span>`;
-                    linkEl.onclick = () => window.open(site.url, '_blank');
-                    const deleteBtn = document.createElement('button');
-                    deleteBtn.className = 'w-6 h-6 bg-red-500/80 text-white rounded-md flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity';
-                    deleteBtn.innerHTML = '<i class="fas fa-times text-xs"></i>';
-                    deleteBtn.onclick = (e) => { e.stopPropagation(); deleteWebsite(site.id); };
-                    linkEl.appendChild(deleteBtn);
-                    elements.quickLinks.appendChild(linkEl);
+                    welcomeWrapperEl.classList.add('fade-out');
+                    if (worldEl) worldEl.classList.add('fade-out');
+                    setTimeout(showDashboard, 1500);
                 });
             }
 
-            function deleteWebsite(id) {
-                const isDefault = defaultWebsites.some(site => site.id === id);
-                if (isDefault) {
-                    if (!playerState.deletedDefaultWebsites.includes(id)) playerState.deletedDefaultWebsites.push(id);
-                } else {
-                    playerState.websites = playerState.websites.filter(site => site.id !== id);
-                }
-                saveState();
-                renderWebsites();
-                addSystemMessage('Quick link removed.', 'success');
+            function initializeDashboard() {
+                let playerState = { level: 1, currentExp: 0, websites: [], deletedDefaultWebsites: [], categoryCounts: { coding: 0, exercise: 0, study: 0, project: 0, exam: 0, creativity: 0 }, tasksToday: 0, totalQuests: 0 };
+                const defaultWebsites = [ { id: 'd1', name: 'GitHub', url: 'https://github.com', icon: 'https://github.githubassets.com/favicons/favicon.png' }, { id: 'd2', name: 'LeetCode', url: 'https://leetcode.com', icon: 'https://leetcode.com/favicon.ico' }, { id: 'd3', name: 'Stack Overflow', url: 'https://stackoverflow.com', icon: 'https://stackoverflow.com/favicon.ico' }, { id: 'd4', name: 'YouTube', url: 'https://www.youtube.com', icon: 'https://www.youtube.com/favicon.ico' } ];
+                const elements = { topBarLevel: document.getElementById('top-bar-level'), topBarExp: document.getElementById('top-bar-exp'), topBarCurrentExp: document.getElementById('top-bar-current-exp'), topBarMaxExp: document.getElementById('top-bar-max-exp'), topBarStreak: document.getElementById('top-bar-streak'), totalQuests: document.getElementById('total-quests'), nextRewardExpDisplay: document.getElementById('next-reward-exp-display'), tasksToday: document.getElementById('tasks-today'), bestStreak: document.getElementById('best-streak'), quickLinks: document.getElementById('quick-links'), addWebsiteBtn: document.getElementById('add-website-btn'), addWebsiteForm: document.getElementById('add-website-form'), saveWebsiteBtn: document.getElementById('save-website'), cancelWebsiteBtn: document.getElementById('cancel-website'), websiteNameInput: document.getElementById('website-name'), websiteUrlInput: document.getElementById('website-url'), systemMessages: document.getElementById('system-messages'), clearMessagesBtn: document.getElementById('clear-messages'), codingCount: document.getElementById('coding-count'), exerciseCount: document.getElementById('exercise-count'), studyCount: document.getElementById('study-count'), projectCount: document.getElementById('project-count'), examCount: document.getElementById('exam-count'), creativityCount: document.getElementById('creativity-count'), calendarHeader: document.getElementById('calendar-header'), calendarGrid: document.getElementById('calendar-grid'), resetTimerLarge: document.getElementById('reset-timer-large'), daySelector: document.getElementById('day-selector'), expandCalendarBtn: document.getElementById('expand-calendar-btn'), };
+                
+                function loadState() { const savedState = JSON.parse(localStorage.getItem('csDungeonStateV3')); if (savedState) playerState = { ...playerState, ...savedState }; }
+                function saveState() { localStorage.setItem('csDungeonStateV3', JSON.stringify(playerState)); }
+                function calculateMaxExp(level) { return level * 200 + 800; }
+                function renderUI() { const maxExp = calculateMaxExp(playerState.level); elements.topBarLevel.textContent = playerState.level; elements.topBarCurrentExp.textContent = playerState.currentExp; elements.topBarMaxExp.textContent = maxExp; elements.topBarExp.style.width = `${(playerState.currentExp / maxExp) * 100}%`; const savedStreak = localStorage.getItem('playerStreak') || 0; const savedRecord = localStorage.getItem('playerRecordStreak') || 0; elements.topBarStreak.textContent = savedStreak; elements.bestStreak.textContent = savedRecord; elements.totalQuests.textContent = playerState.totalQuests; elements.nextRewardExpDisplay.textContent = maxExp; elements.tasksToday.textContent = playerState.tasksToday || 0; for (const category in playerState.categoryCounts) { if (elements[`${category}Count`]) { elements[`${category}Count`].textContent = playerState.categoryCounts[category]; } } renderWebsites(); }
+                function levelUp(newLevel) { elements.topBarLevel.classList.add('level-up-animation'); setTimeout(() => { elements.topBarLevel.classList.remove('level-up-animation'); }, 1500); addSystemMessage(`Congratulations! You reached Level ${newLevel}!`, 'success'); }
+                function addExp(amount) { let maxExp = calculateMaxExp(playerState.level); playerState.currentExp += amount; while (playerState.currentExp >= maxExp) { playerState.currentExp -= maxExp; playerState.level++; maxExp = calculateMaxExp(playerState.level); levelUp(playerState.level); } }
+                function renderCalendar() { const now = new Date(); const monthName = now.toLocaleString('default', { month: 'long' }); const capitalizedMonth = monthName.charAt(0).toUpperCase() + monthName.slice(1); elements.calendarHeader.textContent = `${capitalizedMonth} ${now.getFullYear()}`; elements.calendarGrid.innerHTML = ''; const daysOfWeek = ['M', 'T', 'W', 'T', 'F', 'S', 'S']; daysOfWeek.forEach(day => { elements.calendarGrid.innerHTML += `<div class="calendar-day-name">${day}</div>`; }); const firstDayOfMonth = new Date(now.getFullYear(), now.getMonth(), 1).getDay(); const daysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate(); const startOffset = (firstDayOfMonth === 0) ? 6 : firstDayOfMonth - 1; for (let i = 0; i < startOffset; i++) { elements.calendarGrid.innerHTML += `<div></div>`; } for (let day = 1; day <= daysInMonth; day++) { const dayClass = day === now.getDate() ? 'calendar-day today' : 'calendar-day'; elements.calendarGrid.innerHTML += `<div class="${dayClass}">${day}</div>`; } }
+                function renderWebsites() { elements.quickLinks.innerHTML = ''; const visibleDefaultWebsites = defaultWebsites.filter(site => !playerState.deletedDefaultWebsites.includes(site.id)); const allLinks = [...visibleDefaultWebsites, ...playerState.websites]; allLinks.forEach(site => { const iconSrc = site.icon || `https://www.google.com/s2/favicons?domain=${site.url}&sz=32`; const linkEl = document.createElement('div'); linkEl.className = 'relative flex items-center p-2 rounded-md hover:bg-slate-700/50 cursor-pointer group'; linkEl.innerHTML = `<img src="${iconSrc}" class="w-5 h-5 mr-2 rounded-sm" onerror="this.src='https://www.google.com/s2/favicons?domain=google.com&sz=32'"><span class="text-sm text-slate-200 flex-grow">${site.name}</span>`; linkEl.onclick = () => window.open(site.url, '_blank'); const deleteBtn = document.createElement('button'); deleteBtn.className = 'w-6 h-6 bg-red-500/80 text-white rounded-md flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity'; deleteBtn.innerHTML = '<i class="fas fa-times text-xs"></i>'; deleteBtn.onclick = (e) => { e.stopPropagation(); deleteWebsite(site.id); }; linkEl.appendChild(deleteBtn); elements.quickLinks.appendChild(linkEl); }); }
+                function addSystemMessage(text, type = 'system') { const message = document.createElement('div'); let icon = 'fa-info-circle', colorClass = 'accent-text'; if (text.startsWith('SUCCESS:')) { type = 'success'; text = text.replace('SUCCESS: ', ''); } if (text.startsWith('ALERT:')) { type = 'danger'; text = text.replace('ALERT: ', ''); } if (type === 'success') { icon = 'fa-check-circle'; colorClass = 'text-green-400'; } else if (type === 'danger') { icon = 'fa-exclamation-triangle'; colorClass = 'text-red-400'; } message.className = `text-xs text-slate-300 flex items-start`; message.innerHTML = `<i class="fas ${icon} ${colorClass} mr-2 mt-1"></i><span>${text}</span>`; elements.systemMessages.appendChild(message); elements.systemMessages.scrollTop = elements.systemMessages.scrollHeight; }
+                function renderDaySelector() { const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']; const now = new Date(); const todayIndex = (now.getDay() + 6) % 7; const mondayDate = new Date(now); mondayDate.setDate(now.getDate() - todayIndex); elements.daySelector.innerHTML = ''; days.forEach((day, index) => { const tab = document.createElement('div'); tab.className = 'day-selector-tab'; if (index === todayIndex) { tab.classList.add('active'); } const currentTabDate = new Date(mondayDate); currentTabDate.setDate(mondayDate.getDate() + index); const dateNumber = currentTabDate.getDate(); tab.innerHTML = `<div class="text-xs">${day}</div><div class="font-bold text-lg leading-none">${dateNumber}</div>`; tab.dataset.dayIndex = index; tab.addEventListener('click', () => selectDay(index)); elements.daySelector.appendChild(tab); }); selectDay(todayIndex); }
+                function selectDay(dayIndex) { document.querySelectorAll('.day-selector-tab').forEach(tab => tab.classList.remove('active')); document.querySelector(`.day-selector-tab[data-day-index='${dayIndex}']`).classList.add('active'); elements.systemMessages.innerHTML = ''; showMessagesForDay(dayIndex); }
+                function showMessagesForDay(dayIndex) { const messages = { 0: ["Welcome to a new week! Let's start strong. Challenge: Solve one medium LeetCode problem.", "Reminder: Project meeting at 3 PM."], 1: ["Today's focus: Data Structures. Review trees and graphs.", "SYSTEM: Dashboard loaded. Ready to tackle new quests!"], 2: ["Mid-week check-in! How's your progress on Project Borealis?", "Don't forget your workout session."], 3: ["Almost there! Prepare for tomorrow's quiz on algorithms.", "SYSTEM: New quick link 'Dev.to' added."], 4: ["Friday! Time to wrap up weekly tasks and push to GitHub.", "SUCCESS: Task completed! +150 EXP in project."], 5: ["Weekend coding session: Work on a personal project.", "ALERT: Streak of 12 broken! Complete a task to start anew."], 6: ["Rest and recharge. Plan for the upcoming week."] }; if (messages[dayIndex] && messages[dayIndex].length > 0) { messages[dayIndex].forEach(msg => addSystemMessage(msg)); } else { addSystemMessage("No messages for this day."); } }
+                function clearMessages() { const activeTab = document.querySelector('.day-selector-tab.active'); if (activeTab) { selectDay(parseInt(activeTab.dataset.dayIndex)); } }
+
+                loadState(); renderUI(); renderCalendar(); renderDaySelector(); setInterval(() => { const now = new Date(); const endOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1, 0, 0, 0); const diff = endOfDay - now; const h = Math.floor((diff / (1000 * 60 * 60)) % 24).toString().padStart(2, '0'); const m = Math.floor((diff / 1000 / 60) % 60).toString().padStart(2, '0'); const s = Math.floor((diff / 1000) % 60).toString().padStart(2, '0'); if (elements.resetTimerLarge) { elements.resetTimerLarge.textContent = `${h}:${m}:${s}`; } }, 1000);
+                elements.expandCalendarBtn.addEventListener('click', () => { window.location.href = 'calendar.html'; });
+                elements.addWebsiteBtn.addEventListener('click', () => toggleWebsiteForm(true));
+                elements.cancelWebsiteBtn.addEventListener('click', () => toggleWebsiteForm(false));
+                elements.saveWebsiteBtn.addEventListener('click', handleAddWebsite);
+                elements.clearMessagesBtn.addEventListener('click', clearMessages);
             }
         });
     </script>
