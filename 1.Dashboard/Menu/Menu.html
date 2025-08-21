@@ -84,6 +84,39 @@
         .bar.accent-gradient:hover { filter: brightness(1.2); }
         .day-label { font-size: 0.75rem; color: #94a3b8; position: absolute; bottom: -1.25rem; }
         @keyframes growBar { from { transform: scaleY(0); } to { transform: scaleY(1); } }
+
+        .category-item {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem; /* 12px */
+        }
+        .category-icon {
+            width: 40px;
+            height: 40px;
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: rgba(15, 23, 42, 0.6); /* bg-slate-900/60 */
+            border-radius: 0.5rem; /* rounded-lg */
+        }
+        .category-progress-bg {
+            background-color: #334155; /* bg-slate-700 */
+            border-radius: 9999px; /* rounded-full */
+            height: 6px;
+            overflow: hidden;
+        }
+        .category-progress-bar {
+            height: 100%;
+            border-radius: 9999px; /* rounded-full */
+            transition: width 0.5s ease-in-out;
+        }
+        .progress-coding { background-color: #3b82f6; } /* blue-500 */
+        .progress-exercise { background-color: #10b981; } /* green-500 */
+        .progress-study { background-color: #8b5cf6; } /* violet-500 */
+        .progress-project { background-color: #f59e0b; } /* amber-500 */
+        .progress-exam { background-color: #ec4899; } /* pink-500 */
+        .progress-creativity { background-color: #6366f1; } /* indigo-500 */
     </style>
 </head>
 
@@ -201,6 +234,94 @@
                                 <text x="10" y="72.5" font-family="Rajdhani, sans-serif" font-size="6" fill="#94a3b8" text-anchor="middle" dominant-baseline="middle">18</text>
                                 <text x="10" y="27.5" font-family="Rajdhani, sans-serif" font-size="6" fill="#94a3b8" text-anchor="middle" dominant-baseline="middle">44</text>
                             </svg>
+                        </div>
+                        
+                        <div class="space-y-4">
+
+                            
+                            <div class="category-item">
+                                <div class="category-icon"><i class="fas fa-code text-lg" style="color: #3b82f6;"></i></div>
+                                <div class="w-full">
+                                    <div class="flex justify-between items-center mb-1">
+                                        <span class="font-semibold text-sm text-slate-200">Coding</span>
+                                        <span class="text-xs text-slate-400" id="coding-count">0</span>
+                                    </div>
+                                    <div class="category-progress-bg">
+                                        <div class="category-progress-bar progress-coding" style="width: 60%;"></div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            
+                            <div class="category-item">
+                                <div class="category-icon"><i class="fas fa-dumbbell text-lg" style="color: #10b981;"></i></div>
+                                <div class="w-full">
+                                    <div class="flex justify-between items-center mb-1">
+                                        <span class="font-semibold text-sm text-slate-200">Exercise</span>
+                                        <span class="text-xs text-slate-400" id="exercise-count">0</span>
+                                    </div>
+                                    <div class="category-progress-bg">
+                                        <div class="category-progress-bar progress-exercise" style="width: 80%;"></div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            
+                            <div class="category-item">
+                                <div class="category-icon"><i class="fas fa-book-open text-lg" style="color: #8b5cf6;"></i></div>
+                                <div class="w-full">
+                                    <div class="flex justify-between items-center mb-1">
+                                        <span class="font-semibold text-sm text-slate-200">Study</span>
+                                        <span class="text-xs text-slate-400" id="study-count">0</span>
+                                    </div>
+                                    <div class="category-progress-bg">
+                                        <div class="category-progress-bar progress-study" style="width: 45%;"></div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            
+                            <div class="category-item">
+                                <div class="category-icon"><i class="fas fa-tasks text-lg" style="color: #f59e0b;"></i></div>
+                                <div class="w-full">
+                                    <div class="flex justify-between items-center mb-1">
+                                        <span class="font-semibold text-sm text-slate-200">Projects</span>
+                                        <span class="text-xs text-slate-400" id="project-count">0</span>
+                                    </div>
+                                    <div class="category-progress-bg">
+                                        <div class="category-progress-bar progress-project" style="width: 70%;"></div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            
+                            <div class="category-item">
+                                <div class="category-icon"><i class="fas fa-file-alt text-lg" style="color: #ec4899;"></i></div>
+                                <div class="w-full">
+                                    <div class="flex justify-between items-center mb-1">
+                                        <span class="font-semibold text-sm text-slate-200">Exams</span>
+                                        <span class="text-xs text-slate-400" id="exam-count">0</span>
+                                    </div>
+                                    <div class="category-progress-bg">
+                                        <div class="category-progress-bar progress-exam" style="width: 90%;"></div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            
+                            <div class="category-item">
+                                <div class="category-icon"><i class="fas fa-lightbulb text-lg" style="color: #6366f1;"></i></div>
+                                <div class="w-full">
+                                    <div class="flex justify-between items-center mb-1">
+                                        <span class="font-semibold text-sm text-slate-200">Creativity</span>
+                                        <span class="text-xs text-slate-400" id="creativity-count">0</span>
+                                    </div>
+                                    <div class="category-progress-bg">
+                                        <div class="category-progress-bar progress-creativity" style="width: 55%;"></div>
+                                    </div>
+                                </div>
+                            </div>
+                            
                         </div>
                     </div>
                 </div>
@@ -366,7 +487,7 @@ uniform vec4 resolution; varying vec3 vNormal; uniform sampler2D perlinnoise; un
                 function loadState() { const savedState = JSON.parse(localStorage.getItem('csDungeonStateV3')); if (savedState) playerState = { ...playerState, ...savedState }; }
                 function saveState() { localStorage.setItem('csDungeonStateV3', JSON.stringify(playerState)); }
                 function calculateMaxExp(level) { return level * 200 + 800; }
-                function renderUI() { const maxExp = calculateMaxExp(playerState.level); elements.topBarLevel.textContent = playerState.level; elements.topBarCurrentExp.textContent = playerState.currentExp; elements.topBarMaxExp.textContent = maxExp; elements.topBarExp.style.width = `${(playerState.currentExp / maxExp) * 100}%`; const savedStreak = localStorage.getItem('playerStreak') || 0; const savedRecord = localStorage.getItem('playerRecordStreak') || 0; elements.topBarStreak.textContent = savedStreak; elements.bestStreak.textContent = savedRecord; elements.totalQuests.textContent = playerState.totalQuests; elements.nextRewardExpDisplay.textContent = maxExp; elements.tasksToday.textContent = playerState.tasksToday || 0; for (const category in playerState.categoryCounts) { if (elements[`${category}Count`]) { elements[`${category}Count`].textContent = playerState.categoryCounts[category]; } } renderWebsites(); }
+                function renderUI() { const maxExp = calculateMaxExp(playerState.level); elements.topBarLevel.textContent = playerState.level; elements.topBarCurrentExp.textContent = playerState.currentExp; elements.topBarMaxExp.textContent = maxExp; elements.topBarExp.style.width = `${(playerState.currentExp / maxExp) * 100}%`; const savedStreak = localStorage.getItem('playerStreak') || 0; const savedRecord = localStorage.getItem('playerRecordStreak') || 0; elements.topBarStreak.textContent = savedStreak; elements.bestStreak.textContent = savedRecord; elements.totalQuests.textContent = playerState.totalQuests; elements.nextRewardExpDisplay.textContent = maxExp; elements.tasksToday.textContent = playerState.tasksToday || 0; for (const category in playerState.categoryCounts) { const count = playerState.categoryCounts[category] || 0; const progress = count % 100; const countElementKey = `${category}Count`; if (elements[countElementKey]) { elements[countElementKey].textContent = count; } const progressBarElementKey = `${category}ProgressBar`; if (elements[progressBarElementKey]) { elements[progressBarElementKey].style.width = `${progress}%`; } } renderWebsites(); }
                 function levelUp(newLevel) { elements.topBarLevel.classList.add('level-up-animation'); setTimeout(() => { elements.topBarLevel.classList.remove('level-up-animation'); }, 1500); addSystemMessage(`Congratulations! You reached Level ${newLevel}!`, 'success'); }
                 function addExp(amount) { let maxExp = calculateMaxExp(playerState.level); playerState.currentExp += amount; while (playerState.currentExp >= maxExp) { playerState.currentExp -= maxExp; playerState.level++; maxExp = calculateMaxExp(playerState.level); levelUp(playerState.level); } }
                 function renderCalendar() { const now = new Date(); const monthName = now.toLocaleString('default', { month: 'long' }); const capitalizedMonth = monthName.charAt(0).toUpperCase() + monthName.slice(1); elements.calendarHeader.textContent = `${capitalizedMonth} ${now.getFullYear()}`; elements.calendarGrid.innerHTML = ''; const daysOfWeek = ['M', 'T', 'W', 'T', 'F', 'S', 'S']; daysOfWeek.forEach(day => { elements.calendarGrid.innerHTML += `<div class="calendar-day-name">${day}</div>`; }); const firstDayOfMonth = new Date(now.getFullYear(), now.getMonth(), 1).getDay(); const daysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate(); const startOffset = (firstDayOfMonth === 0) ? 6 : firstDayOfMonth - 1; for (let i = 0; i < startOffset; i++) { elements.calendarGrid.innerHTML += `<div></div>`; } for (let day = 1; day <= daysInMonth; day++) { const dayClass = day === now.getDate() ? 'calendar-day today' : 'calendar-day'; elements.calendarGrid.innerHTML += `<div class="${dayClass}">${day}</div>`; } }
@@ -376,6 +497,59 @@ uniform vec4 resolution; varying vec3 vNormal; uniform sampler2D perlinnoise; un
                 function selectDay(dayIndex) { document.querySelectorAll('.day-selector-tab').forEach(tab => tab.classList.remove('active')); document.querySelector(`.day-selector-tab[data-day-index='${dayIndex}']`).classList.add('active'); elements.systemMessages.innerHTML = ''; showMessagesForDay(dayIndex); }
                 function showMessagesForDay(dayIndex) { const messages = { 0: ["Welcome to a new week! Let's start strong. Challenge: Solve one medium LeetCode problem.", "Reminder: Project meeting at 3 PM."], 1: ["Today's focus: Data Structures. Review trees and graphs.", "SYSTEM: Dashboard loaded. Ready to tackle new quests!"], 2: ["Mid-week check-in! How's your progress on Project Borealis?", "Don't forget your workout session."], 3: ["Almost there! Prepare for tomorrow's quiz on algorithms.", "SYSTEM: New quick link 'Dev.to' added."], 4: ["Friday! Time to wrap up weekly tasks and push to GitHub.", "SUCCESS: Task completed! +150 EXP in project."], 5: ["Weekend coding session: Work on a personal project.", "ALERT: Streak of 12 broken! Complete a task to start anew."], 6: ["Rest and recharge. Plan for the upcoming week."] }; if (messages[dayIndex] && messages[dayIndex].length > 0) { messages[dayIndex].forEach(msg => addSystemMessage(msg)); } else { addSystemMessage("No messages for this day."); } }
                 function clearMessages() { const activeTab = document.querySelector('.day-selector-tab.active'); if (activeTab) { selectDay(parseInt(activeTab.dataset.dayIndex)); } }
+
+                function toggleWebsiteForm(show) {
+                    if (show) {
+                        elements.addWebsiteForm.classList.remove('hidden');
+                        elements.websiteNameInput.focus();
+                    } else {
+                        elements.addWebsiteForm.classList.add('hidden');
+                        elements.websiteNameInput.value = '';
+                        elements.websiteUrlInput.value = '';
+                    }
+                }
+
+                function handleAddWebsite() {
+                    const name = elements.websiteNameInput.value.trim();
+                    let url = elements.websiteUrlInput.value.trim();
+                    if (name && url) {
+                        if (!/^https?:\/\//i.test(url)) {
+                            url = 'https://' + url;
+                        }
+
+                        try {
+                            new URL(url);
+                        } catch (_) {
+                            addSystemMessage('ALERT: Please enter a valid URL.', 'danger');
+                            return;
+                        }
+                        
+                        const newSite = {
+                            id: `c${Date.now()}`,
+                            name: name,
+                            url: url,
+                            icon: `https://www.google.com/s2/favicons?domain=${new URL(url).hostname}&sz=32`
+                        };
+                        playerState.websites.push(newSite);
+                        saveState();
+                        renderWebsites();
+                        toggleWebsiteForm(false);
+                        addSystemMessage(`SUCCESS: Quick link '${name}' added.`, 'success');
+                    }
+                }
+
+                function deleteWebsite(id) {
+                    if (id.startsWith('d')) {
+                        if (!playerState.deletedDefaultWebsites.includes(id)) {
+                            playerState.deletedDefaultWebsites.push(id);
+                        }
+                    } else {
+                        playerState.websites = playerState.websites.filter(site => site.id !== id);
+                    }
+                    saveState();
+                    renderWebsites();
+                    addSystemMessage('Quick link removed.', 'system');
+                }
 
                 loadState(); renderUI(); renderCalendar(); renderDaySelector(); setInterval(() => { const now = new Date(); const endOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1, 0, 0, 0); const diff = endOfDay - now; const h = Math.floor((diff / (1000 * 60 * 60)) % 24).toString().padStart(2, '0'); const m = Math.floor((diff / 1000 / 60) % 60).toString().padStart(2, '0'); const s = Math.floor((diff / 1000) % 60).toString().padStart(2, '0'); if (elements.resetTimerLarge) { elements.resetTimerLarge.textContent = `${h}:${m}:${s}`; } }, 1000);
                 elements.expandCalendarBtn.addEventListener('click', () => { window.location.href = 'calendar.html'; });
