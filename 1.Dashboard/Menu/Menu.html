@@ -4,280 +4,763 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CS Student Dungeon - Sync Theme</title>
+    <title>CS Student Dungeon - Rediseño</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght @400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&display=swap');
-
-        /* Custom styles and color palette from Sync Log */
+        /* Paleta de colores y estilos base del código original */
         body {
             font-family: 'Rajdhani', sans-serif;
-            background-color: #0f172a; /* Main background */
-            color: #e2e8f0; /* Default text */
+            background-color: #0f172a;
+            color: #e2e8f0;
             background-image: radial-gradient(circle at 10% 20%, rgba(56, 189, 248, 0.05) 0%, rgba(56, 189, 248, 0) 25%),
                               radial-gradient(circle at 90% 80%, rgba(56, 189, 248, 0.05) 0%, rgba(56, 189, 248, 0) 25%);
         }
 
-        .container-bg {
+        .panel {
             background-color: #1e293b; /* Primary container background */
+            border: 1px solid rgba(56, 189, 248, 0.2);
+            border-radius: 0.5rem;
+            box-shadow: 0 0 15px rgba(56, 189, 248, 0.1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .panel-header {
+            background-color: rgba(15, 23, 42, 0.5);
+            border-bottom: 1px solid rgba(56, 189, 248, 0.2);
+            padding: 0.75rem 1rem;
+            font-weight: 600;
+            color: #cbd5e1;
         }
         
-        .container-bg-dark {
-            background-color: #0f172a;
-        }
-
-        .container-bg-light {
-             background-color: #334155; /* Lighter container for hover/details */
-        }
-
         .accent-text {
-            color: #38bdf8; /* Main accent color */
+            color: #38bdf8;
         }
 
-        .accent-border {
-            border: 1px solid rgba(56, 189, 248, 0.3);
-            box-shadow: 0 0 15px rgba(56, 189, 248, 0.2);
-        }
-        
         .accent-gradient {
             background: linear-gradient(90deg, #38bdf8 0%, #0ea5e9 100%);
         }
 
-        .task-item:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 15px rgba(56, 189, 248, 0.2);
-        }
-
-        .floating {
-            animation: floating 3s ease-in-out infinite;
-        }
-
-        @keyframes floating {
-            0% { transform: translateY(0px); }
-            50% { transform: translateY(-10px); }
-            100% { transform: translateY(0px); }
-        }
-
-        .pulse {
-            animation: pulse 2s infinite;
-        }
-
-        @keyframes pulse {
-            0% { box-shadow: 0 0 0 0 rgba(56, 189, 248, 0.4); }
-            70% { box-shadow: 0 0 0 10px rgba(56, 189, 248, 0); }
-            100% { box-shadow: 0 0 0 0 rgba(56, 189, 248, 0); }
-        }
-
         /* Custom scrollbar */
-        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar { width: 6px; }
         ::-webkit-scrollbar-track { background: #1e293b; }
-        ::-webkit-scrollbar-thumb { background: #38bdf8; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb { background: #38bdf8; border-radius: 3px; }
 
-        /* Keeping original category badge colors for variety */
-        .category-badge { display: inline-block; padding: 0.25rem 0.5rem; border-radius: 9999px; font-size: 0.75rem; font-weight: 600; text-transform: uppercase; }
-        .coding-badge { background-color: rgba(59, 130, 246, 0.2); color: #3b82f6; }
-        .exercise-badge { background-color: rgba(16, 185, 129, 0.2); color: #10b981; }
-        .study-badge { background-color: rgba(139, 92, 246, 0.2); color: #8b5cf6; }
-        .project-badge { background-color: rgba(245, 158, 11, 0.2); color: #f59e0b; }
-        .exam-badge { background-color: rgba(236, 72, 153, 0.2); color: #ec4899; }
+        /* Animación para la subida de nivel */
+        @keyframes level-up-glow {
+            0% { text-shadow: 0 0 5px #38bdf8, 0 0 10px #38bdf8; }
+            50% { text-shadow: 0 0 20px #38bdf8, 0 0 30px #38bdf8, 0 0 40px #0ea5e9; }
+            100% { text-shadow: 0 0 5px #38bdf8, 0 0 10px #38bdf8; }
+        }
+        .level-up-animation {
+            animation: level-up-glow 1.5s ease-in-out;
+        }
+
+        /* Estilos para el calendario */
+        .calendar-day-name {
+            font-size: 0.7rem;
+            color: #94a3b8; /* slate-400 */
+        }
+        .calendar-day {
+            font-size: 0.8rem;
+            color: #e2e8f0; /* slate-200 */
+        }
+        .calendar-day.today {
+            background-color: #38bdf8;
+            color: #0f172a;
+            border-radius: 9999px;
+            font-weight: bold;
+        }
+        .calendar-day.other-month {
+            color: #475569; /* slate-600 */
+        }
+
+        /* Estilos para el gráfico de barras animado */
+        @keyframes growBar {
+            from { transform: scaleY(0); }
+            to { transform: scaleY(1); }
+        }
+
+        .bar-container {
+            width: 1.5rem; /* 24px */
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: flex-end;
+        }
+
+        .bar {
+            width: 100%;
+            background-color: #475569; /* slate-600 */
+            border-radius: 4px 4px 0 0;
+            transition: background-color 0.3s ease, filter 0.3s ease;
+            animation: growBar 0.8s ease-out forwards;
+            transform-origin: bottom;
+        }
+
+        .bar:hover {
+            background-color: #64748b; /* slate-500 */
+        }
+        
+        .bar.accent-gradient {
+             background: linear-gradient(to top, #38bdf8 0%, #0ea5e9 100%);
+        }
+
+        .bar.accent-gradient:hover {
+            filter: brightness(1.2);
+        }
+
+        .day-label {
+            font-size: 0.75rem; /* 12px */
+            color: #94a3b8; /* slate-400 */
+            position: absolute;
+            bottom: -1.25rem; /* -bottom-5 */
+        }
+
+        /* Nuevos estilos para la sección de Proyectos */
+        .project-item {
+            background-color: rgba(15, 23, 42, 0.6);
+            border-radius: 0.5rem;
+            padding: 0.75rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            transition: background-color 0.3s ease;
+            border: 1px solid transparent;
+        }
+        .project-item:hover {
+            background-color: rgba(30, 41, 59, 0.8);
+            border-color: rgba(56, 189, 248, 0.2);
+        }
+        .project-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 9999px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: #334155; /* slate-700 */
+            flex-shrink: 0;
+        }
+        .difficulty-hard { color: #ef4444; } /* red-500 */
+        .difficulty-insane { color: #f97316; } /* orange-500 */
+        .difficulty-medium { color: #eab308; } /* yellow-500 */
+
+        /* Nuevos estilos para el panel de logros */
+        .achievement-item {
+            background-color: rgba(15, 23, 42, 0.6);
+            border-radius: 0.5rem;
+            padding: 0.75rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+        .achievement-icon {
+            width: 32px;
+            height: 32px;
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 0.25rem;
+            background-color: rgba(56, 189, 248, 0.1);
+        }
+
+        /* Nuevos estilos para Category Breakdown */
+        .category-item {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        .category-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: 9999px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: #334155;
+            flex-shrink: 0;
+            border: 1px solid rgba(56, 189, 248, 0.3);
+        }
+        .category-progress-bg {
+            height: 6px;
+            background-color: #0f172a;
+            border-radius: 3px;
+            width: 100%;
+        }
+        .category-progress-bar {
+            height: 100%;
+            border-radius: 3px;
+        }
+        .progress-coding { background-color: #3b82f6; }
+        .progress-exercise { background-color: #10b981; }
+        .progress-study { background-color: #8b5cf6; }
+        .progress-project { background-color: #f59e0b; }
+        .progress-exam { background-color: #ec4899; }
+        .progress-creativity { background-color: #6366f1; } /* indigo-500 */
+
+        /* Estilos para el selector de día en System Messages */
+        .day-selector-tab {
+            padding: 0.5rem;
+            border-radius: 0.375rem;
+            cursor: pointer;
+            transition: background-color 0.3s, color 0.3s;
+            text-align: center;
+            flex-grow: 1;
+        }
+        .day-selector-tab.active {
+            background-color: #38bdf8;
+            color: #0f172a;
+        }
+        .day-selector-tab:not(.active):hover {
+            background-color: #334155;
+        }
+
     </style>
 </head>
 
-<body class="min-h-screen">
-    <div class="container mx-auto px-4 py-8">
-        <!-- Header with Player Stats -->
-        <header class="mb-8 accent-border rounded-lg p-6 container-bg relative overflow-hidden">
-            <div class="absolute inset-0 bg-gradient-to-r from-[#0f172a] to-[#1e293b] opacity-50"></div>
-            <div class="relative z-10 flex flex-col md:flex-row justify-between items-center">
-                <div class="flex items-center mb-4 md:mb-0">
-                    <div class="w-16 h-16 rounded-full container-bg-light flex items-center justify-center mr-4 pulse">
-                        <i class="fas fa-laptop-code accent-text text-2xl"></i>
-                    </div>
-                    <div>
-                        <h1 class="text-2xl font-bold text-slate-100">CS Student</h1>
-                        <div class="flex items-center">
-                            <span class="accent-text mr-2">Lv. <span id="player-level">5</span></span>
-                            <div class="w-32 h-2 bg-slate-900 rounded-full">
-                                <div id="exp-bar" class="accent-gradient h-full rounded-full" style="width: 45%"></div>
-                            </div>
-                            <span class="ml-2 text-sm text-slate-300"><span id="current-exp">450</span>/<span id="max-exp">1000</span> EXP</span>
-                        </div>
-                    </div>
+<body class="p-4 lg:p-6">
+    <div class="mb-4">
+        <div class="panel py-1 px-3 flex items-center gap-4">
+            <!-- Level Display -->
+            <div class="flex items-baseline gap-2">
+                <div class="text-xs text-slate-400 font-semibold">LEVEL</div>
+                <div id="top-bar-level" class="text-lg font-bold accent-text leading-none">1</div>
+            </div>
+            <!-- EXP Bar -->
+            <div class="flex-grow flex items-center gap-3 px-4">
+                <div class="w-full h-2 bg-slate-900 rounded-full flex-grow">
+                    <div id="top-bar-exp" class="accent-gradient h-full rounded-full" style="width: 45%"></div>
                 </div>
-                <div class="grid grid-cols-3 gap-4 text-center">
-                    <div>
-                        <div class="text-xs text-slate-400 opacity-80">ALGO</div>
-                        <div class="text-xl font-bold accent-text">87</div>
-                    </div>
-                    <div>
-                        <div class="text-xs text-slate-400 opacity-80">PHYS</div>
-                        <div class="text-xl font-bold accent-text">92</div>
-                    </div>
-                    <div>
-                        <div class="text-xs text-slate-400 opacity-80">GRADES</div>
-                        <div class="text-xl font-bold accent-text">3.8</div>
-                    </div>
+                <div class="text-xs text-slate-400 whitespace-nowrap"><span id="top-bar-current-exp">450</span> / <span id="top-bar-max-exp">1000</span> EXP</div>
+            </div>
+            <!-- Rank -->
+            <div class="text-center bg-slate-700/50 px-2 py-0.5 rounded-md">
+                <div class="text-xs text-slate-400">RANK</div>
+                <div class="text-lg font-bold text-yellow-400 leading-none">E</div>
+            </div>
+            <!-- Streak -->
+            <div class="bg-slate-900/50 py-1 px-3 rounded-lg flex items-center gap-2">
+                <i class="fas fa-fire text-lg text-red-500"></i>
+                <div>
+                    <div class="text-xs text-slate-400">STREAK</div>
+                    <div class="font-bold text-base text-slate-100 leading-none"><span id="top-bar-streak">0</span> DAYS</div>
                 </div>
             </div>
-        </header>
-
-        <!-- Main Content -->
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            <!-- Left Column -->
-            <div class="lg:col-span-2">
-                <iframe src="tasks.html" class="w-full h-[500px] border-none rounded-lg container-bg accent-border mb-8"></iframe>
-                <div class="accent-border rounded-lg p-6 container-bg">
-                    <div class="flex justify-between items-center mb-6">
-                        <h2 class="text-xl font-bold text-slate-100 flex items-center">
-                            <i class="fas fa-link accent-text mr-2"></i> Quick Links
-                        </h2>
-                        <button id="add-website-btn" class="text-xs accent-gradient hover:opacity-90 text-white font-bold px-3 py-1 rounded-lg transition">
-                            <i class="fas fa-plus mr-1"></i> Add Website
-                        </button>
-                    </div>
-                    <div id="add-website-form" class="hidden p-4 container-bg-light rounded-lg mt-4">
-                        <input type="text" id="website-name" placeholder="Website Name" class="bg-slate-900 border accent-border text-slate-200 p-2 rounded mb-2 w-full">
-                        <input type="url" id="website-url" placeholder="Website URL" class="bg-slate-900 border accent-border text-slate-200 p-2 rounded mb-2 w-full">
-                        <input type="text" id="website-icon" placeholder="Icon URL (optional)" class="bg-slate-900 border accent-border text-slate-200 p-2 rounded mb-2 w-full">
-                        <div class="flex">
-                            <button id="save-website" class="accent-gradient hover:opacity-90 text-white font-bold px-4 py-2 rounded-lg mr-2">Save</button>
-                            <button id="cancel-website" class="container-bg-light hover:bg-slate-600 text-slate-200 font-bold px-4 py-2 rounded-lg">Cancel</button>
-                        </div>
-                    </div>
-                    <div id="quick-links" class="grid grid-cols-2 md:grid-cols-4 gap-4"></div>
-                </div>
-            </div>
-
-            <!-- Right Column -->
-            <div>
-                <div class="accent-border rounded-lg p-6 container-bg mb-6">
-                    <h2 class="text-xl font-bold text-slate-100 flex items-center mb-6"><i class="fas fa-dungeon accent-text mr-2"></i> Student Progress</h2>
-                    <div class="mb-6">
-                        <div class="flex justify-between mb-2"><span class="text-slate-200">Daily Completion</span><span class="accent-text font-bold" id="daily-percentage">0%</span></div>
-                        <div class="w-full h-3 bg-slate-900 rounded-full"><div id="progress-bar" class="h-3 rounded-full accent-gradient" style="width: 0%"></div></div>
-                    </div>
-                    <div class="space-y-4">
-                        <div class="flex items-center"><div class="w-10 h-10 rounded-full container-bg-light flex items-center justify-center mr-3"><i class="fas fa-fire accent-text"></i></div><div class="flex-grow"><div class="text-slate-100 font-medium">Current Streak</div><div class="text-xs text-slate-400">Consecutive days active</div></div><div class="text-xl font-bold accent-text" id="streak-count">0</div></div>
-                        <div class="flex items-center"><div class="w-10 h-10 rounded-full container-bg-light flex items-center justify-center mr-3"><i class="fas fa-trophy accent-text"></i></div><div class="flex-grow"><div class="text-slate-100 font-medium">Total Tasks</div><div class="text-xs text-slate-400">All-time completed</div></div><div class="text-xl font-bold accent-text" id="total-quests">0</div></div>
-                        <div class="flex items-center"><div class="w-10 h-10 rounded-full container-bg-light flex items-center justify-center mr-3"><i class="fas fa-gem accent-text"></i></div><div class="flex-grow"><div class="text-slate-100 font-medium">Next Reward</div><div class="text-xs text-slate-400">At <span id="next-reward-exp">1000</span> EXP</div></div><div class="text-xl font-bold accent-text"><i class="fas fa-chevron-right"></i></div></div>
-                    </div>
-                </div>
-                <div class="accent-border rounded-lg p-6 container-bg mb-6">
-                    <h2 class="text-xl font-bold text-slate-100 flex items-center mb-6"><i class="fas fa-chart-pie accent-text mr-2"></i> Category Breakdown</h2>
-                    <div class="grid grid-cols-2 gap-4 mb-4">
-                        <div class="container-bg-light rounded-lg p-3 text-center"><div class="text-sm text-slate-300 opacity-80 mb-1">Coding</div><div class="text-xl font-bold text-[#3b82f6]" id="coding-count">0</div></div>
-                        <div class="container-bg-light rounded-lg p-3 text-center"><div class="text-sm text-slate-300 opacity-80 mb-1">Exercise</div><div class="text-xl font-bold text-[#10b981]" id="exercise-count">0</div></div>
-                        <div class="container-bg-light rounded-lg p-3 text-center"><div class="text-sm text-slate-300 opacity-80 mb-1">Study</div><div class="text-xl font-bold text-[#8b5cf6]" id="study-count">0</div></div>
-                        <div class="container-bg-light rounded-lg p-3 text-center"><div class="text-sm text-slate-300 opacity-80 mb-1">Projects</div><div class="text-xl font-bold text-[#f59e0b]" id="project-count">0</div></div>
-                    </div>
-                    <div class="text-center"><div class="inline-block container-bg-light rounded-lg p-3"><div class="text-sm text-slate-300 opacity-80 mb-1">Exams</div><div class="text-xl font-bold text-[#ec4899]" id="exam-count">0</div></div></div>
-                </div>
-                <div class="accent-border rounded-lg p-6 container-bg">
-                    <h2 class="text-xl font-bold text-slate-100 flex items-center mb-6"><i class="fas fa-terminal accent-text mr-2"></i> System Messages</h2>
-                    <div id="system-messages" class="space-y-3 max-h-64 overflow-y-auto pr-2"></div>
-                    <div class="mt-4 text-center"><button id="clear-messages" class="text-xs text-slate-400 hover:text-white transition"><i class="fas fa-trash mr-1"></i> Clear Messages</button></div>
-                </div>
-            </div>
-        </div>
-        <!-- Floating Crystals -->
-        <div class="fixed bottom-0 left-0 w-full h-full flex justify-between items-end px-8 pointer-events-none z-0 opacity-20">
-            <div class="w-16 h-16 rounded-full bg-gradient-to-br from-[#38bdf8] to-transparent floating" style="animation-delay: 0s;"></div>
-            <div class="w-12 h-12 rounded-full bg-gradient-to-br from-[#0ea5e9] to-transparent floating" style="animation-delay: 1s; align-self: flex-start; margin-top: 20vh;"></div>
-            <div class="w-10 h-10 rounded-full bg-gradient-to-br from-[#38bdf8] to-transparent floating" style="animation-delay: 0.5s;"></div>
         </div>
     </div>
 
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-4">
+        
+        <!-- Columna 1: Perfil del Jugador -->
+        <div class="lg:col-span-2 flex flex-col gap-4">
+            <div class="panel flex-grow flex flex-col p-4 items-center">
+                <div class="w-24 h-24 rounded-full bg-[#0f172a] border-2 border-[#38bdf8] flex items-center justify-center mb-4">
+                    <i class="fas fa-user-astronaut text-4xl accent-text"></i>
+                </div>
+                <h1 class="text-2xl font-bold text-slate-100 mb-4">CS Student</h1>
+                
+                <!-- Health and Gold -->
+                <div class="w-full space-y-4 text-sm">
+                    <!-- Health Bar -->
+                    <div>
+                        <div class="flex justify-between items-center mb-1">
+                            <span class="font-bold text-red-500">HEALTH</span>
+                            <span class="text-sm text-slate-400">100 / 100</span>
+                        </div>
+                        <div class="w-full h-2 bg-slate-900 rounded-full">
+                            <div id="health-bar" class="bg-red-500 h-full rounded-full" style="width: 100%"></div>
+                        </div>
+                    </div>
+                    <!-- Gold Display -->
+                    <div class="flex items-center justify-between">
+                        <span class="font-bold text-yellow-400">GOLD</span>
+                        <div class="flex items-center gap-1">
+                            <i class="fas fa-coins text-yellow-400"></i>
+                            <span id="gold-count" class="text-lg font-bold">1,250</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="panel">
+                <div class="panel-header flex justify-between items-center">
+                    <span>Quick Links</span>
+                    <button id="add-website-btn" class="w-7 h-7 bg-slate-700/50 hover:bg-slate-700 text-slate-300 rounded-md transition flex items-center justify-center">
+                        <i class="fas fa-plus"></i>
+                    </button>
+                </div>
+                <div id="quick-links" class="p-2 space-y-2 max-h-60 overflow-y-auto"></div>
+                 <div id="add-website-form" class="hidden p-4 bg-[#0f172a]">
+                    <input type="text" id="website-name" placeholder="Website Name" class="bg-slate-900 border border-slate-600 text-slate-200 p-2 rounded mb-2 w-full text-sm">
+                    <input type="url" id="website-url" placeholder="Website URL" class="bg-slate-900 border border-slate-600 text-slate-200 p-2 rounded mb-2 w-full text-sm">
+                    <div class="flex">
+                        <button id="save-website" class="accent-gradient hover:opacity-90 text-white font-bold px-3 py-1 rounded-md mr-2 text-sm">Save</button>
+                        <button id="cancel-website" class="bg-slate-600 hover:bg-slate-700 text-slate-200 font-bold px-3 py-1 rounded-md text-sm">Cancel</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Columna 2: Reporte y Gráficos -->
+        <div class="lg:col-span-3 flex flex-col gap-4">
+            <div class="panel flex-grow p-4">
+                <h2 class="font-bold text-slate-100 mb-4">Category Breakdown</h2>
+                
+                <div class="flex justify-center items-center h-48 mb-4 bg-slate-900/50 rounded-md">
+                    <svg class="w-40 h-40" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M50 10L85 27.5V72.5L50 90L15 72.5V27.5L50 10Z" stroke="#38bdf8" stroke-opacity="0.2"/>
+                        <path d="M50 25L72.5 38.75V61.25L50 75L27.5 61.25V38.75L50 25Z" stroke="#38bdf8" stroke-opacity="0.4"/>
+                        <path d="M50 10V90" stroke="#38bdf8" stroke-opacity="0.1"/>
+                        <path d="M15 27.5L85 72.5" stroke="#38bdf8" stroke-opacity="0.1"/>
+                        <path d="M15 72.5L85 27.5" stroke="#38bdf8" stroke-opacity="0.1"/>
+                        <path d="M50 25L85 27.5L72.5 61.25L50 90L27.5 61.25L15 27.5L50 25Z" fill="#38bdf8" fill-opacity="0.2"/>
+                        <!-- Labels for Radar Chart -->
+                        <text x="50" y="5" font-family="Rajdhani, sans-serif" font-size="6" fill="#94a3b8" text-anchor="middle">18</text>
+                        <text x="90" y="27.5" font-family="Rajdhani, sans-serif" font-size="6" fill="#94a3b8" text-anchor="middle" dominant-baseline="middle">29</text>
+                        <text x="90" y="72.5" font-family="Rajdhani, sans-serif" font-size="6" fill="#94a3b8" text-anchor="middle" dominant-baseline="middle">32</text>
+                        <text x="50" y="95" font-family="Rajdhani, sans-serif" font-size="6" fill="#94a3b8" text-anchor="middle">43</text>
+                        <text x="10" y="72.5" font-family="Rajdhani, sans-serif" font-size="6" fill="#94a3b8" text-anchor="middle" dominant-baseline="middle">18</text>
+                        <text x="10" y="27.5" font-family="Rajdhani, sans-serif" font-size="6" fill="#94a3b8" text-anchor="middle" dominant-baseline="middle">44</text>
+                    </svg>
+                </div>
+
+                <div class="space-y-4">
+                    <!-- Category Item: Coding -->
+                    <div class="category-item">
+                        <div class="category-icon"><i class="fas fa-code text-lg" style="color: #3b82f6;"></i></div>
+                        <div class="w-full">
+                            <div class="flex justify-between items-center mb-1">
+                                <span class="font-semibold text-sm text-slate-200">Coding</span>
+                                <span class="text-xs text-slate-400" id="coding-count">0</span>
+                            </div>
+                            <div class="category-progress-bg">
+                                <div class="category-progress-bar progress-coding" style="width: 60%;"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Category Item: Exercise -->
+                    <div class="category-item">
+                        <div class="category-icon"><i class="fas fa-dumbbell text-lg" style="color: #10b981;"></i></div>
+                        <div class="w-full">
+                            <div class="flex justify-between items-center mb-1">
+                                <span class="font-semibold text-sm text-slate-200">Exercise</span>
+                                <span class="text-xs text-slate-400" id="exercise-count">0</span>
+                            </div>
+                            <div class="category-progress-bg">
+                                <div class="category-progress-bar progress-exercise" style="width: 80%;"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Category Item: Study -->
+                    <div class="category-item">
+                        <div class="category-icon"><i class="fas fa-book-open text-lg" style="color: #8b5cf6;"></i></div>
+                        <div class="w-full">
+                            <div class="flex justify-between items-center mb-1">
+                                <span class="font-semibold text-sm text-slate-200">Study</span>
+                                <span class="text-xs text-slate-400" id="study-count">0</span>
+                            </div>
+                            <div class="category-progress-bg">
+                                <div class="category-progress-bar progress-study" style="width: 45%;"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Category Item: Projects -->
+                    <div class="category-item">
+                        <div class="category-icon"><i class="fas fa-tasks text-lg" style="color: #f59e0b;"></i></div>
+                        <div class="w-full">
+                            <div class="flex justify-between items-center mb-1">
+                                <span class="font-semibold text-sm text-slate-200">Projects</span>
+                                <span class="text-xs text-slate-400" id="project-count">0</span>
+                            </div>
+                            <div class="category-progress-bg">
+                                <div class="category-progress-bar progress-project" style="width: 70%;"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Category Item: Exams -->
+                    <div class="category-item">
+                        <div class="category-icon"><i class="fas fa-file-alt text-lg" style="color: #ec4899;"></i></div>
+                        <div class="w-full">
+                            <div class="flex justify-between items-center mb-1">
+                                <span class="font-semibold text-sm text-slate-200">Exams</span>
+                                <span class="text-xs text-slate-400" id="exam-count">0</span>
+                            </div>
+                            <div class="category-progress-bg">
+                                <div class="category-progress-bar progress-exam" style="width: 90%;"></div>
+                            </div>
+                        </div>
+                    </div>
+                     <!-- Category Item: Creativity -->
+                    <div class="category-item">
+                        <div class="category-icon"><i class="fas fa-lightbulb text-lg" style="color: #6366f1;"></i></div>
+                        <div class="w-full">
+                            <div class="flex justify-between items-center mb-1">
+                                <span class="font-semibold text-sm text-slate-200">Creativity</span>
+                                <span class="text-xs text-slate-400" id="creativity-count">0</span>
+                            </div>
+                            <div class="category-progress-bg">
+                                <div class="category-progress-bar progress-creativity" style="width: 55%;"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Columna 3: Mensajes y Progreso -->
+        <div class="lg:col-span-7 flex flex-col gap-4">
+            
+            <!-- Contenedor para Calendario, Gráfico y Mensajes -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                <!-- Columna Izquierda con Calendario y Gráfico -->
+                <div class="flex flex-col gap-4">
+                    <!-- Panel Calendario -->
+                    <div class="panel p-4 h-48 flex flex-col">
+                        <div class="flex justify-between items-center mb-2">
+                            <div id="calendar-header" class="font-bold text-sm accent-text"></div>
+                            <button id="expand-calendar-btn" class="text-slate-400 hover:text-white"><i class="fas fa-expand-arrows-alt"></i></button>
+                        </div>
+                         <div id="calendar-grid" class="grid grid-cols-7 gap-1 text-center flex-grow"></div>
+                    </div>
+                    <!-- Panel Gráfico de Barras -->
+                    <div class="panel p-4 h-48 flex flex-col">
+                        <h3 class="font-bold text-sm mb-2 text-slate-300">Weekly Activity</h3>
+                        <div class="flex-grow flex items-end justify-around">
+                            <div class="bar-container h-full">
+                                <div class="bar" style="height: 40%; animation-delay: 0.1s;"></div>
+                                <span class="day-label">M</span>
+                            </div>
+                            <div class="bar-container h-full">
+                                <div class="bar" style="height: 60%; animation-delay: 0.2s;"></div>
+                                <span class="day-label">T</span>
+                            </div>
+                            <div class="bar-container h-full">
+                                <div class="bar accent-gradient" style="height: 85%; animation-delay: 0.3s;"></div>
+                                <span class="day-label">W</span>
+                            </div>
+                            <div class="bar-container h-full">
+                                <div class="bar" style="height: 50%; animation-delay: 0.4s;"></div>
+                                <span class="day-label">T</span>
+                            </div>
+                            <div class="bar-container h-full">
+                                <div class="bar" style="height: 70%; animation-delay: 0.5s;"></div>
+                                <span class="day-label">F</span>
+                            </div>
+                            <div class="bar-container h-full">
+                                <div class="bar" style="height: 20%; animation-delay: 0.6s;"></div>
+                                <span class="day-label">S</span>
+                            </div>
+                            <div class="bar-container h-full">
+                                <div class="bar" style="height: 30%; animation-delay: 0.7s;"></div>
+                                <span class="day-label">S</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- Panel System Messages -->
+                <div class="panel flex flex-col">
+                    <div class="panel-header flex justify-between items-center">
+                        <span>System Messages</span>
+                        <i class="fas fa-terminal accent-text"></i>
+                    </div>
+                    <div id="day-selector" class="flex justify-around p-2 bg-slate-900/50">
+                        <!-- Day tabs will be inserted here by JS -->
+                    </div>
+                    <div id="system-messages" class="p-2 space-y-2 flex-grow overflow-y-auto"></div>
+                    <div class="p-2 border-t border-slate-700/50">
+                        <button id="clear-messages" class="text-xs text-slate-400 hover:text-white transition w-full text-center">
+                            <i class="fas fa-trash mr-1"></i> Clear Messages
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Nuevo Contenedor para Tareas y Logros -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                <!-- Columna Izquierda con 4 Paneles -->
+                <div class="grid grid-cols-2 gap-4">
+                    <!-- Panel Total Tasks -->
+                    <div class="panel p-4 flex flex-col justify-center items-center text-center">
+                        <i class="fas fa-trophy text-2xl accent-text mb-2"></i>
+                        <div class="text-slate-100 font-bold text-3xl" id="total-quests">0</div>
+                        <div class="text-xs text-slate-400">Total Tasks</div>
+                    </div>
+                    <!-- Panel Next Reward -->
+                    <div class="panel p-4 flex flex-col justify-center items-center text-center">
+                        <i class="fas fa-gem text-2xl accent-text mb-2"></i>
+                        <div class="text-slate-100 font-bold text-3xl" id="next-reward-exp-display">1000</div>
+                        <div class="text-xs text-slate-400">Next Reward</div>
+                    </div>
+                    <!-- Panel Tasks Today -->
+                    <div class="panel p-4 flex flex-col justify-center items-center text-center">
+                        <i class="fas fa-check-square text-2xl accent-text mb-2"></i>
+                        <div class="text-slate-100 font-bold text-3xl" id="tasks-today">0</div>
+                        <div class="text-xs text-slate-400">Tasks Today</div>
+                    </div>
+                    <!-- Panel Best Streak -->
+                    <div class="panel p-4 flex flex-col justify-center items-center text-center">
+                        <i class="fas fa-star text-2xl accent-text mb-2"></i>
+                        <div class="text-slate-100 font-bold text-3xl" id="best-streak">0</div>
+                        <div class="text-xs text-slate-400">Best Streak</div>
+                    </div>
+                </div>
+                <!-- Panel de Logros (Columna Derecha) -->
+                <div class="panel p-4">
+                    <h3 class="font-bold text-center mb-4">This Month's Achievements</h3>
+                    <div class="space-y-3">
+                        <div class="achievement-item">
+                            <div class="achievement-icon"><i class="fas fa-gift accent-text"></i></div>
+                            <div class="flex-grow">
+                                <div class="font-bold text-slate-200 text-sm">Treasure Box</div>
+                                <div class="text-xs text-slate-400">Lottery unlocked</div>
+                            </div>
+                            <div class="font-bold accent-text">1</div>
+                        </div>
+                         <div class="achievement-item">
+                            <div class="achievement-icon"><i class="fas fa-check-double accent-text"></i></div>
+                            <div class="flex-grow">
+                                <div class="font-bold text-slate-200 text-sm">Daily Goals</div>
+                                <div class="text-xs text-slate-400">Goals achieved</div>
+                            </div>
+                            <div class="font-bold accent-text">26</div>
+                        </div>
+                        <div class="achievement-item">
+                            <div class="achievement-icon"><i class="fas fa-medal accent-text"></i></div>
+                            <div class="flex-grow">
+                                <div class="font-bold text-slate-200 text-sm">Badge Earned</div>
+                                <div class="text-xs text-slate-400">"LeetCoder" Badge</div>
+                            </div>
+                            <div class="font-bold accent-text">1</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Contenedor para los Proyectos -->
+        <div class="lg:col-span-12 panel">
+             <div class="panel-header">Projects</div>
+             <div class="p-2 space-y-2">
+                <!-- Project Item 1 -->
+                <div class="project-item">
+                    <div class="project-icon flex-shrink-0"><i class="fas fa-atom text-xl accent-text"></i></div>
+                    <div class="flex-grow min-w-0">
+                        <div class="font-bold text-slate-100 truncate">Nova Prospekt</div>
+                        <div class="text-xs text-slate-400">Sunday, 12 November 2004</div>
+                    </div>
+                    <div class="w-28 flex-shrink-0 text-sm text-slate-300 hidden sm:block">20 Members</div>
+                    <div class="w-32 flex-shrink-0 text-sm font-semibold hidden md:block"><span class="difficulty-hard">Difficult: Hard</span></div>
+                    <div class="w-32 flex-shrink-0 text-sm text-slate-400 hidden lg:block">Antlion Horde</div>
+                    <button class="flex-shrink-0 text-slate-500 hover:text-white w-8 text-center"><i class="fas fa-ellipsis-h"></i></button>
+                </div>
+                <!-- Project Item 2 -->
+                <div class="project-item">
+                    <div class="project-icon flex-shrink-0"><i class="fas fa-biohazard text-xl accent-text"></i></div>
+                    <div class="flex-grow min-w-0">
+                        <div class="font-bold text-slate-100 truncate">Black Mesa East</div>
+                        <div class="text-xs text-slate-400">Friday, 06 December 2020</div>
+                    </div>
+                    <div class="w-28 flex-shrink-0 text-sm text-slate-300 hidden sm:block">75 Members</div>
+                    <div class="w-32 flex-shrink-0 text-sm font-semibold hidden md:block"><span class="difficulty-insane">Difficult: Insane</span></div>
+                    <div class="w-32 flex-shrink-0 text-sm text-slate-400 hidden lg:block">G-Man</div>
+                    <button class="flex-shrink-0 text-slate-500 hover:text-white w-8 text-center"><i class="fas fa-ellipsis-h"></i></button>
+                </div>
+             </div>
+        </div>
+
+        <!-- Temporizador de Reseteo Diario -->
+        <div class="lg:col-span-12 text-center py-4">
+            <span class="text-slate-400 text-lg">Reset in: <span id="reset-timer" class="font-bold text-slate-200">23:59:59</span></span>
+        </div>
+
+    </div>
+
     <script>
-        // Paste the original complex JavaScript here, it should work with the updated class names and structure.
-        // I will use the same JS from the user's provided code.
         document.addEventListener('DOMContentLoaded', function () {
             // --- DATA & STATE ---
             let playerState = {
-                level: 1,
-                currentExp: 0,
-                streak: 0,
-                totalQuests: 0,
-                lastCompletionDate: null,
-                websites: [],
-                deletedDefaultWebsites: [], // Add this line
-                categoryCounts: { coding: 0, exercise: 0, study: 0, project: 0, exam: 0 }
+                level: 1, currentExp: 0, websites: [],
+                deletedDefaultWebsites: [], categoryCounts: { coding: 0, exercise: 0, study: 0, project: 0, exam: 0, creativity: 0 },
+                tasksToday: 0, totalQuests: 0
             };
 
             const defaultWebsites = [
-                { id: 'd1', name: 'GitHub', url: 'https://github.com', icon: 'https://github.githubassets.com/favicons/favicon.png', description: 'Code hosting' },
-                { id: 'd2', name: 'LeetCode', url: 'https://leetcode.com', icon: 'https://leetcode.com/favicon.ico', description: 'Coding practice' },
-                { id: 'd3', name: 'Stack Overflow', url: 'https://stackoverflow.com', icon: 'https://stackoverflow.com/favicon.ico', description: 'Q&A' },
-                { id: 'd4', name: 'YouTube', url: 'https://www.youtube.com', icon: 'https://www.youtube.com/favicon.ico', description: 'Tutorials' }
+                { id: 'd1', name: 'GitHub', url: 'https://github.com', icon: 'https://github.githubassets.com/favicons/favicon.png' },
+                { id: 'd2', name: 'LeetCode', url: 'https://leetcode.com', icon: 'https://leetcode.com/favicon.ico' },
+                { id: 'd3', name: 'Stack Overflow', url: 'https://stackoverflow.com', icon: 'https://stackoverflow.com/favicon.ico' },
+                { id: 'd4', name: 'YouTube', url: 'https://www.youtube.com', icon: 'https://www.youtube.com/favicon.ico' }
             ];
 
             // --- DOM ELEMENTS ---
             const elements = {
-                level: document.getElementById('player-level'),
-                currentExp: document.getElementById('current-exp'),
-                maxExp: document.getElementById('max-exp'),
-                expBar: document.getElementById('exp-bar'),
-                streakCount: document.getElementById('streak-count'),
+                topBarLevel: document.getElementById('top-bar-level'), topBarExp: document.getElementById('top-bar-exp'),
+                topBarCurrentExp: document.getElementById('top-bar-current-exp'), topBarMaxExp: document.getElementById('top-bar-max-exp'),
+                topBarStreak: document.getElementById('top-bar-streak'),
                 totalQuests: document.getElementById('total-quests'),
-                nextRewardExp: document.getElementById('next-reward-exp'),
+                nextRewardExpDisplay: document.getElementById('next-reward-exp-display'), 
+                tasksToday: document.getElementById('tasks-today'),
+                bestStreak: document.getElementById('best-streak'),
                 quickLinks: document.getElementById('quick-links'),
-                addWebsiteBtn: document.getElementById('add-website-btn'),
-                addWebsiteForm: document.getElementById('add-website-form'),
-                saveWebsiteBtn: document.getElementById('save-website'),
-                cancelWebsiteBtn: document.getElementById('cancel-website'),
-                websiteNameInput: document.getElementById('website-name'),
-                websiteUrlInput: document.getElementById('website-url'),
-                websiteIconInput: document.getElementById('website-icon'),
-                systemMessages: document.getElementById('system-messages'),
-                clearMessagesBtn: document.getElementById('clear-messages'),
-                codingCount: document.getElementById('coding-count'),
-                exerciseCount: document.getElementById('exercise-count'),
-                studyCount: document.getElementById('study-count'),
-                projectCount: document.getElementById('project-count'),
+                addWebsiteBtn: document.getElementById('add-website-btn'), addWebsiteForm: document.getElementById('add-website-form'),
+                saveWebsiteBtn: document.getElementById('save-website'), cancelWebsiteBtn: document.getElementById('cancel-website'),
+                websiteNameInput: document.getElementById('website-name'), websiteUrlInput: document.getElementById('website-url'),
+                systemMessages: document.getElementById('system-messages'), clearMessagesBtn: document.getElementById('clear-messages'),
+                codingCount: document.getElementById('coding-count'), exerciseCount: document.getElementById('exercise-count'),
+                studyCount: document.getElementById('study-count'), projectCount: document.getElementById('project-count'),
                 examCount: document.getElementById('exam-count'),
+                creativityCount: document.getElementById('creativity-count'),
+                calendarHeader: document.getElementById('calendar-header'), calendarGrid: document.getElementById('calendar-grid'),
+                resetTimer: document.getElementById('reset-timer'),
+                daySelector: document.getElementById('day-selector'),
+                expandCalendarBtn: document.getElementById('expand-calendar-btn'),
             };
 
             // --- INITIALIZATION ---
             loadState();
-            checkStreak();
             renderUI();
-            addSystemMessage("Welcome to your CS Student Dungeon. Complete tasks to level up your skills!");
-
+            renderCalendar();
+            renderDaySelector();
+            updateResetTimer();
+            setInterval(updateResetTimer, 1000);
+            
             // --- EVENT LISTENERS ---
             elements.addWebsiteBtn.addEventListener('click', () => toggleWebsiteForm(true));
             elements.cancelWebsiteBtn.addEventListener('click', () => toggleWebsiteForm(false));
             elements.saveWebsiteBtn.addEventListener('click', handleAddWebsite);
             elements.clearMessagesBtn.addEventListener('click', clearMessages);
-
-            window.addEventListener('message', function(event) {
-                if (event.data.type === 'taskCompleted') {
-                    const expGain = event.data.exp || 50;
-                    const category = event.data.category || 'coding';
-                    addExp(expGain);
-                    updateTotalQuests(playerState.totalQuests + 1);
-                    updateStreak();
-                    if(playerState.categoryCounts.hasOwnProperty(category)) {
-                        playerState.categoryCounts[category]++;
-                    }
-                    saveState();
-                    renderUI();
-                    addSystemMessage(`Task completed! +${expGain} EXP in ${category}.`, 'success');
-                }
+            elements.expandCalendarBtn.addEventListener('click', () => {
+                window.location.href = 'calendar.html';
             });
+            
+            // --- DAY SELECTOR LOGIC ---
+            function renderDaySelector() {
+                const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+                const now = new Date();
+                const todayIndex = (now.getDay() + 6) % 7; // Monday is 0
 
-            // --- FUNCTIONS ---
-            function loadState() {
-                const savedState = JSON.parse(localStorage.getItem('csDungeonStateV2'));
-                if (savedState) {
-                    playerState = { ...playerState, ...savedState };
+                const mondayDate = new Date(now);
+                mondayDate.setDate(now.getDate() - todayIndex);
+
+                elements.daySelector.innerHTML = '';
+                days.forEach((day, index) => {
+                    const tab = document.createElement('div');
+                    tab.className = 'day-selector-tab';
+                    if (index === todayIndex) {
+                        tab.classList.add('active');
+                    }
+
+                    const currentTabDate = new Date(mondayDate);
+                    currentTabDate.setDate(mondayDate.getDate() + index);
+                    const dateNumber = currentTabDate.getDate();
+
+                    tab.innerHTML = `
+                        <div class="text-xs">${day}</div>
+                        <div class="font-bold text-lg leading-none">${dateNumber}</div>
+                    `;
+                    tab.dataset.dayIndex = index;
+                    tab.addEventListener('click', () => selectDay(index));
+                    elements.daySelector.appendChild(tab);
+                });
+                selectDay(todayIndex); // Show today's messages by default
+            }
+
+            function selectDay(dayIndex) {
+                // Remove active class from all tabs
+                document.querySelectorAll('.day-selector-tab').forEach(tab => tab.classList.remove('active'));
+                // Add active class to the selected one
+                document.querySelector(`.day-selector-tab[data-day-index='${dayIndex}']`).classList.add('active');
+                // Clear current messages and show messages for the selected day
+                elements.systemMessages.innerHTML = '';
+                showMessagesForDay(dayIndex);
+            }
+
+            function showMessagesForDay(dayIndex) {
+                const messages = {
+                    0: ["Welcome to a new week! Let's start strong. Challenge: Solve one medium LeetCode problem.", "Reminder: Project meeting at 3 PM."],
+                    1: ["Today's focus: Data Structures. Review trees and graphs.", "SYSTEM: Dashboard loaded. Ready to tackle new quests!"],
+                    2: ["Mid-week check-in! How's your progress on Project Borealis?", "Don't forget your workout session."],
+                    3: ["Almost there! Prepare for tomorrow's quiz on algorithms.", "SYSTEM: New quick link 'Dev.to' added."],
+                    4: ["Friday! Time to wrap up weekly tasks and push to GitHub.", "SUCCESS: Task completed! +150 EXP in project."],
+                    5: ["Weekend coding session: Work on a personal project.", "ALERT: Streak of 12 broken! Complete a task to start anew."],
+                    6: ["Rest and recharge. Plan for the upcoming week."]
+                };
+                
+                if (messages[dayIndex] && messages[dayIndex].length > 0) {
+                    messages[dayIndex].forEach(msg => addSystemMessage(msg));
+                } else {
+                    addSystemMessage("No messages for this day.");
                 }
             }
 
+            // --- TIMER LOGIC ---
+            function updateResetTimer() {
+                const now = new Date();
+                const endOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1, 0, 0, 0);
+                const diff = endOfDay - now;
+
+                const h = Math.floor((diff / (1000 * 60 * 60)) % 24).toString().padStart(2, '0');
+                const m = Math.floor((diff / 1000 / 60) % 60).toString().padStart(2, '0');
+                const s = Math.floor((diff / 1000) % 60).toString().padStart(2, '0');
+
+                if (elements.resetTimer) {
+                    elements.resetTimer.textContent = `${h}:${m}:${s}`;
+                }
+            }
+
+            // --- CALENDAR LOGIC ---
+            function renderCalendar() {
+                const now = new Date();
+                const monthName = now.toLocaleString('default', { month: 'long' });
+                const capitalizedMonth = monthName.charAt(0).toUpperCase() + monthName.slice(1);
+                
+                elements.calendarHeader.textContent = `${capitalizedMonth} ${now.getFullYear()}`;
+                elements.calendarGrid.innerHTML = '';
+
+                const daysOfWeek = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
+                daysOfWeek.forEach(day => {
+                    elements.calendarGrid.innerHTML += `<div class="calendar-day-name">${day}</div>`;
+                });
+
+                const firstDayOfMonth = new Date(now.getFullYear(), now.getMonth(), 1).getDay();
+                const daysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
+                
+                // Adjust for Monday start
+                const startOffset = (firstDayOfMonth === 0) ? 6 : firstDayOfMonth - 1;
+
+                for (let i = 0; i < startOffset; i++) {
+                    elements.calendarGrid.innerHTML += `<div></div>`;
+                }
+
+                for (let day = 1; day <= daysInMonth; day++) {
+                    const dayClass = day === now.getDate() ? 'calendar-day today' : 'calendar-day';
+                    elements.calendarGrid.innerHTML += `<div class="${dayClass}">${day}</div>`;
+                }
+            }
+
+            // --- CORE FUNCTIONS ---
+            function completeTask(expGain, category) {
+                addExp(expGain);
+                updateTotalQuests(playerState.totalQuests + 1);
+                if (playerState.categoryCounts.hasOwnProperty(category)) {
+                    playerState.categoryCounts[category]++;
+                }
+                saveState();
+                renderUI();
+                addSystemMessage(`Task completed! +${expGain} EXP in ${category}.`, 'success');
+            }
+
+            function loadState() {
+                const savedState = JSON.parse(localStorage.getItem('csDungeonStateV3'));
+                if (savedState) playerState = { ...playerState, ...savedState };
+            }
+
             function saveState() {
-                localStorage.setItem('csDungeonStateV2', JSON.stringify(playerState));
+                localStorage.setItem('csDungeonStateV3', JSON.stringify(playerState));
             }
 
             function calculateMaxExp(level) {
@@ -286,28 +769,34 @@
 
             function renderUI() {
                 const maxExp = calculateMaxExp(playerState.level);
-                elements.level.textContent = playerState.level;
-                elements.currentExp.textContent = playerState.currentExp;
-                elements.maxExp.textContent = maxExp;
-                elements.expBar.style.width = `${(playerState.currentExp / maxExp) * 100}%`;
-                elements.streakCount.textContent = playerState.streak;
-                elements.totalQuests.textContent = playerState.totalQuests;
-                elements.nextRewardExp.textContent = maxExp;
+                // Top Bar
+                elements.topBarLevel.textContent = playerState.level;
+                elements.topBarCurrentExp.textContent = playerState.currentExp;
+                elements.topBarMaxExp.textContent = maxExp;
+                elements.topBarExp.style.width = `${(playerState.currentExp / maxExp) * 100}%`;
                 
-                // Render category counts
+                // Get streak data from the new calendar system via localStorage
+                const savedStreak = localStorage.getItem('playerStreak') || 0;
+                const savedRecord = localStorage.getItem('playerRecordStreak') || 0;
+
+                elements.topBarStreak.textContent = savedStreak;
+                elements.bestStreak.textContent = savedRecord;
+
+                elements.totalQuests.textContent = playerState.totalQuests;
+                elements.nextRewardExpDisplay.textContent = maxExp;
+                elements.tasksToday.textContent = playerState.tasksToday || 0;
+                
                 for (const category in playerState.categoryCounts) {
                     if (elements[`${category}Count`]) {
                         elements[`${category}Count`].textContent = playerState.categoryCounts[category];
                     }
                 }
-
                 renderWebsites();
             }
 
             function addExp(amount) {
                 let maxExp = calculateMaxExp(playerState.level);
                 playerState.currentExp += amount;
-
                 while (playerState.currentExp >= maxExp) {
                     playerState.currentExp -= maxExp;
                     playerState.level++;
@@ -317,32 +806,9 @@
             }
             
             function levelUp(newLevel) {
-                elements.level.classList.add('level-up-animation');
-                setTimeout(() => {
-                    elements.level.classList.remove('level-up-animation');
-                }, 1500);
+                elements.topBarLevel.classList.add('level-up-animation');
+                setTimeout(() => { elements.topBarLevel.classList.remove('level-up-animation'); }, 1500);
                 addSystemMessage(`Congratulations! You reached Level ${newLevel}!`, 'success');
-            }
-
-            function updateStreak() {
-                const today = new Date().toDateString();
-                if (playerState.lastCompletionDate !== today) {
-                    playerState.streak++;
-                    playerState.lastCompletionDate = today;
-                    addSystemMessage(`Streak extended to ${playerState.streak} days!`);
-                }
-            }
-            
-            function checkStreak() {
-                if (!playerState.lastCompletionDate) return;
-                const lastDate = new Date(playerState.lastCompletionDate);
-                const today = new Date();
-                const yesterday = new Date();
-                yesterday.setDate(today.getDate() - 1);
-                if (lastDate.toDateString() !== today.toDateString() && lastDate.toDateString() !== yesterday.toDateString()) {
-                    addSystemMessage(`Streak of ${playerState.streak} broken! Complete a task to start anew.`, 'danger');
-                    playerState.streak = 0;
-                }
             }
 
             function updateTotalQuests(count) {
@@ -351,32 +817,22 @@
 
             function addSystemMessage(text, type = 'system') {
                 const message = document.createElement('div');
-                let borderColorClass = 'accent-border';
-                let titleColorClass = 'accent-text';
-                let title = 'SYSTEM:';
-
-                if (type === 'success') {
-                    borderColorClass = 'border-green-500';
-                    titleColorClass = 'text-green-400';
-                    title = 'SUCCESS:';
-                } else if (type === 'danger') {
-                    borderColorClass = 'border-red-500';
-                    titleColorClass = 'text-red-400';
-                    title = 'ALERT:';
-                }
-
-                message.className = `container-bg-dark rounded p-3 text-sm text-slate-300 border-l-4 ${borderColorClass} mb-2`;
-                message.innerHTML = `
-                    <div class="font-bold ${titleColorClass}">${title}</div>
-                    <div>${text}</div>
-                `;
+                let icon = 'fa-info-circle', colorClass = 'accent-text';
+                if (text.startsWith('SUCCESS:')) { type = 'success'; text = text.replace('SUCCESS: ', ''); }
+                if (text.startsWith('ALERT:')) { type = 'danger'; text = text.replace('ALERT: ', ''); }
+                if (type === 'success') { icon = 'fa-check-circle'; colorClass = 'text-green-400'; } 
+                else if (type === 'danger') { icon = 'fa-exclamation-triangle'; colorClass = 'text-red-400'; }
+                message.className = `text-xs text-slate-300 flex items-start`;
+                message.innerHTML = `<i class="fas ${icon} ${colorClass} mr-2 mt-1"></i><span>${text}</span>`;
                 elements.systemMessages.appendChild(message);
                 elements.systemMessages.scrollTop = elements.systemMessages.scrollHeight;
             }
             
             function clearMessages() {
-                elements.systemMessages.innerHTML = '';
-                addSystemMessage("Message log cleared.");
+                const activeTab = document.querySelector('.day-selector-tab.active');
+                if (activeTab) {
+                    selectDay(parseInt(activeTab.dataset.dayIndex));
+                }
             }
 
             function toggleWebsiteForm(show) {
@@ -384,22 +840,15 @@
                 if (!show) {
                     elements.websiteNameInput.value = '';
                     elements.websiteUrlInput.value = '';
-                    elements.websiteIconInput.value = '';
                 }
             }
 
             function handleAddWebsite() {
                 const name = elements.websiteNameInput.value.trim();
                 let url = elements.websiteUrlInput.value.trim();
-                const icon = elements.websiteIconInput.value.trim();
-
-                if (!name || !url) {
-                    addSystemMessage('Please enter both a name and URL.', 'danger');
-                    return;
-                }
+                if (!name || !url) { addSystemMessage('Please enter both a name and URL.', 'danger'); return; }
                 if (!url.startsWith('http')) url = `https://${url}`;
-
-                playerState.websites.push({ id: Date.now(), name, url, icon, description: new URL(url).hostname });
+                playerState.websites.push({ id: Date.now(), name, url, icon: '' });
                 saveState();
                 renderWebsites();
                 toggleWebsiteForm(false);
@@ -412,38 +861,16 @@
                 const allLinks = [...visibleDefaultWebsites, ...playerState.websites];
                 
                 allLinks.forEach(site => {
-                    const iconSrc = site.icon || `https://www.google.com/s2/favicons?domain=${site.url}&sz=64`;
+                    const iconSrc = site.icon || `https://www.google.com/s2/favicons?domain=${site.url}&sz=32`;
                     const linkEl = document.createElement('div');
-                    linkEl.className = 'relative container-bg-light p-4 rounded-lg task-item cursor-pointer flex flex-col items-center text-center';
-                    
-                    const linkContent = document.createElement('div');
-                    linkContent.onclick = () => window.open(site.url, '_blank');
-                    linkContent.innerHTML = `
-                        <img src="${iconSrc}" class="w-8 h-8 mb-2 rounded" onerror="this.src='https://www.google.com/s2/favicons?domain=google.com&sz=64'">
-                        <div class="font-bold text-slate-100 text-sm">${site.name}</div>
-                        <div class="text-xs text-slate-400">${site.description}</div>
-                    `;
-
-                    linkEl.appendChild(linkContent);
-
+                    linkEl.className = 'relative flex items-center p-2 rounded-md hover:bg-slate-700/50 cursor-pointer group';
+                    linkEl.innerHTML = `<img src="${iconSrc}" class="w-5 h-5 mr-2 rounded-sm" onerror="this.src='https://www.google.com/s2/favicons?domain=google.com&sz=32'"><span class="text-sm text-slate-200 flex-grow">${site.name}</span>`;
+                    linkEl.onclick = () => window.open(site.url, '_blank');
                     const deleteBtn = document.createElement('button');
-                    deleteBtn.className = 'absolute top-1 right-1 w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center transition-opacity';
+                    deleteBtn.className = 'w-6 h-6 bg-red-500/80 text-white rounded-md flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity';
                     deleteBtn.innerHTML = '<i class="fas fa-times text-xs"></i>';
-                    deleteBtn.style.opacity = '0'; // Initially hidden
-                    deleteBtn.onclick = (e) => {
-                        e.stopPropagation();
-                        deleteWebsite(site.id);
-                    };
+                    deleteBtn.onclick = (e) => { e.stopPropagation(); deleteWebsite(site.id); };
                     linkEl.appendChild(deleteBtn);
-
-                    linkEl.addEventListener('mouseenter', () => {
-                        deleteBtn.style.opacity = '1';
-                    });
-
-                    linkEl.addEventListener('mouseleave', () => {
-                        deleteBtn.style.opacity = '0';
-                    });
-
                     elements.quickLinks.appendChild(linkEl);
                 });
             }
@@ -451,9 +878,7 @@
             function deleteWebsite(id) {
                 const isDefault = defaultWebsites.some(site => site.id === id);
                 if (isDefault) {
-                    if (!playerState.deletedDefaultWebsites.includes(id)) {
-                        playerState.deletedDefaultWebsites.push(id);
-                    }
+                    if (!playerState.deletedDefaultWebsites.includes(id)) playerState.deletedDefaultWebsites.push(id);
                 } else {
                     playerState.websites = playerState.websites.filter(site => site.id !== id);
                 }
