@@ -117,6 +117,20 @@
         .progress-project { background-color: #f59e0b; } /* amber-500 */
         .progress-exam { background-color: #ec4899; } /* pink-500 */
         .progress-creativity { background-color: #6366f1; } /* indigo-500 */
+
+        .player-character {
+            position: absolute;
+            top: 20px; /* Distancia desde arriba */
+            left: 50%;
+            transform: translateX(-50%); /* Centrado horizontal exacto */
+            width: 182px;
+            height: 280px;
+            background-image: url('../../99.Game/assets/menu.png');
+            background-repeat: no-repeat;
+            background-size: 658.6px 566.1px;
+            background-position: -476.4px -284.4px;
+            z-index: 10; /* Asegura que esté por encima */
+        }
     </style>
 </head>
 
@@ -135,7 +149,7 @@
                 Are you ready for synchronization? ⚡
             </p>
             <button id="sync-button" class="sync-button w-full font-bold py-3 px-8 rounded-lg transition-colors duration-300 flex items-center justify-center gap-3 text-lg">
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
                 SYNCHRONIZE
             </button>
         </div>
@@ -173,16 +187,17 @@
             <div class="grid grid-cols-1 lg:grid-cols-12 gap-4">
                 
                 <div class="lg:col-span-2 flex flex-col gap-4">
-                    <div class="panel flex-grow flex flex-col p-4 items-center">
-                        <div class="w-24 h-24 rounded-full bg-[#0f172a] border-2 border-[#38bdf8] flex items-center justify-center mb-4">
-                            <i class="fas fa-user-astronaut text-4xl accent-text"></i>
-                        </div>
-                        <h1 class="text-2xl font-bold text-slate-100 mb-4">CS Student</h1>
-                        <div class="w-full space-y-4 text-sm">
+                    <div class="panel flex-grow flex flex-col p-4 items-center relative">
+                        <div class="player-character"></div>
+                        
+                        <div class="h-72 w-full"></div>
+
+                        <h1 class="text-2xl font-bold text-slate-100 mb-2">CS Student</h1>
+                        <div class="w-full space-y-4 text-sm mt-24">
                             <div>
                                 <div class="flex justify-between items-center mb-1">
                                     <span class="font-bold text-red-500">HEALTH</span>
-                                    <span class="text-sm text-slate-400">100 / 100</span>
+                                    <span class="text-sm font-bold text-red-500">100 / 100</span>
                                 </div>
                                 <div class="w-full h-2 bg-slate-900 rounded-full">
                                     <div id="health-bar" class="bg-red-500 h-full rounded-full" style="width: 100%"></div>
