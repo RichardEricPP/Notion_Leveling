@@ -613,12 +613,19 @@ uniform vec4 resolution; varying vec3 vNormal; uniform sampler2D perlinnoise; un
     <script>
         document.addEventListener('DOMContentLoaded', function () {
             const spriteConfigurations = {
-                "1.PNG": { targetWidth: 220, targetHeight: 320 },
-
-                "3.png": { left: '45%', targetWidth: 190, targetHeight: 290 },
-                "4.png": { targetWidth: 242, targetHeight: 352 },
-                "5.png": { targetWidth: 230, targetHeight: 280, left: '40%' },
-                "6.png": { left: '45%', targetWidth: 192, targetHeight: 290 },
+                "menu": { // Configurations for the 'menu' asset
+                    "1.PNG": { targetWidth: 220, targetHeight: 320 },
+                    "3.png": { left: '45%', targetWidth: 190, targetHeight: 290 },
+                    "4.png": { targetWidth: 242, targetHeight: 352 },
+                    "5.png": { targetWidth: 230, targetHeight: 280, left: '40%' },
+                    "6.png": { left: '45%', targetWidth: 192, targetHeight: 290 },
+                },
+                "menu_1": { // Configurations for the 'menu_1' asset
+                    "1.png": { targetWidth: 150, targetHeight: 150 },
+                    "2.png": { targetWidth: 150, targetHeight: 150 },
+                    "3.png": { targetWidth: 150, targetHeight: 150 },
+                    "4.png": { targetWidth: 150, targetHeight: 150 },
+                }
             };
 
             const characterNames = {
@@ -733,7 +740,7 @@ uniform vec4 resolution; varying vec3 vNormal; uniform sampler2D perlinnoise; un
                                 spriteElement.style.backgroundSize = 'auto'; // Ensure original size of background image
 
                                 // Get custom dimensions from configuration, or use default
-                                const config = spriteConfigurations[frameName] || {};
+                                const config = spriteConfigurations[asset] && spriteConfigurations[asset][frameName] || {};
                                 const targetWidth = config.targetWidth || 182;
                                 const targetHeight = config.targetHeight || 280;
                                 const left = config.left || '50%';
@@ -760,22 +767,44 @@ uniform vec4 resolution; varying vec3 vNormal; uniform sampler2D perlinnoise; un
 
                             } else if (asset === 'menu_1') { // Logic for 'menu_1' asset (images in boxes)
                                 console.log("Applying 'menu_1' asset logic.");
-                                // Set the element's dimensions to a fixed size (e.g., 40px x 40px)
-                                spriteElement.style.width = `40px`;
-                                spriteElement.style.height = `40px`;
+                                
+                                const frameW = rotated ? frame.h : frame.w;
+                                const frameH = rotated ? frame.w : frame.h;
+
+                                // Set the element's dimensions to the frame's dimensions
+                                spriteElement.style.width = `${frameW}px`;
+                                spriteElement.style.height = `${frameH}px`;
 
                                 // Position the background image to show the specific frame
-                                const bgPosX = -(frame.x + (trimmed ? spriteSourceSize.x : 0));
-                                const bgPosY = -(frame.y + (trimmed ? spriteSourceSize.y : 0));
-                                spriteElement.style.backgroundPosition = `${bgPosX}px ${bgPosY}px`;
+                                spriteElement.style.backgroundPosition = `-${frame.x}px -${frame.y}px`;
                                 spriteElement.style.backgroundSize = 'auto'; // Ensure original size of background image
 
-                                // Reset any inline styles that might interfere
-                                spriteElement.style.transform = 'none'; // Remove any inline transform
-                                spriteElement.style.transformOrigin = 'initial'; // Reset transform-origin
-                                spriteElement.style.position = 'static'; // Reset position
-                                spriteElement.style.left = 'auto'; // Reset left
-                                spriteElement.style.top = 'auto'; // Reset top
+                                // Get custom dimensions from configuration, or use default
+                                const config = spriteConfigurations[asset] && spriteConfigurations[asset][frameName] || {};
+                                const targetWidth = config.targetWidth || 150; // Default for menu_1 asset
+                                const targetHeight = config.targetHeight || 150; // Default for menu_1 asset
+                                const left = config.left || '50%'; // Default centering
+                                const top = config.top || '50%'; // Default centering
+
+                                // Calculate scale to fit the element
+                                const scaleX = targetWidth / sourceSize.w;
+                                const scaleY = targetHeight / sourceSize.h;
+                                const scale = Math.min(scaleX, scaleY); // Use 'contain' logic
+
+                                console.log(`Calculated scale: ${scale}`);
+
+                                let transform = `translate(-50%, -50%) scale(${scale})`;
+                                if (rotated) {
+                                    transform += ' rotate(-90deg)';
+                                }
+                                
+                                // Apply the scale and centering using CSS transform
+                                spriteElement.style.transform = transform;
+                                spriteElement.style.transformOrigin = 'center center'; // Scale from center
+                                spriteElement.style.position = 'absolute';
+                                spriteElement.style.left = left;
+                                spriteElement.style.top = top;
+                                spriteElement.style.overflow = `hidden`; // Keep overflow hidden
 
                             } else { // Default behavior for other assets (if any)
                                 console.log("Applying default asset logic.");
