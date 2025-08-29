@@ -9,6 +9,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="menu.css">
     <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <!-- Three.js Library -->
@@ -169,7 +170,7 @@
     
     <!-- Main Dashboard Container (Initially Hidden) -->
     <div id="dashboard-container" style="display: none; opacity: 0;" class="fade-in">
-        <div id="dashboard-wrapper" style="width: 1600px; min-width: 1600px; margin: auto;">
+        <div id="dashboard-wrapper" style="width: 1300px; min-width: 1300px; margin: auto;">
             <div class="p-4 p-6">
             <div class="mb-4">
                 <div class="panel py-1 px-3 flex items-center gap-4">
@@ -856,44 +857,18 @@ uniform vec4 resolution; varying vec3 vNormal; uniform sampler2D perlinnoise; un
         }
 
         // Initial call
-        document.addEventListener('DOMContentLoaded', scaleDashboard);
+        // document.addEventListener('DOMContentLoaded', scaleDashboard);
         // Call on resize
-        window.addEventListener('resize', scaleDashboard);
+        // window.addEventListener('resize', scaleDashboard);
     </script>
-    <!-- Zoom Controls -->
-    <div class="fixed bottom-4 right-4 z-20 flex flex-col gap-2">
-        <button id="zoom-in-btn" class="w-10 h-10 bg-slate-800/50 hover:bg-slate-700 text-white rounded-full flex items-center justify-center transition-colors">
-            <i class="fas fa-plus"></i>
-        </button>
-        <button id="zoom-out-btn" class="w-10 h-10 bg-slate-800/50 hover:bg-slate-700 text-white rounded-full flex items-center justify-center transition-colors">
-            <i class="fas fa-minus"></i>
-        </button>
-    </div>
+    
 
-    <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            const dashboardContainer = document.getElementById('dashboard-container');
-            let currentZoom = 1;
+    
+    <script type="module">
+        import { startCountdown } from './menu.js';
 
-            // Function to apply the zoom
-            function applyZoom() {
-                dashboardContainer.style.transform = `scale(${currentZoom})`;
-                dashboardContainer.style.transformOrigin = 'top left';
-            }
-
-            // Zoom In
-            document.getElementById('zoom-in-btn').addEventListener('click', () => {
-                currentZoom += 0.1;
-                applyZoom();
-            });
-
-            // Zoom Out
-            document.getElementById('zoom-out-btn').addEventListener('click', () => {
-                if (currentZoom > 0.5) { // Prevent zooming out too much
-                    currentZoom -= 0.1;
-                    applyZoom();
-                }
-            });
+        document.addEventListener('DOMContentLoaded', () => {
+            startCountdown(60); // Start countdown with 60 seconds
         });
     </script>
 </body>
