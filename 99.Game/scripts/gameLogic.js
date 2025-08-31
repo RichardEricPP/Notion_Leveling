@@ -1375,7 +1375,7 @@ function openChest(chest) {
     chest.opened = true;
     map[chest.tileY][chest.tileX].base = 1;
     if (chest.item) {
-        if (chest.item.type === 'potion') {
+        if (chest.item.tipo === 'potion') {
             const oldHp = player.hp;
             player.hp = Math.min(player.maxHp, player.hp + (chest.item.heal || 0));
             const actualHealedAmount = player.hp - oldHp;

@@ -138,117 +138,117 @@ const items = {
 
 function createEquipoHTML(onBack, onSave) {
     const container = document.createElement('div');
-    container.className = "container mx-auto bg-gray-700 p-8 rounded-2xl shadow-2xl max-w-6xl w-full border border-gray-600";
+    container.className = "container mx-auto bg-slate-800 p-8 rounded-2xl shadow-2xl max-w-6xl w-full border border-slate-700";
     container.innerHTML = `
-        <h1 class="text-4xl font-extrabold text-center mb-10 text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-cyan-600">
+        <h1 class="text-4xl font-extrabold text-center mb-10 text-transparent bg-clip-text bg-gradient-to-r from-sky-400 to-cyan-500">
             Equipación
         </h1>
 
         <div class="flex flex-col md:flex-row justify-center items-start gap-8 mb-10">
 
             <!-- Left Equipped Items Column -->
-            <div id="equipped-left-column" class="flex flex-col gap-6 p-4 bg-gray-800 rounded-2xl shadow-inner border border-gray-600 w-full md:w-1/4 items-center">
+            <div id="equipped-left-column" class="flex flex-col gap-6 p-4 bg-slate-900 rounded-2xl shadow-inner border border-slate-700 w-full md:w-1/4 items-center">
                 <div class="flex flex-col items-center">
-                    <span class="text-sm text-blue-200 mb-1">Casco</span>
+                    <span class="text-sm text-slate-300 mb-1">Casco</span>
                     <img id="equippedHelmetIcon" src="https://images4.imagebam.com/39/36/7b/ME13I00A_o.png" alt="Icono de Casco" class="w-24 h-24 rounded-lg object-contain">
                 </div>
                 <div class="flex flex-col items-center">
-                    <span class="text-sm text-blue-200 mb-1">Armadura</span>
+                    <span class="text-sm text-slate-300 mb-1">Armadura</span>
                     <img id="equippedArmorIcon" src="https://images4.imagebam.com/39/36/7b/ME13I00A_o.png" alt="Icono de Armadura" class="w-24 h-24 rounded-lg object-contain">
                 </div>
                 <div class="flex flex-col items-center">
-                    <span class="text-sm text-blue-200 mb-1">Guantes</span>
+                    <span class="text-sm text-slate-300 mb-1">Guantes</span>
                     <img id="equippedGlovesIcon" src="https://images4.imagebam.com/39/36/7b/ME13I00A_o.png" alt="Icono de Guantes" class="w-24 h-24 rounded-lg object-contain">
                 </div>
                 <div class="flex flex-col items-center">
-                    <span class="text-sm text-blue-200 mb-1">Botas</span>
+                    <span class="text-sm text-slate-300 mb-1">Botas</span>
                     <img id="equippedBootsIcon" src="https://images4.imagebam.com/39/36/7b/ME13I00A_o.png" alt="Icono de Botas" class="w-24 h-24 rounded-lg object-contain">
                 </div>
             </div>
 
             <!-- Character Display Area (Middle) -->
             <div class="flex flex-col items-center w-full md:w-1/2">
-                <div class="bg-gray-800 p-6 rounded-2xl flex items-center justify-center relative shadow-inner border border-gray-600 overflow-hidden w-full max-w-sm" style="min-height: 400px;">
+                <div class="bg-slate-900 p-6 rounded-2xl flex items-center justify-center relative shadow-inner border border-slate-700 overflow-hidden w-full max-w-sm" style="min-height: 400px;">
                     <!-- Base Character Image -->
                     <img id="characterBase" src="https://images4.imagebam.com/48/06/a5/ME13HPUO_o.png" alt="Base del Personaje" class="character-layer z-10">
                 </div>
                 <!-- Action Buttons -->
                 <div class="mt-6 w-full max-w-sm flex justify-between gap-4">
-                    <button id="backButton" class="w-1/2 bg-gray-600 hover:bg-gray-700 text-white font-bold py-3 px-6 rounded-xl shadow-lg transition duration-300 ease-in-out transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-opacity-75">
+                    <button id="backButton" class="w-1/2 bg-slate-700 hover:bg-slate-600 text-white font-bold py-3 px-6 rounded-xl shadow-lg transition duration-300 ease-in-out transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-opacity-75">
                         Regresar
                     </button>
-                    <button id="saveButton" class="w-1/2 bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-xl shadow-lg transition duration-300 ease-in-out transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-75">
+                    <button id="saveButton" class="w-1/2 bg-sky-500 hover:bg-sky-600 text-white font-bold py-3 px-6 rounded-xl shadow-lg transition duration-300 ease-in-out transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-75">
                         Guardar
                     </button>
                 </div>
                 <!-- Set Bonus Display Area -->
-                <div id="setBonusDisplay" class="mt-4 p-3 text-center text-lg font-semibold text-cyan-300 bg-gray-800 rounded-lg w-full max-w-sm min-h-[50px] flex items-center justify-center border border-cyan-500/50 shadow-lg">
+                <div id="setBonusDisplay" class="mt-4 p-3 text-center text-lg font-semibold text-sky-300 bg-slate-900 rounded-lg w-full max-w-sm min-h-[50px] flex items-center justify-center border border-sky-500/50 shadow-lg">
                     <!-- El mensaje de bonificación aparecerá aquí -->
                 </div>
             </div>
 
             <!-- Right Equipped Items and Skills Column -->
-            <div id="equipped-right-column" class="flex flex-col gap-6 p-4 bg-gray-800 rounded-2xl shadow-inner border border-gray-600 w-full md:w-1/4 items-center">
+            <div id="equipped-right-column" class="flex flex-col gap-6 p-4 bg-slate-900 rounded-2xl shadow-inner border border-slate-700 w-full md:w-1/4 items-center">
                 <div class="flex flex-col items-center">
-                    <span class="text-sm text-blue-200 mb-1">Arma</span>
+                    <span class="text-sm text-slate-300 mb-1">Arma</span>
                     <img id="equippedWeaponIcon" src="https://images4.imagebam.com/39/36/7b/ME13I00A_o.png" alt="Icono de Arma" class="w-24 h-24 rounded-lg object-contain">
                 </div>
                 <div class="flex flex-col items-center">
-                    <span class="text-sm text-blue-200 mb-1">Habilidad 1</span>
+                    <span class="text-sm text-slate-300 mb-1">Habilidad 1</span>
                     <img id="equippedSkill1Icon" src="https://images4.imagebam.com/39/36/7b/ME13I00A_o.png" alt="Icono de Habilidad 1" class="w-24 h-24 rounded-lg object-contain">
                 </div>
                 <div class="flex flex-col items-center">
-                    <span class="text-sm text-blue-200 mb-1">Habilidad 2</span>
+                    <span class="text-sm text-slate-300 mb-1">Habilidad 2</span>
                     <img id="equippedSkill2Icon" src="https://images4.imagebam.com/39/36/7b/ME13I00A_o.png" alt="Icono de Habilidad 2" class="w-24 h-24 rounded-lg object-contain">
                 </div>
                 <div class="flex flex-col items-center">
-                    <span class="text-sm text-blue-200 mb-1">Habilidad 3</span>
+                    <span class="text-sm text-slate-300 mb-1">Habilidad 3</span>
                     <img id="equippedSkill3Icon" src="https://images4.imagebam.com/39/36/7b/ME13I00A_o.png" alt="Icono de Habilidad 3" class="w-24 h-24 rounded-lg object-contain">
                 </div>
             </div>
         </div>
 
         <!-- Inventory/Equipment Controls (Below Character) -->
-        <div class="bg-gray-800 p-6 rounded-2xl shadow-inner border border-gray-600">
+        <div class="bg-slate-900 p-6 rounded-2xl shadow-inner border border-slate-700">
             <div class="flex flex-col gap-8">
                 <!-- Helmet Section -->
-                <div class="bg-gray-700 p-6 rounded-2xl shadow-inner border border-gray-600 w-full">
-                    <h3 class="text-xl font-semibold mb-4 text-blue-300 text-center">Cascos</h3>
+                <div class="bg-slate-800 p-6 rounded-2xl shadow-inner border border-slate-700 w-full">
+                    <h3 class="text-xl font-semibold mb-4 text-slate-200 text-center">Cascos</h3>
                     <div id="helmet-buttons" class="grid grid-cols-4 gap-4 justify-items-center">
                     </div>
                 </div>
 
                 <!-- Armor Section -->
-                <div class="bg-gray-700 p-6 rounded-2xl shadow-inner border border-gray-600 w-full">
-                    <h3 class="text-xl font-semibold mb-4 text-blue-300 text-center">Armaduras</h3>
+                <div class="bg-slate-800 p-6 rounded-2xl shadow-inner border border-slate-700 w-full">
+                    <h3 class="text-xl font-semibold mb-4 text-slate-200 text-center">Armaduras</h3>
                     <div id="armor-buttons" class="grid grid-cols-4 gap-4 justify-items-center">
                     </div>
                 </div>
 
                 <!-- Gloves Section -->
-                <div class="bg-gray-700 p-6 rounded-2xl shadow-inner border border-gray-600 w-full">
-                    <h3 class="text-xl font-semibold mb-4 text-blue-300 text-center">Guantes</h3>
+                <div class="bg-slate-800 p-6 rounded-2xl shadow-inner border border-slate-700 w-full">
+                    <h3 class="text-xl font-semibold mb-4 text-slate-200 text-center">Guantes</h3>
                     <div id="gloves-buttons" class="grid grid-cols-4 gap-4 justify-items-center">
                     </div>
                 </div>
 
                 <!-- Boots Section -->
-                <div class="bg-gray-700 p-6 rounded-2xl shadow-inner border border-gray-600 w-full">
-                    <h3 class="text-xl font-semibold mb-4 text-blue-300 text-center">Botas</h3>
+                <div class="bg-slate-800 p-6 rounded-2xl shadow-inner border border-slate-700 w-full">
+                    <h3 class="text-xl font-semibold mb-4 text-slate-200 text-center">Botas</h3>
                     <div id="boots-buttons" class="grid grid-cols-4 gap-4 justify-items-center">
                     </div>
                 </div>
 
                 <!-- Weapon Section -->
-                <div class="bg-gray-700 p-6 rounded-2xl shadow-inner border border-gray-600 w-full">
-                    <h3 class="text-xl font-semibold mb-4 text-blue-300 text-center">Armas</h3>
+                <div class="bg-slate-800 p-6 rounded-2xl shadow-inner border border-slate-700 w-full">
+                    <h3 class="text-xl font-semibold mb-4 text-slate-200 text-center">Armas</h3>
                     <div id="weapon-buttons" class="grid grid-cols-4 gap-4 justify-items-center">
                     </div>
                 </div>
 
                 <!-- Skills Section -->
-                <div class="bg-gray-700 p-6 rounded-2xl shadow-inner border border-gray-600 w-full">
-                    <h3 class="text-xl font-semibold mb-4 text-blue-300 text-center">Habilidades</h3>
+                <div class="bg-slate-800 p-6 rounded-2xl shadow-inner border border-slate-700 w-full">
+                    <h3 class="text-xl font-semibold mb-4 text-slate-200 text-center">Habilidades</h3>
                     <div id="skills-buttons" class="grid grid-cols-4 gap-4 justify-items-center">
                     </div>
                 </div>
@@ -258,7 +258,7 @@ function createEquipoHTML(onBack, onSave) {
 
     const messageBox = document.createElement('div');
     messageBox.id = "messageBox";
-    messageBox.className = "fixed bottom-8 left-1/2 -translate-x-1/2 bg-blue-600 text-white px-6 py-3 rounded-lg shadow-xl z-50 transition-all duration-300 ease-in-out transform scale-0 opacity-0";
+    messageBox.className = "fixed bottom-8 left-1/2 -translate-x-1/2 bg-sky-500 text-white px-6 py-3 rounded-lg shadow-xl z-50 transition-all duration-300 ease-in-out transform scale-0 opacity-0";
     messageBox.textContent = "¡Item equipado!";
     container.appendChild(messageBox);
 
