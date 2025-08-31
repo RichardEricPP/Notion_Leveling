@@ -9,7 +9,6 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    
     <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <!-- Three.js Library -->
@@ -28,12 +27,6 @@
             background-color: #0f172a;
             color: #e2e8f0;
             overflow-x: hidden;
-        }
-        /* Moved from menu.css: dashboard-specific responsive rules */
-        #dashboard-container { overflow-x: hidden; }
-        #dashboard-wrapper { width: 1300px; margin: 0 auto; transform-origin: top center; will-change: transform; }
-        @media (prefers-reduced-motion: no-preference) {
-            #dashboard-wrapper { transition: transform 0.2s ease-out; }
         }
 
         /* --- Welcome Screen Styles --- */
@@ -176,8 +169,8 @@
     
     <!-- Main Dashboard Container (Initially Hidden) -->
     <div id="dashboard-container" style="display: none; opacity: 0;" class="fade-in">
-        <div id="dashboard-wrapper">
-            <div class="p-4 p-6">
+        <div id="dashboard-wrapper" style="width: 1600px; margin: auto;">
+            <div class="p-4 lg:p-6">
             <div class="mb-4">
                 <div class="panel py-1 px-3 flex items-center gap-4">
                     <div class="flex items-baseline gap-2">
@@ -204,9 +197,9 @@
                 </div>
             </div>
 
-            <div class="grid grid-cols-1 grid-cols-12 gap-4">
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-4">
                 
-                <div class="col-span-2 flex flex-col gap-4">
+                <div class="lg:col-span-2 flex flex-col gap-4">
                     <div class="panel flex-grow flex flex-col p-4 items-center relative group">
                         <div class="player-character sprite" data-sprite-asset="menu" data-sprite-frame="3.png"></div>
                         <button id="prev-char-btn" class="absolute left-2 top-1/4 -translate-y-1/2 bg-slate-800/50 p-2 rounded-full opacity-0 group-hover:opacity-100 transition-opacity z-20">
@@ -259,7 +252,7 @@
                     </div>
                 </div>
 
-                <div class="col-span-3 flex flex-col gap-4">
+                <div class="lg:col-span-3 flex flex-col gap-4">
                     <div class="panel flex-grow p-4">
                         <h2 class="font-bold neon-text-blue mb-4" style="font-family: 'Geo', sans-serif; text-align: center; color: #ffffff;">Category Breakdown</h2>
                         <div class="flex justify-center items-center h-48 mb-4 bg-slate-900/50 rounded-md">
@@ -369,8 +362,8 @@
                     </div>
                 </div>
 
-                <div class="col-span-7 flex flex-col gap-4">
-                    <div class="grid grid-cols-1 grid-cols-2 gap-4">
+                <div class="lg:col-span-7 flex flex-col gap-4">
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
                         <div class="flex flex-col gap-4">
                             <div class="panel p-4 h-48 flex flex-col">
                                 <button id="expand-calendar-btn" class="text-slate-400 hover:text-white" style="position: absolute; top: 10px; right: 10px;"><i class="fas fa-expand-arrows-alt"></i></button>
@@ -422,14 +415,14 @@
                         </div>
                     </div>
                 </div>
-                <div class="col-span-12 panel">
+                <div class="lg:col-span-12 panel">
                      <div class="panel-header"><span class="font-bold neon-text-blue" style="font-family: 'Geo', sans-serif; color: #ffffff; font-size: 0.875rem;">Projects</span></div>
                      <div class="p-2 space-y-2">
                         <div class="project-item"><div class="project-icon flex-shrink-0"><i class="fas fa-atom text-xl accent-text"></i></div><div class="flex-grow min-w-0"><div class="font-bold text-slate-100 truncate">Nova Prospekt</div><div class="text-xs text-slate-400">Sunday, 12 November 2004</div></div><div class="w-28 flex-shrink-0 text-sm text-slate-300 hidden sm:block">20 Members</div><div class="w-32 flex-shrink-0 text-sm font-semibold hidden md:block"><span class="difficulty-hard">Difficult: Hard</span></div><div class="w-32 flex-shrink-0 text-sm text-slate-400 hidden lg:block">Antlion Horde</div><button class="flex-shrink-0 text-slate-500 hover:text-white w-8 text-center"><i class="fas fa-ellipsis-h"></i></button></div>
                         <div class="project-item"><div class="project-icon flex-shrink-0"><i class="fas fa-biohazard text-xl accent-text"></i></div><div class="flex-grow min-w-0"><div class="font-bold text-slate-100 truncate">Black Mesa East</div><div class="text-xs text-slate-400">Friday, 06 December 2020</div></div><div class="w-28 flex-shrink-0 text-sm text-slate-300 hidden sm:block">75 Members</div><div class="w-32 flex-shrink-0 text-sm font-semibold hidden md:block"><span class="difficulty-insane">Difficult: Insane</span></div><div class="w-32 flex-shrink-0 text-sm text-slate-400 hidden lg:block">G-Man</div><button class="flex-shrink-0 text-slate-500 hover:text-white w-8 text-center"><i class="fas fa-ellipsis-h"></i></button></div>
                      </div>
                 </div>
-                <div class="col-span-12 text-center py-4">
+                <div class="lg:col-span-12 text-center py-4">
                     <div class="flex items-center justify-center gap-2 mb-1">
                         <i class="fas fa-exclamation-triangle text-red-500 text-lg"></i>
                         <h3 class="text-lg font-bold text-red-500">Warning</h3>
@@ -471,8 +464,6 @@ uniform vec4 resolution; varying vec3 vNormal; uniform sampler2D perlinnoise; un
                 dashboardContainerEl.style.display = 'block';
                 requestAnimationFrame(() => {
                     dashboardContainerEl.classList.add('fade-in');
-                    // ensure scaling applies after layout
-                    try { scaleDashboard(); } catch(e) {}
                 });
                 initializeDashboard();
             };
@@ -853,28 +844,56 @@ uniform vec4 resolution; varying vec3 vNormal; uniform sampler2D perlinnoise; un
 
             const container = wrapper.parentElement;
             const containerWidth = container.clientWidth;
-            const contentWidth = 1300; // The fixed width of the wrapper
+            const contentWidth = 1600; // The fixed width of the wrapper
 
             if (containerWidth < contentWidth) {
                 const scale = containerWidth / contentWidth;
                 wrapper.style.transform = `scale(${scale})`;
-                wrapper.style.transformOrigin = 'top center';
+                wrapper.style.transformOrigin = 'top left';
             } else {
                 wrapper.style.transform = 'none';
             }
         }
 
-        // Scale on resize
+        // Initial call
+        document.addEventListener('DOMContentLoaded', scaleDashboard);
+        // Call on resize
         window.addEventListener('resize', scaleDashboard);
     </script>
-    
+    <!-- Zoom Controls -->
+    <div class="fixed bottom-4 right-4 z-20 flex flex-col gap-2">
+        <button id="zoom-in-btn" class="w-10 h-10 bg-slate-800/50 hover:bg-slate-700 text-white rounded-full flex items-center justify-center transition-colors">
+            <i class="fas fa-plus"></i>
+        </button>
+        <button id="zoom-out-btn" class="w-10 h-10 bg-slate-800/50 hover:bg-slate-700 text-white rounded-full flex items-center justify-center transition-colors">
+            <i class="fas fa-minus"></i>
+        </button>
+    </div>
 
-    
-    <script type="module">
-        import { startCountdown } from './menu.js';
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const dashboardContainer = document.getElementById('dashboard-container');
+            let currentZoom = 1;
 
-        document.addEventListener('DOMContentLoaded', () => {
-            startCountdown(60); // Start countdown with 60 seconds
+            // Function to apply the zoom
+            function applyZoom() {
+                dashboardContainer.style.transform = `scale(${currentZoom})`;
+                dashboardContainer.style.transformOrigin = 'top left';
+            }
+
+            // Zoom In
+            document.getElementById('zoom-in-btn').addEventListener('click', () => {
+                currentZoom += 0.1;
+                applyZoom();
+            });
+
+            // Zoom Out
+            document.getElementById('zoom-out-btn').addEventListener('click', () => {
+                if (currentZoom > 0.5) { // Prevent zooming out too much
+                    currentZoom -= 0.1;
+                    applyZoom();
+                }
+            });
         });
     </script>
 </body>
