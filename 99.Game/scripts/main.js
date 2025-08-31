@@ -69,22 +69,70 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     let selectedMapId = 1;
+    let currentMapIndex = 0;
+
+    const mapBackground = document.getElementById('mapBackground');
+    const prevMapBtn = document.getElementById('prevMap');
+    const nextMapBtn = document.getElementById('nextMap');
 
     // Populate map list
     for (const mapId in todosLosMapas) {
         const map = todosLosMapas[mapId];
         const mapButton = document.createElement('button');
         mapButton.textContent = map.nombre;
+        mapButton.dataset.mapId = mapId;
         mapButton.addEventListener('click', () => {
             selectedMapId = mapId;
-            const floorInput = document.getElementById('floorInput');
-            floorInput.max = map.maxFloors;
-            floorInput.value = 1;
             mapSelectionScreen.style.display = 'none';
             difficultyScreen.style.display = 'flex';
+            document.body.classList.remove('map-selection-active');
+            document.body.style.backgroundImage = '';
         });
         mapList.appendChild(mapButton);
     }
+
+    const mapButtons = mapList.querySelectorAll('button');
+    const numMaps = mapButtons.length;
+    const angle = 360 / numMaps;
+    const radius = 250; // Adjust as needed
+
+    function updateMapSelection() {
+        const rotateY = -currentMapIndex * angle;
+        mapList.style.transform = `rotateY(${rotateY}deg)`;
+
+        mapButtons.forEach((button, index) => {
+            const buttonAngle = index * angle;
+            button.style.transform = `rotateY(${buttonAngle}deg) translateZ(${radius}px)`;
+            if (index === currentMapIndex) {
+                button.classList.add('selected');
+            } else {
+                button.classList.remove('selected');
+            }
+        });
+
+        const mapIds = Object.keys(todosLosMapas);
+        const mapId = mapIds[currentMapIndex];
+        const map = todosLosMapas[mapId];
+        
+        document.body.style.backgroundImage = `url(${map.background})`;
+        
+        selectedMapId = mapId;
+        const floorInput = document.getElementById('floorInput');
+        floorInput.max = map.maxFloors;
+        floorInput.value = 1;
+    }
+
+    prevMapBtn.addEventListener('click', () => {
+        currentMapIndex = (currentMapIndex - 1 + numMaps) % numMaps;
+        updateMapSelection();
+    });
+
+    nextMapBtn.addEventListener('click', () => {
+        currentMapIndex = (currentMapIndex + 1) % numMaps;
+        updateMapSelection();
+    });
+
+    updateMapSelection();
 
     document.getElementById('btnFacil').addEventListener('click', () => startGame('facil', selectedMapId));
     document.getElementById('btnMedio').addEventListener('click', () => startGame('medio', selectedMapId));
@@ -95,11 +143,14 @@ document.addEventListener('DOMContentLoaded', () => {
     btnSelectMap.addEventListener('click', () => {
         difficultyScreen.style.display = 'none';
         mapSelectionScreen.style.display = 'block';
+        document.body.classList.add('map-selection-active');
     });
 
     btnReturnToDifficultyFromMapSelection.addEventListener('click', () => {
         mapSelectionScreen.style.display = 'none';
         difficultyScreen.style.display = 'flex';
+        document.body.classList.remove('map-selection-active');
+        document.body.style.backgroundImage = '';
     });
     
     document.addEventListener('keydown', (e) => {

@@ -3,6 +3,8 @@ export const mapaDesierto = {
     maxFloors: 22,
     tileset: "assets/mapa_1.png",
     atlas: "assets/mapa_1.json",
+    background: "https://picsum.photos/800/600?random=6",
+    x: 60, y: 50,
     enemigos: [
         { tipo: 'skeleton', cantidad: { min: 15, max: 25 } },
         { tipo: 'gusano_arena', cantidad: { min: 3, max: 6 } },

@@ -3,6 +3,8 @@ export const mapaHielo = {
     maxFloors: 10,
     tileset: "assets/mapa_1.png",
     atlas: "assets/mapa_1.json",
+    background: "https://picsum.photos/800/600?random=3",
+    x: 30, y: 50,
     enemigos: [
         { tipo: 'skeleton', cantidad: { min: 8, max: 15 } },
         { tipo: 'lobo_hielo', cantidad: { min: 5, max: 10 } },

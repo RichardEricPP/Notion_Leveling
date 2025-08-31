@@ -3,6 +3,8 @@ export const mapaArquitecto = {
     maxFloors: 50,
     tileset: "assets/mapa_1.png",
     atlas: "assets/mapa_1.json",
+    background: "https://picsum.photos/800/600?random=10",
+    x: 50, y: 30,
     enemigos: [
         { tipo: 'constructor', cantidad: { min: 10, max: 20 } },
         { tipo: 'golem', cantidad: { min: 5, max: 10 } },

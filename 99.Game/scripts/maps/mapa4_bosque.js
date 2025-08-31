@@ -3,6 +3,8 @@ export const mapaBosque = {
     maxFloors: 14,
     tileset: "assets/mapa_1.png",
     atlas: "assets/mapa_1.json",
+    background: "https://picsum.photos/800/600?random=4",
+    x: 40, y: 50,
     enemigos: [
         { tipo: 'duende', cantidad: { min: 10, max: 20 } },
         { tipo: 'lobo', cantidad: { min: 5, max: 10 } },

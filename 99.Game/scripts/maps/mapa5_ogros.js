@@ -3,6 +3,8 @@ export const mapaOgros = {
     maxFloors: 18,
     tileset: "assets/mapa_1.png",
     atlas: "assets/mapa_1.json",
+    background: "https://picsum.photos/800/600?random=5",
+    x: 50, y: 50,
     enemigos: [
         { tipo: 'ogro', cantidad: { min: 10, max: 15 } },
         { tipo: 'lobo', cantidad: { min: 5, max: 10 } },

@@ -3,6 +3,8 @@ export const mapaMazmorra = {
     maxFloors: 5,
     tileset: "assets/mapa_1.png",
     atlas: "assets/mapa_1.json",
+    background: "https://picsum.photos/800/600?random=1",
+    x: 10, y: 50,
     enemigos: [
         { tipo: 'duende', cantidad: { min: 6, max: 12 } },
         { tipo: 'lobo', cantidad: { min: 2, max: 5 } },

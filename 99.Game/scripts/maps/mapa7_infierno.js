@@ -3,6 +3,8 @@ export const mapaInfierno = {
     maxFloors: 26,
     tileset: "assets/mapa_1.png",
     atlas: "assets/mapa_1.json",
+    background: "https://picsum.photos/800/600?random=7",
+    x: 70, y: 50,
     enemigos: [
         { tipo: 'diablillo', cantidad: { min: 10, max: 20 } },
         { tipo: 'perro_infernal', cantidad: { min: 5, max: 10 } },

@@ -3,6 +3,8 @@ export const mapaHormigas = {
     maxFloors: 30,
     tileset: "assets/mapa_1.png",
     atlas: "assets/mapa_1.json",
+    background: "https://picsum.photos/800/600?random=8",
+    x: 80, y: 50,
     enemigos: [
         { tipo: 'hormiga_obrera', cantidad: { min: 20, max: 30 } },
         { tipo: 'hormiga_soldado', cantidad: { min: 10, max: 15 } },

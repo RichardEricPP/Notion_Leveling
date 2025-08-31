@@ -3,6 +3,8 @@ export const mapaDragones = {
     maxFloors: 35,
     tileset: "assets/mapa_1.png",
     atlas: "assets/mapa_1.json",
+    background: "https://picsum.photos/800/600?random=9",
+    x: 90, y: 50,
     enemigos: [
         { tipo: 'caballero', cantidad: { min: 10, max: 15 } },
         { tipo: 'dragon_joven', cantidad: { min: 3, max: 5 } },

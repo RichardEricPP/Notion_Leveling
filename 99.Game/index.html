@@ -24,8 +24,13 @@
         </div>
     </div>
     <div id="mapSelectionScreen" style="display: none;">
+        <div id="mapBackground"></div>
         <h2 id="mapSelectionTitle">Selecciona un Mapa</h2>
-        <div id="mapList"></div>
+        <div id="mapCarousel">
+            <button id="prevMap">&lt;</button>
+            <div id="mapList"></div>
+            <button id="nextMap">&gt;</button>
+        </div>
         <button id="btnReturnToDifficultyFromMapSelection">Regresar</button>
     </div>
     <canvas id="gameCanvas" width="800" height="600"></canvas>

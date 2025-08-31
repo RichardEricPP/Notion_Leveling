@@ -28,12 +28,6 @@
             color: #e2e8f0;
             overflow-x: hidden;
         }
-        /* --- Embed (Notion/iframe) grid overrides: force desktop grid layout --- */
-        body.embed-mode .lg\:grid-cols-12 { grid-template-columns: repeat(12, minmax(0, 1fr)); }
-        body.embed-mode .lg\:col-span-2 { grid-column: span 2 / span 2; }
-        body.embed-mode .lg\:col-span-3 { grid-column: span 3 / span 3; }
-        body.embed-mode .lg\:col-span-7 { grid-column: span 7 / span 7; }
-        body.embed-mode .lg\:col-span-12 { grid-column: span 12 / span 12; }
 
         /* --- Welcome Screen Styles --- */
         #world {
@@ -428,7 +422,7 @@
                         <div class="project-item"><div class="project-icon flex-shrink-0"><i class="fas fa-biohazard text-xl accent-text"></i></div><div class="flex-grow min-w-0"><div class="font-bold text-slate-100 truncate">Black Mesa East</div><div class="text-xs text-slate-400">Friday, 06 December 2020</div></div><div class="w-28 flex-shrink-0 text-sm text-slate-300 hidden sm:block">75 Members</div><div class="w-32 flex-shrink-0 text-sm font-semibold hidden md:block"><span class="difficulty-insane">Difficult: Insane</span></div><div class="w-32 flex-shrink-0 text-sm text-slate-400 hidden lg:block">G-Man</div><button class="flex-shrink-0 text-slate-500 hover:text-white w-8 text-center"><i class="fas fa-ellipsis-h"></i></button></div>
                      </div>
                 </div>
-                <div class="lg:col-span-12 text-center py-4">
+                <div class="lg:col-span-12 text-center pt-2 pb-0">
                     <div class="flex items-center justify-center gap-2 mb-1">
                         <i class="fas fa-exclamation-triangle text-red-500 text-lg"></i>
                         <h3 class="text-lg font-bold text-red-500">Warning</h3>
@@ -461,13 +455,6 @@ uniform vec4 resolution; varying vec3 vNormal; uniform sampler2D perlinnoise; un
             const dashboardContainerEl = document.getElementById('dashboard-container');
             const syncButtonEl = document.getElementById('sync-button');
 
-            // If embedded (e.g., Notion), keep things simple for better compatibility
-            const isInIframe = (() => { try { return window.self !== window.top; } catch (e) { return true; } })();
-            if (isInIframe) {
-                document.body.classList.add('embed-mode');
-                if (worldEl) worldEl.style.display = 'none';
-            }
-
             const lastSync = localStorage.getItem('lastSyncDate');
             const today = new Date().toDateString();
 
@@ -477,8 +464,6 @@ uniform vec4 resolution; varying vec3 vNormal; uniform sampler2D perlinnoise; un
                 dashboardContainerEl.style.display = 'block';
                 requestAnimationFrame(() => {
                     dashboardContainerEl.classList.add('fade-in');
-                    // Ensure scaling and height are correct once visible
-                    try { scaleDashboard(); } catch (e) {}
                 });
                 initializeDashboard();
             };
@@ -510,9 +495,7 @@ uniform vec4 resolution; varying vec3 vNormal; uniform sampler2D perlinnoise; un
                 localStorage.setItem('playerRecordStreak', recordStreak);
             }
 
-            if (isInIframe) {
-                try { showDashboard(); } catch (e) {}
-            } else if (lastSync === today) {
+            if (lastSync === today) {
                 showDashboard();
             } else {
                 welcomeWrapperEl.style.display = 'flex';
@@ -863,24 +846,18 @@ uniform vec4 resolution; varying vec3 vNormal; uniform sampler2D perlinnoise; un
             const containerWidth = container.clientWidth;
             const contentWidth = 1600; // The fixed width of the wrapper
 
-            // Detect if running inside an iframe (e.g., Notion embed)
-            const isInIframe = (() => { try { return window.self !== window.top; } catch (e) { return true; } })();
+            if (containerWidth < contentWidth) {
+                const scale = containerWidth / contentWidth;
+                wrapper.style.transform = `scale(${scale})`;
+                wrapper.style.transformOrigin = 'top left';
+            } else {
+                wrapper.style.transform = 'none';
+            }
 
-            // Scale down to fit, never scale up (prevents "gigante" in embeds)
-            const baseScale = Math.min(1, containerWidth / contentWidth);
-            // Persist the base scale so zoom can compose on top
-            wrapper.dataset.baseScale = String(baseScale);
-            const zoom = parseFloat(wrapper.dataset.zoom || '1');
-            const finalScale = baseScale * (isNaN(zoom) ? 1 : zoom);
-            wrapper.style.transform = `scale(${finalScale})`;
-            wrapper.style.transformOrigin = 'top left';
-
-            // Match container height to the scaled visual height
+            // Ajusta la altura del contenedor al alto visual del wrapper escalado
             const scaledHeight = wrapper.getBoundingClientRect().height;
             if (scaledHeight > 0) {
                 container.style.height = `${scaledHeight}px`;
-                // Keep overflow default in embeds; hide overflow only in standalone pages
-                container.style.overflow = isInIframe ? '' : 'hidden';
             }
         }
 
@@ -889,7 +866,42 @@ uniform vec4 resolution; varying vec3 vNormal; uniform sampler2D perlinnoise; un
         // Call on resize
         window.addEventListener('resize', scaleDashboard);
     </script>
-    
+    <!-- Zoom Controls -->
+    <div class="fixed bottom-4 right-4 z-20 flex flex-col gap-2">
+        <button id="zoom-in-btn" class="w-10 h-10 bg-slate-800/50 hover:bg-slate-700 text-white rounded-full flex items-center justify-center transition-colors">
+            <i class="fas fa-plus"></i>
+        </button>
+        <button id="zoom-out-btn" class="w-10 h-10 bg-slate-800/50 hover:bg-slate-700 text-white rounded-full flex items-center justify-center transition-colors">
+            <i class="fas fa-minus"></i>
+        </button>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const dashboardContainer = document.getElementById('dashboard-container');
+            let currentZoom = 1;
+
+            // Function to apply the zoom
+            function applyZoom() {
+                dashboardContainer.style.transform = `scale(${currentZoom})`;
+                dashboardContainer.style.transformOrigin = 'top left';
+            }
+
+            // Zoom In
+            document.getElementById('zoom-in-btn').addEventListener('click', () => {
+                currentZoom += 0.1;
+                applyZoom();
+            });
+
+            // Zoom Out
+            document.getElementById('zoom-out-btn').addEventListener('click', () => {
+                if (currentZoom > 0.5) { // Prevent zooming out too much
+                    currentZoom -= 0.1;
+                    applyZoom();
+                }
+            });
+        });
+    </script>
 </body>
 
 </html>

@@ -3,6 +3,8 @@ export const mapaCueva = {
     maxFloors: 7,
     tileset: "assets/mapa_1.png",
     atlas: "assets/mapa_1.json",
+    background: "https://picsum.photos/800/600?random=2",
+    x: 20, y: 50,
     enemigos: [
         { tipo: 'lobo', cantidad: { min: 8, max: 15 } },
         { tipo: 'spiderling', cantidad: { min: 5, max: 10 } },
