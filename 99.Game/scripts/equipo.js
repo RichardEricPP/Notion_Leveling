@@ -208,49 +208,51 @@ function createEquipoHTML(onBack, onSave) {
             </div>
         </div>
 
-        <!-- Inventory/Equipment Controls (Below Character) -->
-        <div class="bg-slate-900 p-6 rounded-2xl shadow-inner border border-slate-700">
-            <div class="flex flex-col gap-8">
-                <!-- Helmet Section -->
-                <div class="bg-slate-800 p-6 rounded-2xl shadow-inner border border-slate-700 w-full">
-                    <h3 class="text-xl font-semibold mb-4 text-slate-200 text-center">Cascos</h3>
-                    <div id="helmet-buttons" class="grid grid-cols-4 gap-4 justify-items-center">
+        <!-- Tab Navigation -->
+        <div class="mb-4 flex space-x-2 p-1 rounded-lg" style="background-color: #020617;">
+            <button class="tab-button flex-1 py-2 px-4 rounded-md text-sm font-medium transition-colors duration-300 active" data-tab="armadura">Armadura</button>
+            <button class="tab-button flex-1 py-2 px-4 rounded-md text-sm font-medium transition-colors duration-300" data-tab="armas">Armas</button>
+            <button class="tab-button flex-1 py-2 px-4 rounded-md text-sm font-medium transition-colors duration-300" data-tab="habilidades">Habilidades</button>
+        </div>
+
+        <!-- Tab Content -->
+        <div id="tab-content-container">
+            <div id="armadura" class="tab-content active">
+                <div class="flex flex-col gap-8">
+                    <!-- Helmet Section -->
+                    <div class="bg-slate-800 p-6 rounded-2xl shadow-inner border border-slate-700 w-full">
+                        <h3 class="text-xl font-semibold mb-4 text-slate-200 text-center">Cascos</h3>
+                        <div id="helmet-buttons" class="grid grid-cols-4 gap-4 justify-items-center"></div>
+                    </div>
+                    <!-- Armor Section -->
+                    <div class="bg-slate-800 p-6 rounded-2xl shadow-inner border border-slate-700 w-full">
+                        <h3 class="text-xl font-semibold mb-4 text-slate-200 text-center">Armaduras</h3>
+                        <div id="armor-buttons" class="grid grid-cols-4 gap-4 justify-items-center"></div>
+                    </div>
+                    <!-- Gloves Section -->
+                    <div class="bg-slate-800 p-6 rounded-2xl shadow-inner border border-slate-700 w-full">
+                        <h3 class="text-xl font-semibold mb-4 text-slate-200 text-center">Guantes</h3>
+                        <div id="gloves-buttons" class="grid grid-cols-4 gap-4 justify-items-center"></div>
+                    </div>
+                    <!-- Boots Section -->
+                    <div class="bg-slate-800 p-6 rounded-2xl shadow-inner border border-slate-700 w-full">
+                        <h3 class="text-xl font-semibold mb-4 text-slate-200 text-center">Botas</h3>
+                        <div id="boots-buttons" class="grid grid-cols-4 gap-4 justify-items-center"></div>
                     </div>
                 </div>
-
-                <!-- Armor Section -->
-                <div class="bg-slate-800 p-6 rounded-2xl shadow-inner border border-slate-700 w-full">
-                    <h3 class="text-xl font-semibold mb-4 text-slate-200 text-center">Armaduras</h3>
-                    <div id="armor-buttons" class="grid grid-cols-4 gap-4 justify-items-center">
-                    </div>
-                </div>
-
-                <!-- Gloves Section -->
-                <div class="bg-slate-800 p-6 rounded-2xl shadow-inner border border-slate-700 w-full">
-                    <h3 class="text-xl font-semibold mb-4 text-slate-200 text-center">Guantes</h3>
-                    <div id="gloves-buttons" class="grid grid-cols-4 gap-4 justify-items-center">
-                    </div>
-                </div>
-
-                <!-- Boots Section -->
-                <div class="bg-slate-800 p-6 rounded-2xl shadow-inner border border-slate-700 w-full">
-                    <h3 class="text-xl font-semibold mb-4 text-slate-200 text-center">Botas</h3>
-                    <div id="boots-buttons" class="grid grid-cols-4 gap-4 justify-items-center">
-                    </div>
-                </div>
-
+            </div>
+            <div id="armas" class="tab-content">
                 <!-- Weapon Section -->
                 <div class="bg-slate-800 p-6 rounded-2xl shadow-inner border border-slate-700 w-full">
                     <h3 class="text-xl font-semibold mb-4 text-slate-200 text-center">Armas</h3>
-                    <div id="weapon-buttons" class="grid grid-cols-4 gap-4 justify-items-center">
-                    </div>
+                    <div id="weapon-buttons" class="grid grid-cols-4 gap-4 justify-items-center"></div>
                 </div>
-
+            </div>
+            <div id="habilidades" class="tab-content">
                 <!-- Skills Section -->
                 <div class="bg-slate-800 p-6 rounded-2xl shadow-inner border border-slate-700 w-full">
                     <h3 class="text-xl font-semibold mb-4 text-slate-200 text-center">Habilidades</h3>
-                    <div id="skills-buttons" class="grid grid-cols-4 gap-4 justify-items-center">
-                    </div>
+                    <div id="skills-buttons" class="grid grid-cols-4 gap-4 justify-items-center"></div>
                 </div>
             </div>
         </div>
@@ -485,12 +487,31 @@ function createEquipoHTML(onBack, onSave) {
     }
 
     backButton.addEventListener('click', onBack);
-
     saveButton.addEventListener('click', onSave);
 
-    document.addEventListener('DOMContentLoaded', _updateCharacterDisplay);
+    const tabButtons = container.querySelectorAll('.tab-button');
+    const tabContents = container.querySelectorAll('.tab-content');
+
+    tabButtons.forEach(button => {
+        button.addEventListener('click', () => {
+            tabButtons.forEach(btn => btn.classList.remove('active'));
+            button.classList.add('active');
+
+            const tabId = button.dataset.tab;
+            tabContents.forEach(content => {
+                if (content.id === tabId) {
+                    content.classList.add('active');
+                } else {
+                    content.classList.remove('active');
+                }
+            });
+        });
+    });
+
+    _updateCharacterDisplay();
 
     return container;
 }
+
 
 export { createEquipoHTML, character, items, setBonuses };

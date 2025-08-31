@@ -28,6 +28,12 @@
             color: #e2e8f0;
             overflow-x: hidden;
         }
+        /* --- Embed (Notion/iframe) grid overrides: force desktop grid layout --- */
+        body.embed-mode .lg\:grid-cols-12 { grid-template-columns: repeat(12, minmax(0, 1fr)); }
+        body.embed-mode .lg\:col-span-2 { grid-column: span 2 / span 2; }
+        body.embed-mode .lg\:col-span-3 { grid-column: span 3 / span 3; }
+        body.embed-mode .lg\:col-span-7 { grid-column: span 7 / span 7; }
+        body.embed-mode .lg\:col-span-12 { grid-column: span 12 / span 12; }
 
         /* --- Welcome Screen Styles --- */
         #world {
@@ -457,8 +463,9 @@ uniform vec4 resolution; varying vec3 vNormal; uniform sampler2D perlinnoise; un
 
             // If embedded (e.g., Notion), keep things simple for better compatibility
             const isInIframe = (() => { try { return window.self !== window.top; } catch (e) { return true; } })();
-            if (isInIframe && worldEl) {
-                worldEl.style.display = 'none';
+            if (isInIframe) {
+                document.body.classList.add('embed-mode');
+                if (worldEl) worldEl.style.display = 'none';
             }
 
             const lastSync = localStorage.getItem('lastSyncDate');
@@ -503,7 +510,9 @@ uniform vec4 resolution; varying vec3 vNormal; uniform sampler2D perlinnoise; un
                 localStorage.setItem('playerRecordStreak', recordStreak);
             }
 
-            if (lastSync === today) {
+            if (isInIframe) {
+                try { showDashboard(); } catch (e) {}
+            } else if (lastSync === today) {
                 showDashboard();
             } else {
                 welcomeWrapperEl.style.display = 'flex';
@@ -857,8 +866,8 @@ uniform vec4 resolution; varying vec3 vNormal; uniform sampler2D perlinnoise; un
             // Detect if running inside an iframe (e.g., Notion embed)
             const isInIframe = (() => { try { return window.self !== window.top; } catch (e) { return true; } })();
 
-            // In iframe contexts, avoid scaling to prevent host layout issues
-            const baseScale = isInIframe ? 1 : (containerWidth < contentWidth ? (containerWidth / contentWidth) : 1);
+            // Scale down to fit, never scale up (prevents "gigante" in embeds)
+            const baseScale = Math.min(1, containerWidth / contentWidth);
             // Persist the base scale so zoom can compose on top
             wrapper.dataset.baseScale = String(baseScale);
             const zoom = parseFloat(wrapper.dataset.zoom || '1');
@@ -866,14 +875,12 @@ uniform vec4 resolution; varying vec3 vNormal; uniform sampler2D perlinnoise; un
             wrapper.style.transform = `scale(${finalScale})`;
             wrapper.style.transformOrigin = 'top left';
 
-            // Match container height to the scaled visual height only when not embedded
+            // Match container height to the scaled visual height
             const scaledHeight = wrapper.getBoundingClientRect().height;
-            if (!isInIframe && scaledHeight > 0) {
+            if (scaledHeight > 0) {
                 container.style.height = `${scaledHeight}px`;
-                container.style.overflow = 'hidden';
-            } else {
-                container.style.height = '';
-                container.style.overflow = '';
+                // Keep overflow default in embeds; hide overflow only in standalone pages
+                container.style.overflow = isInIframe ? '' : 'hidden';
             }
         }
 

@@ -355,3 +355,15 @@ body {
     background: #38bdf8;
     border-radius: 3px;
 }
+
+/* Tab Styles */
+.tab-content {
+    display: none;
+}
+.tab-content.active {
+    display: block;
+}
+.tab-button.active {
+    background-color: #38bdf8;
+    color: #020617;
+}
