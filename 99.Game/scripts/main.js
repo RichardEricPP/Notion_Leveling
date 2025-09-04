@@ -85,8 +85,6 @@ document.addEventListener('DOMContentLoaded', () => {
             selectedMapId = mapId;
             mapSelectionScreen.style.display = 'none';
             difficultyScreen.style.display = 'flex';
-            document.body.classList.remove('map-selection-active');
-            document.body.style.backgroundImage = '';
         });
         mapList.appendChild(mapButton);
     }
@@ -94,7 +92,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const mapButtons = mapList.querySelectorAll('button');
     const numMaps = mapButtons.length;
     const angle = 360 / numMaps;
-    const radius = 250; // Adjust as needed
+    const radius = 350; // Adjust as needed
 
     function updateMapSelection() {
         const rotateY = -currentMapIndex * angle;
@@ -114,7 +112,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const mapId = mapIds[currentMapIndex];
         const map = todosLosMapas[mapId];
         
-        document.body.style.backgroundImage = `url(${map.background})`;
+        mapBackground.style.backgroundImage = `url(${map.background})`;
         
         selectedMapId = mapId;
         const floorInput = document.getElementById('floorInput');
@@ -143,14 +141,11 @@ document.addEventListener('DOMContentLoaded', () => {
     btnSelectMap.addEventListener('click', () => {
         difficultyScreen.style.display = 'none';
         mapSelectionScreen.style.display = 'block';
-        document.body.classList.add('map-selection-active');
     });
 
     btnReturnToDifficultyFromMapSelection.addEventListener('click', () => {
         mapSelectionScreen.style.display = 'none';
         difficultyScreen.style.display = 'flex';
-        document.body.classList.remove('map-selection-active');
-        document.body.style.backgroundImage = '';
     });
     
     document.addEventListener('keydown', (e) => {
