@@ -35,7 +35,7 @@
         html, body { overflow-x: auto; }
         #dashboard-container { width: 100%; min-width: 0; }
         .dashboard-scroll { overflow-x: auto; overflow-y: hidden; width: 100%; position: relative; -webkit-overflow-scrolling: touch; }
-        .dashboard-inner { width: 1280px; display: inline-block; transform: none !important; }
+        .dashboard-inner { width: 100%; max-width: 1280px; display: block; transform: none !important; min-width: 0; }
 
         /* --- Welcome Screen Styles --- */
         #world {
@@ -180,7 +180,7 @@
         <div class="dashboard-scroll">
             <div class="dashboard-inner p-6">
             <div class="mb-4">
-                <div class="panel py-1 px-3 flex items-center gap-4" style="flex-wrap: nowrap; overflow-x: auto;">
+                <div class="panel py-1 px-3 flex items-center gap-4 flex-wrap md:flex-nowrap overflow-x-auto">
                     <div class="flex items-baseline gap-2">
                         <div class="text-xs text-slate-400 font-semibold">LEVEL</div>
                         <div id="top-bar-level" class="text-lg font-bold accent-text leading-none">1</div>
@@ -205,9 +205,9 @@
                 </div>
             </div>
 
-            <div class="grid grid-cols-12 gap-4">
+            <div class="grid grid-cols-1 md:grid-cols-12 gap-4">
                 
-                <div class="col-span-2 flex flex-col gap-4">
+                <div class="col-span-12 md:col-span-2 flex flex-col gap-4">
                     <div class="panel flex-grow flex flex-col p-4 items-center relative group">
                         <div class="player-character sprite" data-sprite-asset="menu" data-sprite-frame="3.png"></div>
                         <button id="prev-char-btn" class="absolute left-2 top-1/4 -translate-y-1/2 bg-slate-800/50 p-2 rounded-full opacity-0 group-hover:opacity-100 transition-opacity z-20">
@@ -260,7 +260,7 @@
                     </div>
                 </div>
 
-                <div class="col-span-3 flex flex-col gap-4">
+                <div class="col-span-12 md:col-span-3 flex flex-col gap-4">
                     <div class="panel flex-grow p-4">
                         <h2 class="font-bold neon-text-blue mb-4" style="font-family: 'Geo', sans-serif; text-align: center; color: #ffffff;">Category Breakdown</h2>
                         <div class="flex justify-center items-center h-48 mb-4 bg-slate-900/50 rounded-md">
@@ -370,8 +370,8 @@
                     </div>
                 </div>
 
-                <div class="col-span-7 flex flex-col gap-4">
-                    <div class="grid grid-cols-2 gap-4">
+                <div class="col-span-12 md:col-span-7 flex flex-col gap-4">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div class="flex flex-col gap-4">
                             <div class="panel p-4 h-48 flex flex-col">
                                 
@@ -400,7 +400,7 @@
                             <div class="p-2 border-t border-slate-700/50"><button id="clear-messages" class="text-xs text-slate-400 hover:text-white transition w-full text-center"><i class="fas fa-trash mr-1"></i> Clear Messages</button></div>
                         </div>
                     </div>
-                    <div class="grid grid-cols-3 gap-4">
+                    <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
                         <div class="panel" style="width: 160px; height: 177px;">
                             <div class="sprite" data-sprite-asset="menu_1" data-sprite-frame="1.png"></div>
                         </div>
