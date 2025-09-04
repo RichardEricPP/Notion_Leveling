@@ -26,19 +26,16 @@
             font-family: 'Rajdhani', sans-serif;
             background-color: #0f172a;
             color: #e2e8f0;
-            overflow-x: hidden;
+            margin: 0;
+            overflow-x: auto;
         }
 
         /* --- Embed/Notion width helpers --- */
-        /* Keep dashboard horizontal in narrow iframes (e.g., Notion) */
-        #dashboard-container {
-            min-width: 1200px;
-        }
-        html, body { /* allow horizontal scroll when container is narrower */
-            overflow-x: auto;
-        }
-        .dashboard-scroll { overflow-x: auto; width: 100%; -webkit-overflow-scrolling: touch; }
-        .dashboard-inner { min-width: 1280px; display: inline-block; }
+        /* Scroll horizontal interno, sin escalado (evitar franjas vacías) */
+        html, body { overflow-x: auto; }
+        #dashboard-container { width: 100%; min-width: 0; }
+        .dashboard-scroll { overflow-x: auto; overflow-y: hidden; width: 100%; position: relative; -webkit-overflow-scrolling: touch; }
+        .dashboard-inner { width: 1280px; display: inline-block; transform: none !important; }
 
         /* --- Welcome Screen Styles --- */
         #world {
@@ -377,7 +374,7 @@
                     <div class="grid grid-cols-2 gap-4">
                         <div class="flex flex-col gap-4">
                             <div class="panel p-4 h-48 flex flex-col">
-                                <button id="expand-calendar-btn" class="text-slate-400 hover:text-white" style="position: absolute; top: 10px; right: 10px;"><i class="fas fa-expand-arrows-alt"></i></button>
+                                
                                 <div class="flex justify-center items-center mb-2">
                                     <div id="calendar-header" class="font-bold text-sm neon-text-blue" style="font-family: 'Geo', sans-serif; text-align: center; color: #ffffff; font-size: 0.875rem;"></div>
                                 </div>
@@ -463,6 +460,8 @@ uniform vec4 resolution; varying vec3 vNormal; uniform sampler2D perlinnoise; un
             function initThree() { scene = new THREE.Scene(); camera = new THREE.PerspectiveCamera(75, width / height, 0.1, 10000); camera.position.z = 5; renderer = new THREE.WebGLRenderer({ antialias: true }); renderer.setPixelRatio(window.devicePixelRatio); renderer.setSize(width, height); renderer.autoClear = false; document.getElementById("world").appendChild(renderer.domElement); material = new THREE.ShaderMaterial({ uniforms: { time: { value: 0.0 }, perlinnoise: { value: new THREE.TextureLoader().load('https://raw.githubusercontent.com/pizza3/asset/master/noise9.png') }, sparknoise: { value: new THREE.TextureLoader().load('https://raw.githubusercontent.com/pizza3/asset/master/sparklenoise.png') }, waterturbulence: { value: new THREE.TextureLoader().load('https://raw.githubusercontent.com/pizza3/asset/master/waterturbulence.png') }, noiseTex: { value: new THREE.TextureLoader().load('https://raw.githubusercontent.com/pizza3/asset/master/rgbnoise2.png') }, color5: { value: new THREE.Vector3(...options.color5) }, color4: { value: new THREE.Vector3(...options.color4) }, color3: { value: new THREE.Vector3(...options.color3) }, color2: { value: new THREE.Vector3(...options.color2) }, color1: { value: new THREE.Vector3(...options.color1) }, color0: { value: new THREE.Vector3(...options.color0) }, resolution: { value: new THREE.Vector2(width, height) }, }, fragmentShader: frag, vertexShader: vert, }); var planegeometry = new THREE.PlaneGeometry(10, 10, 1, 1); var plane = new THREE.Mesh(planegeometry, material); scene.add(plane); var renderScene = new THREE.RenderPass(scene, camera); bloomPass = new THREE.UnrealBloomPass(new THREE.Vector2(width, height), 1.5, 0.4, 0.85); bloomPass.threshold = options.bloomThreshold; bloomPass.strength = options.bloomStrength; bloomPass.radius = options.bloomRadius; composer = new THREE.EffectComposer(renderer); composer.addPass(renderScene); composer.addPass(bloomPass); }
             function animateThree() { requestAnimationFrame(animateThree); var time = performance.now() * 0.0001; material.uniforms['time'].value = time; composer.render(); }
 
+            // (Auto-fit eliminado; usamos scroll horizontal interno para evitar huecos)
+
             const welcomeWrapperEl = document.getElementById('welcome-wrapper');
             const worldEl = document.getElementById('world');
             const dashboardContainerEl = document.getElementById('dashboard-container');
@@ -540,7 +539,7 @@ uniform vec4 resolution; varying vec3 vNormal; uniform sampler2D perlinnoise; un
             function initializeDashboard() {
                 let playerState = { level: 1, currentExp: 0, websites: [], deletedDefaultWebsites: [], categoryCounts: { coding: 0, exercise: 0, study: 0, project: 0, exam: 0, creativity: 0 }, tasksToday: 0, totalQuests: 0 };
                 const defaultWebsites = [ { id: 'd1', name: 'GitHub', url: 'https://github.com', icon: 'https://github.githubassets.com/favicons/favicon.png' }, { id: 'd2', name: 'LeetCode', url: 'https://leetcode.com', icon: 'https://leetcode.com/favicon.ico' }, { id: 'd3', name: 'Stack Overflow', url: 'https://stackoverflow.com', icon: 'https://stackoverflow.com/favicon.ico' }, { id: 'd4', name: 'YouTube', url: 'https://www.youtube.com', icon: 'https://www.youtube.com/favicon.ico' } ];
-                const elements = { topBarLevel: document.getElementById('top-bar-level'), topBarExp: document.getElementById('top-bar-exp'), topBarCurrentExp: document.getElementById('top-bar-current-exp'), topBarMaxExp: document.getElementById('top-bar-max-exp'), topBarStreak: document.getElementById('top-bar-streak'), totalQuests: document.getElementById('total-quests'), nextRewardExpDisplay: document.getElementById('next-reward-exp-display'), tasksToday: document.getElementById('tasks-today'), bestStreak: document.getElementById('best-streak'), quickLinks: document.getElementById('quick-links'), addWebsiteBtn: document.getElementById('add-website-btn'), addWebsiteForm: document.getElementById('add-website-form'), saveWebsiteBtn: document.getElementById('save-website'), cancelWebsiteBtn: document.getElementById('cancel-website'), websiteNameInput: document.getElementById('website-name'), websiteUrlInput: document.getElementById('website-url'), systemMessages: document.getElementById('system-messages'), clearMessagesBtn: document.getElementById('clear-messages'), codingCount: document.getElementById('coding-count'), exerciseCount: document.getElementById('exercise-count'), studyCount: document.getElementById('study-count'), projectCount: document.getElementById('project-count'), examCount: document.getElementById('exam-count'), creativityCount: document.getElementById('creativity-count'), calendarHeader: document.getElementById('calendar-header'), calendarGrid: document.getElementById('calendar-grid'), resetTimerLarge: document.getElementById('reset-timer-large'), daySelector: document.getElementById('day-selector'), expandCalendarBtn: document.getElementById('expand-calendar-btn'), };
+                const elements = { topBarLevel: document.getElementById('top-bar-level'), topBarExp: document.getElementById('top-bar-exp'), topBarCurrentExp: document.getElementById('top-bar-current-exp'), topBarMaxExp: document.getElementById('top-bar-max-exp'), topBarStreak: document.getElementById('top-bar-streak'), totalQuests: document.getElementById('total-quests'), nextRewardExpDisplay: document.getElementById('next-reward-exp-display'), tasksToday: document.getElementById('tasks-today'), bestStreak: document.getElementById('best-streak'), quickLinks: document.getElementById('quick-links'), addWebsiteBtn: document.getElementById('add-website-btn'), addWebsiteForm: document.getElementById('add-website-form'), saveWebsiteBtn: document.getElementById('save-website'), cancelWebsiteBtn: document.getElementById('cancel-website'), websiteNameInput: document.getElementById('website-name'), websiteUrlInput: document.getElementById('website-url'), systemMessages: document.getElementById('system-messages'), clearMessagesBtn: document.getElementById('clear-messages'), codingCount: document.getElementById('coding-count'), exerciseCount: document.getElementById('exercise-count'), studyCount: document.getElementById('study-count'), projectCount: document.getElementById('project-count'), examCount: document.getElementById('exam-count'), creativityCount: document.getElementById('creativity-count'), calendarHeader: document.getElementById('calendar-header'), calendarGrid: document.getElementById('calendar-grid'), resetTimerLarge: document.getElementById('reset-timer-large'), daySelector: document.getElementById('day-selector') };
                 
                 function loadState() { const savedState = JSON.parse(localStorage.getItem('csDungeonStateV3')); if (savedState) playerState = { ...playerState, ...savedState }; }
                 function saveState() { localStorage.setItem('csDungeonStateV3', JSON.stringify(playerState)); }
@@ -614,7 +613,7 @@ uniform vec4 resolution; varying vec3 vNormal; uniform sampler2D perlinnoise; un
                 renderCalendar();
                 renderDaySelector();
                 setInterval(() => { const now = new Date(); const endOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1, 0, 0, 0); const diff = endOfDay - now; const h = Math.floor((diff / (1000 * 60 * 60)) % 24).toString().padStart(2, '0'); const m = Math.floor((diff / 1000 / 60) % 60).toString().padStart(2, '0'); const s = Math.floor((diff / 1000) % 60).toString().padStart(2, '0'); if (elements.resetTimerLarge) { elements.resetTimerLarge.textContent = `${h}:${m}:${s}`; } }, 1000);
-                elements.expandCalendarBtn.addEventListener('click', () => { window.location.href = 'calendar.html'; });
+                // Zoom/expand button eliminado
                 elements.addWebsiteBtn.addEventListener('click', () => toggleWebsiteForm(true));
                 elements.cancelWebsiteBtn.addEventListener('click', () => toggleWebsiteForm(false));
                 elements.saveWebsiteBtn.addEventListener('click', handleAddWebsite);
@@ -848,51 +847,6 @@ uniform vec4 resolution; varying vec3 vNormal; uniform sampler2D perlinnoise; un
                         console.error('Error loading sprite data:', error);
                     });
             }
-        });
-    </script>
-    <script>
-        window.addEventListener('resize', function() {
-            let scale = Math.min(window.innerWidth / 1200, 1);
-            document.body.style.transform = "scale(" + scale + ")";
-            document.body.style.transformOrigin = "top left";
-        });
-        // Initial call to set the scale on load
-        window.dispatchEvent(new Event('resize'));
-    </script>
-    <!-- Zoom Controls -->
-    <div class="fixed bottom-4 right-4 z-20 flex flex-col gap-2">
-        <button id="zoom-in-btn" class="w-10 h-10 bg-slate-800/50 hover:bg-slate-700 text-white rounded-full flex items-center justify-center transition-colors">
-            <i class="fas fa-plus"></i>
-        </button>
-        <button id="zoom-out-btn" class="w-10 h-10 bg-slate-800/50 hover:bg-slate-700 text-white rounded-full flex items-center justify-center transition-colors">
-            <i class="fas fa-minus"></i>
-        </button>
-    </div>
-
-    <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            const dashboardContainer = document.getElementById('dashboard-container');
-            let currentZoom = 1;
-
-            // Function to apply the zoom
-            function applyZoom() {
-                dashboardContainer.style.transform = `scale(${currentZoom})`;
-                dashboardContainer.style.transformOrigin = 'top left';
-            }
-
-            // Zoom In
-            document.getElementById('zoom-in-btn').addEventListener('click', () => {
-                currentZoom += 0.1;
-                applyZoom();
-            });
-
-            // Zoom Out
-            document.getElementById('zoom-out-btn').addEventListener('click', () => {
-                if (currentZoom > 0.5) { // Prevent zooming out too much
-                    currentZoom -= 0.1;
-                    applyZoom();
-                }
-            });
         });
     </script>
 </body>
