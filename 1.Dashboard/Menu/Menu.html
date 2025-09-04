@@ -36,6 +36,9 @@
         #dashboard-container { width: 100%; min-width: 0; }
         .dashboard-scroll { overflow-x: auto; overflow-y: hidden; width: 100%; position: relative; -webkit-overflow-scrolling: touch; }
         .dashboard-inner { width: 100%; max-width: 1280px; display: block; transform: none !important; min-width: 0; }
+        /* Sprite grid to avoid overlap and fit two-by-two */
+        .sprites-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.5rem; }
+        .sprite-box { position: relative; overflow: hidden; width: 100%; aspect-ratio: 160 / 177; display: flex; align-items: center; justify-content: center; }
 
         /* --- Welcome Screen Styles --- */
         #world {
@@ -147,9 +150,8 @@
         }
 
         .sprite {
-            transform: scale(0.05);
-            transform-origin: top left;
-            margin: 0.5rem;
+            margin: 0; /* avoid extra spacing that could cause misalignment/overlap */
+            /* no default transform; transforms are applied inline by JS per-asset */
         }
             </style>
 </head>
@@ -402,17 +404,17 @@
                         </div>
                     </div>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4 items-stretch">
-                        <div class="grid grid-cols-2 gap-2 justify-items-start">
-                            <div class="panel relative overflow-hidden flex items-center justify-center" style="width: 160px; height: 177px;">
+                        <div class="sprites-grid">
+                            <div class="panel sprite-box">
                                 <div class="sprite" data-sprite-asset="menu_1" data-sprite-frame="1.png"></div>
                             </div>
-                            <div class="panel relative overflow-hidden flex items-center justify-center" style="width: 160px; height: 177px;">
+                            <div class="panel sprite-box">
                                 <div class="sprite" data-sprite-asset="menu_1" data-sprite-frame="3.png"></div>
                             </div>
-                            <div class="panel relative overflow-hidden flex items-center justify-center" style="width: 160px; height: 177px;">
+                            <div class="panel sprite-box">
                                 <div class="sprite" data-sprite-asset="menu_1" data-sprite-frame="2.png"></div>
                             </div>
-                            <div class="panel relative overflow-hidden flex items-center justify-center" style="width: 160px; height: 177px;">
+                            <div class="panel sprite-box">
                                 <div class="sprite" data-sprite-asset="menu_1" data-sprite-frame="4.png"></div>
                             </div>
                         </div>
@@ -641,10 +643,10 @@ uniform vec4 resolution; varying vec3 vNormal; uniform sampler2D perlinnoise; un
                     "6.png": { left: '45%', targetWidth: 192, targetHeight: 290 },
                 },
                 "menu_1": { // Configurations for the 'menu_1' asset
-                    "1.png": { targetWidth: 166, targetHeight: 188, left: '45%', top: '45%' },
-                    "2.png": { targetWidth: 166, targetHeight: 188, left: '45%', top: '45%' },
-                    "3.png": { targetWidth: 166, targetHeight: 188, left: '45%', top: '45%' },
-                    "4.png": { targetWidth: 166, targetHeight: 188, left: '45%', top: '45%' },
+                    "1.png": { targetWidth: 166, targetHeight: 188, left: '50%', top: '50%' },
+                    "2.png": { targetWidth: 166, targetHeight: 188, left: '50%', top: '50%' },
+                    "3.png": { targetWidth: 166, targetHeight: 188, left: '50%', top: '50%' },
+                    "4.png": { targetWidth: 166, targetHeight: 188, left: '50%', top: '50%' },
                 }
             };
 
@@ -663,6 +665,19 @@ uniform vec4 resolution; varying vec3 vNormal; uniform sampler2D perlinnoise; un
             spriteElements.forEach(spriteElement => {
                 loadSprite(spriteElement);
             });
+
+            // Recompute scaling on resize for menu_1 sprites
+            window.addEventListener('resize', () => {
+                document.querySelectorAll('.sprite[data-sprite-asset="menu_1"]').forEach(el => loadSprite(el));
+            });
+
+            // Observe size changes of each sprite box to keep sprites fitted
+            if ('ResizeObserver' in window) {
+                const ro = new ResizeObserver(() => {
+                    document.querySelectorAll('.sprite[data-sprite-asset="menu_1"]').forEach(el => loadSprite(el));
+                });
+                document.querySelectorAll('.sprite-box').forEach(box => ro.observe(box));
+            }
 
             if (mainCharacterSprite) {
                 const prevBtn = document.getElementById('prev-char-btn');
@@ -799,17 +814,19 @@ uniform vec4 resolution; varying vec3 vNormal; uniform sampler2D perlinnoise; un
                                 spriteElement.style.backgroundPosition = `-${frame.x}px -${frame.y}px`;
                                 spriteElement.style.backgroundSize = 'auto'; // Ensure original size of background image
 
-                                // Get custom dimensions from configuration, or use default
-                                const config = spriteConfigurations[asset] && spriteConfigurations[asset][frameName] || {};
-                                const targetWidth = config.targetWidth || 150; // Default for menu_1 asset
-                                const targetHeight = config.targetHeight || 150; // Default for menu_1 asset
-                                const left = config.left || '50%'; // Default centering
-                                const top = config.top || '50%'; // Default centering
+                                // Use config baseline (like before) and clamp to panel size
+                                const config = (spriteConfigurations[asset] && spriteConfigurations[asset][frameName]) || {};
+                                const left = config.left || '50%';
+                                const top = config.top || '50%';
+                                const panelRect = spriteElement.parentElement.getBoundingClientRect();
+                                // Fill the box: use full panel size and cover (may crop)
+                                const targetWidth = Math.max(1, panelRect.width);
+                                const targetHeight = Math.max(1, panelRect.height);
 
                                 // Calculate scale to fit the element
                                 const scaleX = targetWidth / sourceSize.w;
                                 const scaleY = targetHeight / sourceSize.h;
-                                const scale = Math.min(scaleX, scaleY); // Use 'contain' logic
+                                const scale = Math.max(scaleX, scaleY); // Use 'cover' logic to fill box
 
                                 
 
@@ -827,7 +844,6 @@ uniform vec4 resolution; varying vec3 vNormal; uniform sampler2D perlinnoise; un
                                 spriteElement.style.overflow = `hidden`; // Keep overflow hidden
 
                             } else { // Default behavior for other assets (if any)
-                                console.log("Applying default asset logic.");
                                 // Apply the scale to the entire background image (spritesheet)
                                 spriteElement.style.backgroundSize = `${spritesheetWidth}px ${spritesheetHeight}px`;
 
