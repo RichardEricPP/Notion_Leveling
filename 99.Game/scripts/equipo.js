@@ -1,3 +1,5 @@
+import { player } from './player.js';
+
 const character = {
     name: "Héroe Anónimo",
     level: 1,
@@ -299,6 +301,10 @@ function createEquipoHTML(onBack, onSave) {
         if (buttonsContainer) {
             for (const item in items[slot]) {
                 if (item !== 'none') {
+                    // Exclude player's current passive skill from active selection
+                    if (slot === 'skills' && item === player.passiveSkill) {
+                        continue;
+                    }
                     const button = createButton(item, slot);
                     buttonsContainer.appendChild(button);
                 }

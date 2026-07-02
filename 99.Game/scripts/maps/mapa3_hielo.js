@@ -10,6 +10,7 @@ export const mapaHielo = {
         { tipo: 'lobo_hielo', cantidad: { min: 5, max: 10 } },
         { tipo: 'yeti', cantidad: 1, dropsKey: false },
         { tipo: 'golem_hielo', cantidad: 1, dropsKey: true },
+        { tipo: 'elfo_de_nueve', cantidad: { min: 1, max: 2 } },
     ],
     objetos: [
         { nombre: 'Poción de Vida Mediana', probabilidad: 0.6, tipo: 'potion', heal: 50 },

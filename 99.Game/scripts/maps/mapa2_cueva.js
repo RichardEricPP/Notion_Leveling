@@ -8,6 +8,7 @@ export const mapaCueva = {
     enemigos: [
         { tipo: 'lobo', cantidad: { min: 8, max: 15 } },
         { tipo: 'spiderling', cantidad: { min: 5, max: 10 } },
+        { tipo: 'minotauro', cantidad: { min: 1, max: 2 } },
         { tipo: 'finalBoss', cantidad: 1, dropsKey: true },
     ],
     objetos: [

@@ -34,6 +34,7 @@ export let keys = {
 export let screenShake = 0;
 export let revealedMap;
 export let torches = [];
+export let traps = [];
 
 // --- EXPORTS (Game Mechanics Variables) ---
 export let projectiles = [];
@@ -147,7 +148,7 @@ export async function setDifficultyAndStart(difficulty, startFloor = 1, baseLeve
         skillUsageThisFloor: {},
         enemiesDefeatedThisRun: 0,
         isSlowed: false, slowEndTime: 0,
-        potionsBoughtTotal: 0,
+        isStunned: false, stunEndTime: 0,
         isStealthed: false, stealthEndTime: 0,
         isInvincible: false, invincibleEndTime: 0,
         isSpeedBoosted: false, speedBoostEndTime: 0,
@@ -173,6 +174,7 @@ export async function setDifficultyAndStart(difficulty, startFloor = 1, baseLeve
     monsters.length = 0;
     chests.length = 0;
     torches.length = 0; // Limpiar antorchas al generar nuevo piso
+    traps.length = 0;
     gameStarted = true;
     gameOver = false;
 
@@ -259,6 +261,7 @@ function updateGame(timestamp) {
 }
 
 function handlePlayerInput(timestamp) {
+    if (player.isStunned && timestamp < player.stunEndTime) return;
     const moveInterval = 1000 / player.spd;
     if (timestamp - lastMoveTime > moveInterval) {
         let moved = false;
@@ -289,6 +292,9 @@ function handlePlayerInput(timestamp) {
 }
 
 function updateStatusEffects(currentTime) {
+    if (player.isStunned && currentTime > player.stunEndTime) {
+        player.isStunned = false;
+    }
     if (player.isSlowed && currentTime > player.slowEndTime) {
         player.isSlowed = false;
         updateStats();
@@ -307,6 +313,31 @@ function updateStatusEffects(currentTime) {
     if (player.isLightSwordSpeedBoosted && currentTime > player.lightSwordSpeedBoostEndTime) {
         player.isLightSwordSpeedBoosted = false;
         updateStats();
+    }
+
+    // Curación Divina (regeneration) passive periodic healing (3% max HP every 5 seconds)
+    if (player.passiveSkill === 'regeneration') {
+        if (!player.lastRegenTime) {
+            player.lastRegenTime = currentTime;
+        }
+        if (currentTime - player.lastRegenTime >= 5000) {
+            player.lastRegenTime = currentTime;
+            const healAmount = Math.max(1, Math.floor(player.maxHp * 0.03));
+            const oldHp = player.hp;
+            player.hp = Math.min(player.maxHp, player.hp + healAmount);
+            const actualHealed = player.hp - oldHp;
+            if (actualHealed > 0) {
+                damageTexts.push({ 
+                    text: `+${Math.floor(actualHealed)} HP`, 
+                    x: player.tileX, 
+                    y: player.tileY, 
+                    life: 40, 
+                    color: '#4CAF50', 
+                    size: 16, 
+                    velY: -0.01 
+                });
+            }
+        }
     }
 }
 
@@ -383,6 +414,7 @@ function updateMonsters(currentTime) {
     if (ui.isInventoryOpen || ui.isSkillMenuOpen || ui.isEquipmentOpen) return;
 
     monsters.forEach(m => {
+        const oldX = m.tileX;
         if (!m.lastActionTime) m.lastActionTime = 0;
 
         if (m.isFrozen && currentTime > m.frozenEndTime) m.isFrozen = false;
@@ -400,7 +432,7 @@ function updateMonsters(currentTime) {
             }
         }
 
-        const bossCenter = (m.type === 'finalBoss') ? { x: m.tileX + 0.5, y: m.tileY + 0.5 } : { x: m.tileX, y: m.tileY };
+        const bossCenter = (m.type === 'finalBoss' || m.type === 'rey_elfo_caballo') ? { x: m.tileX + 0.5, y: m.tileY + 0.5 } : { x: m.tileX, y: m.tileY };
         let target = player; // Default target is player
         let distanceToTarget = getDistance(m.tileX, m.tileY, player.tileX, player.tileY, m);
         let canSeeTarget = hasLineOfSight(m, player) && !player.isStealthed;
@@ -516,6 +548,120 @@ function updateMonsters(currentTime) {
             }
         }
 
+        // --- Elfo de Nueve Special Abilities ---
+        if (m.type === 'elfo_de_nueve' && (m.state === 'ATTACK' || m.state === 'CHASE')) {
+            if (!m.abilityCooldowns) m.abilityCooldowns = { tiroDeNueve: 0 };
+            if (currentTime - (m.abilityCooldowns.tiroDeNueve || 0) > 4000 && distanceToTarget < 9 && canSeeTarget) {
+                // Dispara 9 flechas en arco (90 grados) hacia el jugador
+                const baseAngle = Math.atan2(target.tileY - m.tileY, target.tileX - m.tileX);
+                const angleStep = (90 * Math.PI / 180) / 8; // 90 grados divididos en 8 intervalos (9 flechas)
+                const startAngle = baseAngle - (45 * Math.PI / 180);
+                
+                for (let i = 0; i < 9; i++) {
+                    const angle = startAngle + i * angleStep;
+                    const dx = Math.cos(angle);
+                    const dy = Math.sin(angle);
+                    projectiles.push(new Projectile(
+                        m.tileX + 0.5, m.tileY + 0.5, dx, dy, 'arrow', 'monster', 12, false, 8
+                    ));
+                }
+                
+                ui.showMessage("¡El Elfo de Nueve desata un Tiro de Nueve!");
+                m.abilityCooldowns.tiroDeNueve = currentTime;
+                actionTaken = true;
+            }
+        }
+
+        // --- Rey Elfo a Caballo Special Abilities ---
+        if (m.type === 'rey_elfo_caballo' && (m.state === 'ATTACK' || m.state === 'CHASE')) {
+            if (!m.abilityCooldowns) m.abilityCooldowns = { cargaReal: 0, cuernoDeGuerra: 0, trampaDeHielo: 0 };
+            
+            // 1. Carga Real (Cooldown: 6000ms) - Charges in a straight line towards player if aligned
+            if (currentTime - (m.abilityCooldowns.cargaReal || 0) > 6000 && canSeeTarget) {
+                const diffX = target.tileX - m.tileX;
+                const diffY = target.tileY - m.tileY;
+                const isAligned = diffX === 0 || diffY === 0 || Math.abs(diffX) === Math.abs(diffY);
+                if (isAligned && distanceToTarget <= 8) {
+                    const dirX = Math.sign(diffX);
+                    const dirY = Math.sign(diffY);
+                    
+                    let chargeX = m.tileX;
+                    let chargeY = m.tileY;
+                    let hitPlayer = false;
+                    
+                    for (let step = 1; step <= 8; step++) {
+                        const nextX = m.tileX + dirX * step;
+                        const nextY = m.tileY + dirY * step;
+                        
+                        const overlapsPlayer = (target.tileX >= nextX && target.tileX < nextX + 2 &&
+                                                target.tileY >= nextY && target.tileY < nextY + 2);
+                                                
+                        if (overlapsPlayer) {
+                            hitPlayer = true;
+                            chargeX = nextX;
+                            chargeY = nextY;
+                            break;
+                        }
+                        
+                        if (isPassable(nextX, nextY, false, m)) {
+                            chargeX = nextX;
+                            chargeY = nextY;
+                        } else {
+                            break;
+                        }
+                    }
+                    
+                    m.tileX = chargeX;
+                    m.tileY = chargeY;
+                    m.lastActionTime = currentTime;
+                    
+                    ui.showMessage("¡El Rey Elfo realiza una Carga Real!");
+                    
+                    if (hitPlayer) {
+                        player.isStunned = true;
+                        player.stunEndTime = currentTime + 2000;
+                        takeDamage(player, m.atk * 2.0, true, 'monster');
+                        ui.showMessage("¡Has sido aturdido por la Carga Real!");
+                    }
+                    
+                    m.abilityCooldowns.cargaReal = currentTime;
+                    actionTaken = true;
+                }
+            }
+            
+            // 2. Cuerno de Guerra (War Horn) - Buffs self and all elf enemies at 75% HP (Cooldown: 12000ms)
+            if (!actionTaken && m.hp < m.maxHp * 0.75 && currentTime - (m.abilityCooldowns.cuernoDeGuerra || 0) > 12000) {
+                ui.showMessage("¡El Rey Elfo hace sonar su Cuerno de Guerra!");
+                monsters.forEach(other => {
+                    if (other.type === 'elfo_de_nueve' || other.type === 'rey_elfo_caballo') {
+                        other.atk = Math.round(other.atk * 1.3);
+                        other.moveSpeed = Math.round(other.moveSpeed * 0.7);
+                        
+                        damageTexts.push({
+                            text: "¡Furia!",
+                            x: other.tileX,
+                            y: other.tileY,
+                            life: 40,
+                            color: '#a78bfa',
+                            size: 16,
+                            velY: -0.01
+                        });
+                    }
+                });
+                m.abilityCooldowns.cuernoDeGuerra = currentTime;
+                actionTaken = true;
+            }
+            
+            // 3. Trampa de Hielo (Ice Trap) - Spawns ice trail on boss's tile (Cooldown: 4000ms)
+            if (!actionTaken && currentTime - (m.abilityCooldowns.trampaDeHielo || 0) > 4000) {
+                const trapX = Math.floor(m.tileX + 0.5);
+                const trapY = Math.floor(m.tileY + 0.5);
+                
+                traps.push({ x: trapX, y: trapY, type: 'ice_trap' });
+                m.abilityCooldowns.trampaDeHielo = currentTime;
+            }
+        }
+
         // --- Attack Action ---
         if (!actionTaken && m.state === 'ATTACK') {
             if (distanceToTarget <= m.attackRange) { // Check if target is still in range
@@ -524,7 +670,19 @@ function updateMonsters(currentTime) {
                     actionTaken = true; // Mark action as taken to prevent movement.
                 } else if (target === player) { // Only apply invulnerability check if target is player
                     if (!player.isInvincible && currentTime - player.lastHitTime > (player.invulnerabilityTime || 0)) {
-                        takeDamage(target, m.atk, false, 'monster');
+                        let isCrit = false;
+                        if (m.type === 'elfo_de_nueve') {
+                            if (!m.lastElficMarkTime) m.lastElficMarkTime = 0;
+                            if (currentTime - m.lastElficMarkTime > 9000) {
+                                m.elficMarkStacks = 0;
+                            }
+                            if (!m.elficMarkStacks) m.elficMarkStacks = 0;
+                            const critChance = 0.05 + m.elficMarkStacks * 0.15;
+                            isCrit = Math.random() < critChance;
+                            m.elficMarkStacks = Math.min(5, m.elficMarkStacks + 1);
+                            m.lastElficMarkTime = currentTime;
+                        }
+                        takeDamage(target, m.atk, isCrit, 'monster');
                         player.lastHitTime = currentTime;
                         m.isAttackingPlayer = true;
                         m.attackAnimFrame = 0;
@@ -533,7 +691,19 @@ function updateMonsters(currentTime) {
                         actionTaken = true;
                     }
                 } else { // If target is a monster/minion
-                    takeDamage(target, m.atk, false, m.isMinion ? 'minion' : 'monster'); // Attacker type is minion or monster
+                    let isCrit = false;
+                    if (m.type === 'elfo_de_nueve') {
+                        if (!m.lastElficMarkTime) m.lastElficMarkTime = 0;
+                        if (currentTime - m.lastElficMarkTime > 9000) {
+                            m.elficMarkStacks = 0;
+                        }
+                        if (!m.elficMarkStacks) m.elficMarkStacks = 0;
+                        const critChance = 0.05 + m.elficMarkStacks * 0.15;
+                        isCrit = Math.random() < critChance;
+                        m.elficMarkStacks = Math.min(5, m.elficMarkStacks + 1);
+                        m.lastElficMarkTime = currentTime;
+                    }
+                    takeDamage(target, m.atk, isCrit, m.isMinion ? 'minion' : 'monster'); // Attacker type is minion or monster
                     m.isAttackingPlayer = true; // Reuse animation flag
                     m.attackAnimFrame = 0;
                     m.attackDirectionX = Math.sign(target.tileX - m.tileX);
@@ -608,6 +778,14 @@ function updateMonsters(currentTime) {
         if (actionTaken) {
             m.lastActionTime = currentTime;
         }
+
+        if (m.tileX > oldX) {
+            m.facing = 'right';
+        } else if (m.tileX < oldX) {
+            m.facing = 'left';
+        } else if (m.isAttackingPlayer && m.attackDirectionX !== 0) {
+            m.facing = m.attackDirectionX > 0 ? 'right' : 'left';
+        }
     });
 }
 
@@ -620,6 +798,7 @@ async function generateFloor(mapId) {
     Object.keys(skillCooldowns).forEach(key => skillCooldowns[key] = 0);
     monsters.length = 0;
     torches.length = 0; // Limpiar antorchas al generar nuevo piso
+    traps.length = 0;
     revealedMap = Array(mapHeight).fill(0).map(() => Array(mapWidth).fill(false));
 
     if (mapId == 2) { // CAVE GENERATION
@@ -784,7 +963,23 @@ async function generateFloor(mapId) {
         };
 
         mapData.enemigos.forEach(enemyInfo => {
-            const count = Math.floor(Math.random() * (enemyInfo.cantidad.max - enemyInfo.cantidad.min + 1)) + enemyInfo.cantidad.min;
+            if (enemyInfo.tipo === 'finalBoss' && currentFloor !== maxFloors) return;
+            if (enemyInfo.tipo !== 'finalBoss' && currentFloor === maxFloors) return;
+
+            let count = 0;
+            if (typeof enemyInfo.cantidad === 'number') {
+                count = enemyInfo.cantidad;
+            } else if (enemyInfo.cantidad && enemyInfo.cantidad.min !== undefined && enemyInfo.cantidad.max !== undefined) {
+                const min = enemyInfo.cantidad.min;
+                const max = enemyInfo.cantidad.max;
+                const floorScaling = 1 + (currentFloor - 1) * 0.15;
+                const scaledMin = Math.round(min * floorScaling);
+                const scaledMax = Math.round(max * floorScaling);
+                count = Math.floor(Math.random() * (scaledMax - scaledMin + 1)) + scaledMin;
+            } else {
+                count = 1;
+            }
+
             for (let i = 0; i < count; i++) {
                 placeMonster(enemyInfo.tipo, enemyInfo.dropsKey);
             }
@@ -893,7 +1088,8 @@ async function generateFloor(mapId) {
 
             stairLocation.x = player.tileX;
             stairLocation.y = player.tileY;
-            monsters.push(createMonster('finalBoss', bossSpawnX, bossSpawnY, currentFloor, { x: arenaX, y: arenaY, width: arenaWidth, height: arenaHeight }));
+            const finalBossType = currentMapId == 3 ? 'rey_elfo_caballo' : 'finalBoss';
+            monsters.push(createMonster(finalBossType, bossSpawnX, bossSpawnY, currentFloor, { x: arenaX, y: arenaY, width: arenaWidth, height: arenaHeight }));
             for (let r = 0; r < 2; r++) {
                 for (let c = 0; c < 2; c++) map[bossSpawnY + r][bossSpawnX + c].base = 1;
             }
@@ -975,15 +1171,30 @@ async function generateFloor(mapId) {
                 if (dropsKey) monster.dropsKey = true;
                 monsters.push(monster);
             };
-            for (let i = 0; i < 6 + (currentFloor - 1) * 2; i++) placeMonster('duende');
-            for (let i = 0; i < 2 + currentFloor; i++) placeMonster('lobo');
-            for (let i = 0; i < 3 + Math.floor((currentFloor - 1) * 1.5); i++) placeMonster('skeleton');
-            if (rooms.length > 1) {
-                // Place the main boss (Golem), which drops the key
-                placeMonster('boss', true);
-                // Place the mini-boss (White Wolf) as well
-                placeMonster('miniBoss', false);
-            }
+            mapData.enemigos.forEach(enemyInfo => {
+                if (enemyInfo.tipo === 'finalBoss') return;
+                
+                if (typeof enemyInfo.cantidad === 'number') {
+                    for (let i = 0; i < enemyInfo.cantidad; i++) {
+                        placeMonster(enemyInfo.tipo, enemyInfo.dropsKey);
+                    }
+                } else if (enemyInfo.cantidad && enemyInfo.cantidad.min !== undefined && enemyInfo.cantidad.max !== undefined) {
+                    const min = enemyInfo.cantidad.min;
+                    const max = enemyInfo.cantidad.max;
+                    const floorScaling = 1 + (currentFloor - 1) * 0.15;
+                    const scaledMin = Math.round(min * floorScaling);
+                    const scaledMax = Math.round(max * floorScaling);
+                    const count = Math.floor(Math.random() * (scaledMax - scaledMin + 1)) + scaledMin;
+                    for (let i = 0; i < count; i++) {
+                        placeMonster(enemyInfo.tipo, enemyInfo.dropsKey);
+                    }
+                } else {
+                    const count = typeof enemyInfo.cantidad === 'number' ? enemyInfo.cantidad : 1;
+                    for (let i = 0; i < count; i++) {
+                        placeMonster(enemyInfo.tipo, enemyInfo.dropsKey);
+                    }
+                }
+            });
             chests.length = 0;
             spawnChests(monsterSpawnLocations, mapData.objetos);
         }
@@ -1048,11 +1259,13 @@ function carvePathBetweenRooms(room1, room2) {
 function hasLineOfSight(monster, target) {
     let x0 = monster.tileX, y0 = monster.tileY;
     const x1 = target.tileX, y1 = target.tileY;
+    const mWidth = Math.floor(monster.width || 1);
+    const mHeight = Math.floor(monster.height || 1);
 
-    if (monster.width > 1 || monster.height > 1) {
+    if (mWidth > 1 || mHeight > 1) {
         // Use the closest point on the monster's bounding box to the target
-        x0 = Math.max(monster.tileX, Math.min(x1, monster.tileX + monster.width - 1));
-        y0 = Math.max(monster.tileY, Math.min(y1, monster.tileY + monster.height - 1));
+        x0 = Math.max(monster.tileX, Math.min(x1, monster.tileX + mWidth - 1));
+        y0 = Math.max(monster.tileY, Math.min(y1, monster.tileY + mHeight - 1));
     }
     
     const dx = Math.abs(x1 - x0), sx = x0 < x1 ? 1 : -1;
@@ -1062,8 +1275,8 @@ function hasLineOfSight(monster, target) {
         if (Math.floor(x0) === Math.floor(x1) && Math.floor(y0) === Math.floor(y1)) return true;
         
         // Check if the current point is a wall, but allow it if it's part of the monster itself
-        const isMonsterTile = Math.floor(x0) >= monster.tileX && Math.floor(x0) < monster.tileX + (monster.width || 1) &&
-                              Math.floor(y0) >= monster.tileY && Math.floor(y0) < monster.tileY + (monster.height || 1);
+        const isMonsterTile = Math.floor(x0) >= monster.tileX && Math.floor(x0) < monster.tileX + mWidth &&
+                              Math.floor(y0) >= monster.tileY && Math.floor(y0) < monster.tileY + mHeight;
 
         if (!isMonsterTile && map[Math.floor(y0)][Math.floor(x0)].base === 0) return false;
 
@@ -1075,8 +1288,8 @@ function hasLineOfSight(monster, target) {
 
 function findOptimalAttackPosition(monster, target) {
     const attackPositions = [];
-    const monsterWidth = monster.width || 1;
-    const monsterHeight = monster.height || 1;
+    const monsterWidth = Math.floor(monster.width || 1);
+    const monsterHeight = Math.floor(monster.height || 1);
 
     // Iterate around the multi-tile monster's perimeter
     for (let i = -1; i <= monsterWidth; i++) {
@@ -1101,6 +1314,7 @@ function createMonster(type, x, y, floor, arena = null) {
     let monster = {
         id: Date.now() + Math.random(), // ID único para el monstruo
         tileX: x, tileY: y, type: type, isMinion: false,
+        facing: 'right',
         hp: 0, maxHp: 0, atk: 0, def: 0, spd: 0, xp: 0,
         moveSpeed: 1000, attackSpeed: 1000, aggroRange: 5, attackRange: 1.5,
         lastActionTime: 0, hitFrame: 0,
@@ -1143,6 +1357,8 @@ function createMonster(type, x, y, floor, arena = null) {
             monster.atk = Math.floor((10 + floor * 4) * atkMultiplier * floorMultiplier);
             monster.moveSpeed = 600;
             monster.attackSpeed = 1200;
+            monster.width = 1.2;
+            monster.height = 1.2;
             break;
         case 'miniBoss':
             monster.maxHp = Math.floor((100 + floor * 10) * hpMultiplier * floorMultiplier);
@@ -1158,6 +1374,19 @@ function createMonster(type, x, y, floor, arena = null) {
             monster.aggroRange = 10;
             monster.attackRange = 1.5;
             monster.xp = 500;
+            monster.width = 1.5;
+            monster.height = 1.5;
+            break;
+        case 'minotauro':
+            monster.maxHp = Math.floor((400 + floor * 30) * hpMultiplier * floorMultiplier);
+            monster.atk = Math.floor((85 + floor * 15) * atkMultiplier * floorMultiplier);
+            monster.moveSpeed = 700;
+            monster.attackSpeed = 1200;
+            monster.aggroRange = 8;
+            monster.attackRange = 1.5;
+            monster.xp = 600;
+            monster.width = 1.5;
+            monster.height = 1.5;
             break;
         case 'finalBoss':
             monster.width = 2;
@@ -1176,6 +1405,53 @@ function createMonster(type, x, y, floor, arena = null) {
             monster.atk = Math.floor((7 + floor * 1) * atkMultiplier * floorMultiplier);
             monster.moveSpeed = 300;
             monster.attackSpeed = 700;
+            break;
+        case 'lobo_hielo':
+            monster.maxHp = Math.floor((40 + floor * 8) * hpMultiplier * floorMultiplier);
+            monster.atk = Math.floor((10 + floor * 3) * atkMultiplier * floorMultiplier);
+            monster.moveSpeed = 350;
+            monster.attackSpeed = 800;
+            monster.xp = 40;
+            break;
+        case 'yeti':
+            monster.maxHp = Math.floor((220 + floor * 15) * hpMultiplier * floorMultiplier);
+            monster.atk = Math.floor((30 + floor * 6) * atkMultiplier * floorMultiplier);
+            monster.moveSpeed = 500;
+            monster.attackSpeed = 1000;
+            monster.xp = 150;
+            monster.width = 1.3;
+            monster.height = 1.3;
+            break;
+        case 'golem_hielo':
+            monster.maxHp = Math.floor((350 + floor * 25) * hpMultiplier * floorMultiplier);
+            monster.atk = Math.floor((50 + floor * 8) * atkMultiplier * floorMultiplier);
+            monster.moveSpeed = 800;
+            monster.attackSpeed = 1200;
+            monster.xp = 400;
+            monster.width = 1.5;
+            monster.height = 1.5;
+            break;
+        case 'elfo_de_nueve':
+            monster.maxHp = Math.floor((180 + floor * 12) * hpMultiplier * floorMultiplier);
+            monster.atk = Math.floor((55 + floor * 9) * atkMultiplier * floorMultiplier);
+            monster.moveSpeed = 350;
+            monster.attackSpeed = 600;
+            monster.aggroRange = 8;
+            monster.attackRange = 1.5;
+            monster.xp = 250;
+            monster.width = 1.2;
+            monster.height = 1.2;
+            monster.abilityCooldowns = { tiroDeNueve: 0 };
+            break;
+        case 'rey_elfo_caballo':
+            monster.maxHp = Math.floor((800 + floor * 60) * hpMultiplier * floorMultiplier);
+            monster.atk = Math.floor((120 + floor * 20) * atkMultiplier * floorMultiplier);
+            monster.moveSpeed = 250;
+            monster.attackSpeed = 1800;
+            monster.xp = 1200;
+            monster.width = 2;
+            monster.height = 2;
+            monster.abilityCooldowns = { cargaReal: 0, cuernoDeGuerra: 0, trampaDeHielo: 0 };
             break;
     }
     monster.hp = monster.maxHp;
@@ -1216,10 +1492,42 @@ function tryMove(dx, dy) {
     }
     const chest = getChestAt(newX, newY);
     if (chest) openChest(chest);
+    
+    // Check if stepped on a trap
+    const trapIndex = traps.findIndex(t => t.x === newX && t.y === newY);
+    if (trapIndex !== -1) {
+        const trap = traps[trapIndex];
+        if (trap.type === 'ice_trap') {
+            player.isSlowed = true;
+            player.slowEndTime = Date.now() + 3000;
+            ui.showMessage("¡Pisaste una trampa de hielo y fuiste ralentizado!");
+            traps.splice(trapIndex, 1);
+        }
+    }
+
     if (isPassable(newX, newY)) {
         player.tileX = newX;
         player.tileY = newY;
         revealMapAroundPlayer();
+
+        // Curación Divina (regeneration) step healing
+        if (player.passiveSkill === 'regeneration') {
+            const healAmount = 2;
+            const oldHp = player.hp;
+            player.hp = Math.min(player.maxHp, player.hp + healAmount);
+            const actualHealed = player.hp - oldHp;
+            if (actualHealed > 0) {
+                damageTexts.push({ 
+                    text: `+2 HP`, 
+                    x: player.tileX, 
+                    y: player.tileY, 
+                    life: 30, 
+                    color: '#4CAF50', 
+                    size: 14, 
+                    velY: -0.01 
+                });
+            }
+        }
     }
 }
 
@@ -1241,6 +1549,15 @@ async function handleFloorTransition() {
         finalOutcomeMessage = "¡Mazmorra completada!";
         lastGameScore = calculateScore();
         lastEnemiesDefeated = player.enemiesDefeatedThisRun;
+        
+        // Guardar dificultad completada para desbloquear personajes
+        const currentRank = localStorage.getItem('selectedDungeonRank');
+        if (currentRank) {
+            localStorage.setItem('cleared_' + currentRank, 'true');
+            if (localStorage.getItem('survive_mission_active') === 'true') {
+                localStorage.setItem('gate_cleared_during_mission', 'true');
+            }
+        }
         return;
     }
     currentFloor++;
@@ -1278,6 +1595,21 @@ function performAttack() {
 
     player.isAttacking = true;
     player.attackAnimFrame = 0;
+
+    // Infierno Abrasador (blade_storm) passive
+    if (player.passiveSkill === 'blade_storm' && Math.random() < 0.20) {
+        const bladeDirections = [
+            {dx: 1, dy: 0}, {dx: -1, dy: 0}, {dx: 0, dy: 1}, {dx: 0, dy: -1},
+            {dx: 1, dy: 1}, {dx: 1, dy: -1}, {dx: -1, dy: 1}, {dx: -1, dy: -1}
+        ];
+        bladeDirections.forEach(dir => {
+            projectiles.push(new Projectile(
+                player.tileX + 0.5, player.tileY + 0.5, dir.dx, dir.dy, 'fire_blade', 'player',
+                player.atk * 0.5, false, 4
+            ));
+        });
+        ui.showMessage("¡Infierno Abrasador!");
+    }
 
     const equippedWeapon = player.equipped.weapon;
     let projectileType = null;
@@ -1341,7 +1673,7 @@ function performAttack() {
                 isCritical = true;
                 player.nextAttackIsCritical = false;
             }
-            takeDamage(monsterToAttack, player.atk, isCritical, 'player');
+            takeDamage(monsterToAttack, player.atk, isCritical, 'player', true);
 
             if (equippedWeapon) {
                 const currentTime = Date.now();
@@ -1394,8 +1726,8 @@ function getChestAt(x, y) {
 }
 
 function isPassable(x, y, forProjectiles = false, monster = null) {
-    const monsterWidth = monster ? (monster.width || 1) : 1;
-    const monsterHeight = monster ? (monster.height || 1) : 1;
+    const monsterWidth = monster ? Math.floor(monster.width || 1) : 1;
+    const monsterHeight = monster ? Math.floor(monster.height || 1) : 1;
 
     for (let i = 0; i < monsterWidth; i++) {
         for (let j = 0; j < monsterHeight; j++) {
@@ -1410,8 +1742,8 @@ function isPassable(x, y, forProjectiles = false, monster = null) {
                 if (checkX === player.tileX && checkY === player.tileY) return false;
                 if (monsters.some(m => {
                     if (m === monster) return false;
-                    const mWidth = m.width || 1;
-                    const mHeight = m.height || 1;
+                    const mWidth = Math.floor(m.width || 1);
+                    const mHeight = Math.floor(m.height || 1);
                     return checkX >= m.tileX && checkX < m.tileX + mWidth && checkY >= m.tileY && checkY < m.tileY + mHeight;
                 })) {
                     return false;
@@ -1424,15 +1756,24 @@ function isPassable(x, y, forProjectiles = false, monster = null) {
 
 function getMonsterAt(x, y) {
     return monsters.find(m => {
-        const mWidth = m.width || 1;
-        const mHeight = m.height || 1;
+        const mWidth = Math.floor(m.width || 1);
+        const mHeight = Math.floor(m.height || 1);
         return x >= m.tileX && x < m.tileX + mWidth && y >= m.tileY && y < m.tileY + mHeight;
     });
 }
 
-function takeDamage(target, damage, isCritical, attackerType = 'player') {
+function takeDamage(target, damage, isCritical, attackerType = 'player', isMelee = false) {
+    if (target === player && player.isInvincible) {
+        return;
+    }
     // Minions cannot be damaged by the player
     if (target.isMinion && attackerType === 'player') {
+        return;
+    }
+
+    // Paso Etéreo del Elfo de Nueve (50% de esquivar ataques melee de forma pasiva)
+    if (target.type === 'elfo_de_nueve' && attackerType === 'player' && isMelee && Math.random() < 0.5) {
+        damageTexts.push({ text: 'Paso Etéreo!', x: target.tileX, y: target.tileY, life: 30, color: '#c084fc', size: 18, velY: -0.01 });
         return;
     }
 
@@ -1470,10 +1811,26 @@ function takeDamage(target, damage, isCritical, attackerType = 'player') {
 
     if (actualDamage > 0) target.hp -= actualDamage;
 
+    // Muro de Escudo (invincible) passive
+    if (target === player && player.passiveSkill === 'invincible' && player.hp < player.maxHp * 0.30) {
+        const currentTime = Date.now();
+        if (currentTime - (player.lastInvinciblePassiveTime || 0) >= 30000) {
+            player.lastInvinciblePassiveTime = currentTime;
+            player.isInvincible = true;
+            player.invincibleEndTime = currentTime + 3000; // 3 seconds invincibility
+            
+            // If the hit was fatal, set player's HP to 10% of max HP
+            if (player.hp <= 0) {
+                player.hp = Math.max(1, Math.floor(player.maxHp * 0.10));
+            }
+            ui.showMessage("¡Muro de Escudo! Invencibilidad activada.");
+        }
+    }
+
     const damageColor = (target === player || isCritical) ? '#ff0000' : '#ffffff';
     damageTexts.push({ text: Math.floor(actualDamage).toString(), x: target.tileX, y: target.tileY, life: 30, color: damageColor, size: isCritical ? 24 : 18, velY: -0.01 });
 
-    if (isCritical && attackerType === 'player') {
+    if (isCritical) {
         criticalHitEffects.push({ x: target.tileX, y: target.tileY, life: 15, size: 50 });
         // Add "CRÍTICO!" text effect
         damageTexts.push({ 
@@ -1511,17 +1868,53 @@ function takeDamage(target, damage, isCritical, attackerType = 'player') {
             player.xp += target.xp || 10;
             player.enemiesDefeatedThisRun++;
             checkLevelUp();
+            
+            const targetTileX = target.tileX;
+            const targetTileY = target.tileY;
+            const targetIsMinion = target.isMinion;
+
             const monsterIndex = monsters.indexOf(target);
             if (monsterIndex > -1) monsters.splice(monsterIndex, 1);
-            if (target.type === 'finalBoss') {
+            
+            // Dominio del Monarca (summon) passive
+            if (player.passiveSkill === 'summon' && !targetIsMinion) {
+                const minion = createMonster('minion', targetTileX, targetTileY, currentFloor);
+                minion.maxHp = player.maxHp * 0.75;
+                minion.hp = minion.maxHp;
+                minion.atk = player.atk * 0.75;
+                minion.def = player.def * 0.75;
+                minion.spd = player.spd;
+                minion.isMinion = true;
+                minion.expirationTime = Date.now() + 10000; // 10s duration
+                monsters.push(minion);
+                ui.showMessage("¡Soldado de Sombra alzado!");
+
+                setTimeout(() => {
+                    const idx = monsters.findIndex(m => m.id === minion.id);
+                    if (idx !== -1) {
+                        monsters.splice(idx, 1);
+                    }
+                }, 10000);
+            }
+
+            if (target.type === 'finalBoss' || target.type === 'rey_elfo_caballo') {
                 gameOver = true;
                 finalOutcomeMessage = "¡Has derrotado al Jefe Final!";
                 finalOutcomeMessageLine2 = "¡Has completado la Mazmorra!";
                 lastGameScore = calculateScore();
                 lastEnemiesDefeated = player.enemiesDefeatedThisRun;
+                
+                // Guardar dificultad completada para desbloquear personajes
+                const currentRank = localStorage.getItem('selectedDungeonRank');
+                if (currentRank) {
+                    localStorage.setItem('cleared_' + currentRank, 'true');
+                    if (localStorage.getItem('survive_mission_active') === 'true') {
+                        localStorage.setItem('gate_cleared_during_mission', 'true');
+                    }
+                }
             } else if (monsters.filter(m => !m.isMinion).length === 0) {
-                stairLocation.x = target.tileX;
-                stairLocation.y = target.tileY;
+                stairLocation.x = targetTileX;
+                stairLocation.y = targetTileY;
                 stairLocation.active = true;
                 ui.showMessage("¡Todos los monstruos derrotados! Las escaleras han aparecido.");
             }
@@ -1530,7 +1923,7 @@ function takeDamage(target, damage, isCritical, attackerType = 'player') {
 }
 
 function getDistance(x1, y1, x2, y2, monster = null) {
-    if (monster && monster.type === 'finalBoss') {
+    if (monster && (monster.type === 'finalBoss' || monster.type === 'rey_elfo_caballo')) {
         const closestX = Math.max(monster.tileX, Math.min(x2, monster.tileX + monster.width - 1));
         const closestY = Math.max(monster.tileY, Math.min(y2, monster.tileY + monster.height - 1));
         return Math.sqrt(Math.pow(x2 - closestX, 2) + Math.pow(y2 - closestY, 2));

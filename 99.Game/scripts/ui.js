@@ -11,7 +11,7 @@ import {
     gameStarted, gameOver, lastGameScore, lastEnemiesDefeated, 
     finalOutcomeMessage, finalOutcomeMessageLine2, keys, screenShake, 
     revealedMap, projectiles, damageTexts, criticalHitEffects, warMaceShockwave, skillCooldowns, mapWidth, mapHeight, tileSize, iceRayEffects,
-    useItem, learnSkill, equipItem, equipSkill, activateSkill, torches, chests, monsters
+    useItem, learnSkill, equipItem, equipSkill, activateSkill, torches, chests, monsters, traps
 } from './gameLogic.js';
 import { synchronizeCharacterWithPlayer } from './equipo.js';
 
@@ -257,6 +257,8 @@ function drawPlayer(x, y) {
 }
 
 function drawMonster(m, screenX, screenY) {
+    let drawWidth = tileSize * (m.width || 1);
+    let drawHeight = tileSize * (m.height || 1);
     let drawX = screenX;
     let drawY = screenY;
 
@@ -275,53 +277,73 @@ function drawMonster(m, screenX, screenY) {
         else if (m.attackDirectionY < 0) drawY -= lunge;
     }
 
+    if (m.type !== 'finalBoss' && m.type !== 'rey_elfo_caballo') {
+        drawX -= (drawWidth - tileSize) / 2;
+        drawY -= (drawHeight - tileSize) / 2;
+    }
+
     if (m.type === 'finalBoss') {
-        drawSprite('araña.png', drawX, drawY, tileSize * m.width, tileSize * m.height);
+        drawSprite('araña.png', drawX, drawY, drawWidth, drawHeight);
     } else {
         let monsterImage;
         if (m.type === 'duende') monsterImage = loadedImages.duende; 
         else if (m.type === 'lobo') monsterImage = loadedImages.lobo;
+        else if (m.type === 'lobo_hielo') monsterImage = loadedImages.lobo;
+        else if (m.type === 'yeti') monsterImage = loadedImages.miniBoss;
+        else if (m.type === 'golem_hielo') monsterImage = loadedImages.boss;
         else if (m.type === 'skeleton') monsterImage = loadedImages.skeleton;
         else if (m.type === 'miniBoss') monsterImage = loadedImages.miniBoss;
         else if (m.type === 'boss') monsterImage = loadedImages.boss;
         else if (m.type === 'spiderling') monsterImage = loadedImages.spiderling;
+        else if (m.type === 'minotauro') monsterImage = loadedImages.minotauro;
+        else if (m.type === 'elfo_de_nueve') monsterImage = loadedImages.elfo_de_nueve;
+        else if (m.type === 'rey_elfo_caballo') monsterImage = loadedImages.rey_elfo_caballo;
         else if (m.type === 'minion') { 
             monsterImage = loadedImages.minion; 
         }
 
         if (monsterImage && monsterImage.complete) {
-            let drawWidth = tileSize * (m.width || 1);
-            let drawHeight = tileSize * (m.height || 1);
-            ctx.drawImage(monsterImage, 0,0,64,64, drawX, drawY, drawWidth, drawHeight);
-            
+            ctx.save();
+            if (m.type === 'lobo_hielo' || m.type === 'yeti' || m.type === 'golem_hielo' || m.type === 'rey_elfo_caballo') {
+                ctx.shadowColor = '#00f0ff';
+                ctx.shadowBlur = 12;
+            }
+            if (m.facing === 'left') {
+                ctx.translate(drawX + drawWidth, drawY);
+                ctx.scale(-1, 1);
+                ctx.drawImage(monsterImage, 0, 0, 64, 64, 0, 0, drawWidth, drawHeight);
+            } else {
+                ctx.drawImage(monsterImage, 0, 0, 64, 64, drawX, drawY, drawWidth, drawHeight);
+            }
+            ctx.restore();
         } else { 
-            ctx.fillStyle = m.type === 'duende' ? '#5C6B00' : (m.type === 'lobo' ? '#8C0000' : (m.type === 'finalBoss') ? '#3A1E00' : (m.type === 'spiderling' ? '#4A2A05' : 'gray')); 
-            ctx.fillRect(drawX, drawY, tileSize * (m.width || 1), tileSize * (m.height || 1));
-            
+            ctx.fillStyle = m.type === 'duende' ? '#5C6B00' : (m.type === 'lobo' ? '#8C0000' : (m.type === 'finalBoss' || m.type === 'rey_elfo_caballo') ? '#3A1E00' : (m.type === 'spiderling' ? '#4A2A05' : 'gray')); 
+            ctx.fillRect(drawX, drawY, drawWidth, drawHeight);
         }
     }
-    if (m.hitFrame > 0) { ctx.fillStyle = 'rgba(255,0,0,0.5)'; ctx.fillRect(drawX, drawY, tileSize * (m.width || 1), tileSize * (m.height || 1)); }
+    if (m.hitFrame > 0) { ctx.fillStyle = 'rgba(255,0,0,0.5)'; ctx.fillRect(drawX, drawY, drawWidth, drawHeight); }
     if (m.isFrozen && Date.now() < m.frozenEndTime) {
         ctx.fillStyle = 'rgba(0, 191, 255, 0.3)'; 
-        ctx.fillRect(drawX, drawY, tileSize * (m.width || 1), tileSize * (m.height || 1));
+        ctx.fillRect(drawX, drawY, drawWidth, drawHeight);
     }
     if (m.isWeakened && Date.now() < m.weaknessEndTime) {
         ctx.fillStyle = 'rgba(128, 0, 128, 0.3)'; 
-        ctx.fillRect(drawX, drawY, tileSize * (m.width || 1), tileSize * (m.height || 1));
+        ctx.fillRect(drawX, drawY, drawWidth, drawHeight);
     }
     if (m.isBleeding && Date.now() < m.bleedingEndTime) {
         ctx.fillStyle = 'rgba(255, 0, 0, 0.3)'; 
-        ctx.fillRect(drawX, drawY, tileSize * (m.width || 1), tileSize * (m.height || 1));
+        ctx.fillRect(drawX, drawY, drawWidth, drawHeight);
     }
     if (m.isAttackSlowed && Date.now() < m.attackSlowEndTime) {
         ctx.fillStyle = 'rgba(135, 206, 235, 0.3)'; 
-        ctx.fillRect(drawX, drawY, tileSize * (m.width || 1), tileSize * (m.height || 1));
+        ctx.fillRect(drawX, drawY, drawWidth, drawHeight);
     }
 
     const healthPercentMonster = m.hp / m.maxHp; 
-    ctx.fillStyle = 'rgba(0,0,0,0.7)'; ctx.fillRect(drawX+5, drawY-10, tileSize-10, 5);
+    const barWidth = drawWidth - 10;
+    ctx.fillStyle = 'rgba(0,0,0,0.7)'; ctx.fillRect(drawX+5, drawY-10, barWidth, 5);
     ctx.fillStyle = healthPercentMonster > 0.5 ? 'rgba(0,255,0,0.7)' : healthPercentMonster > 0.25 ? 'rgba(255,255,0,0.7)' : 'rgba(255,0,0,0.7)';
-    ctx.fillRect(drawX+5, drawY-10, (tileSize-10)*healthPercentMonster, 5);
+    ctx.fillRect(drawX+5, drawY-10, barWidth*healthPercentMonster, 5);
 }
 
 function drawProjectiles(offsetX, offsetY) {
@@ -427,6 +449,14 @@ function drawProjectiles(offsetX, offsetY) {
             // Draw the handle (brown)
             ctx.fillStyle = '#8B4513'; // SaddleBrown color
             ctx.fillRect(-7, -2.5, 3, 5); // Handle: shorter and wider, attached to one end
+        } else if (proj.type === 'fire_blade') { // Drawing for 'fire_blade' projectiles
+            // Draw the flaming blade (orange/red)
+            ctx.fillStyle = 'rgba(255, 69, 0, 0.9)'; // OrangeRed
+            ctx.fillRect(-7, -1.5, 14, 3);
+            ctx.fillStyle = 'rgba(255, 140, 0, 0.7)'; // DarkOrange
+            ctx.fillRect(-5, -2.5, 10, 5);
+            ctx.fillStyle = '#8B4513'; // Handle (brown)
+            ctx.fillRect(-7, -2.5, 3, 5);
         }
         ctx.restore(); 
     });
@@ -536,6 +566,62 @@ function hasAdjacentFloor(x, y, map) {
     return false;
 }
 
+function getWallType(x, y) {
+    const hasFloorBelow = (y + 1 < mapHeight && (map[y + 1][x].base === 1 || map[y + 1][x].base === 2));
+    const hasFloorAbove = (y - 1 >= 0 && (map[y - 1][x].base === 1 || map[y - 1][x].base === 2));
+    const hasFloorLeft = (x - 1 >= 0 && (map[y][x - 1].base === 1 || map[y][x - 1].base === 2));
+    const hasFloorRight = (x + 1 < mapWidth && (map[y][x + 1].base === 1 || map[y][x + 1].base === 2));
+
+    if (hasFloorBelow) return 'wall_up';
+    if (hasFloorAbove) return 'wall_down';
+    if (hasFloorLeft) return 'wall_right';
+    if (hasFloorRight) return 'wall_left';
+
+    // Scan vertically for a nearby wall tile that has floor to its left or right
+    for (let d = 1; d <= 8; d++) {
+        // Check above
+        if (y - d >= 0 && map[y - d][x].base === 0) {
+            const hasFloorL = (x - 1 >= 0 && (map[y - d][x - 1].base === 1 || map[y - d][x - 1].base === 2));
+            const hasFloorR = (x + 1 < mapWidth && (map[y - d][x + 1].base === 1 || map[y - d][x + 1].base === 2));
+            if (hasFloorR) return 'wall_left';
+            if (hasFloorL) return 'wall_right';
+        }
+        // Check below
+        if (y + d < mapHeight && map[y + d][x].base === 0) {
+            const hasFloorL = (x - 1 >= 0 && (map[y + d][x - 1].base === 1 || map[y + d][x - 1].base === 2));
+            const hasFloorR = (x + 1 < mapWidth && (map[y + d][x + 1].base === 1 || map[y + d][x + 1].base === 2));
+            if (hasFloorR) return 'wall_left';
+            if (hasFloorL) return 'wall_right';
+        }
+    }
+
+    // Scan horizontally for a nearby wall tile that has floor above or below
+    for (let d = 1; d <= 8; d++) {
+        // Check left
+        if (x - d >= 0 && map[y][x - d].base === 0) {
+            const hasFloorA = (y - 1 >= 0 && (map[y - 1][x - d].base === 1 || map[y - 1][x - d].base === 2));
+            const hasFloorB = (y + 1 < mapHeight && (map[y + 1][x - d].base === 1 || map[y + 1][x - d].base === 2));
+            if (hasFloorB) return 'wall_up';
+            if (hasFloorA) return 'wall_down';
+        }
+        // Check right
+        if (x + d < mapWidth && map[y][x + d].base === 0) {
+            const hasFloorA = (y - 1 >= 0 && (map[y - 1][x + d].base === 1 || map[y - 1][x + d].base === 2));
+            const hasFloorB = (y + 1 < mapHeight && (map[y + 1][x + d].base === 1 || map[y + 1][x + d].base === 2));
+            if (hasFloorB) return 'wall_up';
+            if (hasFloorA) return 'wall_down';
+        }
+    }
+
+    // Fallback for corners and isolated walls
+    const isVoidLeft = (x - 1 < 0 || (x - 1 >= 0 && map[y][x - 1].base === 9));
+    const isVoidRight = (x + 1 >= mapWidth || (x + 1 < mapWidth && map[y][x + 1].base === 9));
+
+    if (isVoidLeft) return 'wall_left';
+    if (isVoidRight) return 'wall_right';
+    return 'wall_right'; // Default for isolated walls
+}
+
 export function drawMap() {
     offsetX = Math.max(0, Math.min(player.tileX * tileSize - gameCanvas.width / 2 + tileSize / 2, mapWidth * tileSize - gameCanvas.width));
     offsetY = Math.max(0, Math.min(player.tileY * tileSize - gameCanvas.height / 2 + tileSize / 2, mapHeight * tileSize - gameCanvas.height));
@@ -562,38 +648,16 @@ export function drawMap() {
                 let baseTileType = tile.base;
 
                 if (baseTileType === 0) { // It's a wall
-                    let wallType = null;
+                    let wallType = getWallType(x, y);
 
-                    const hasFloorBelow = (y + 1 < mapHeight && (map[y + 1][x].base === 1 || map[y + 1][x].base === 2));
-                    const hasFloorAbove = (y - 1 >= 0 && (map[y - 1][x].base === 1 || map[y - 1][x].base === 2));
-                    const hasFloorLeft = (x - 1 >= 0 && (map[y][x - 1].base === 1 || map[y][x - 1].base === 2));
-                    const hasFloorRight = (x + 1 < mapWidth && (map[y][x + 1].base === 1 || map[y][x + 1].base === 2));
-
-                    if (hasFloorBelow) { wallType = 'wall_up'; }
-                    else if (hasFloorAbove) { wallType = 'wall_down'; }
-                    else if (hasFloorLeft) { wallType = 'wall_right'; }
-                    else if (hasFloorRight) { wallType = 'wall_left'; }
-
-                    if (wallType) {
-                        drawWall(screenX, screenY, wallType);
-                        // Check if this wall has a torch
-                        if (torches.some(t => t.x === x && t.y === y)) {
-                            let rotation = 0;
-                            if (wallType === 'wall_down') {
-                                rotation = 180;
-                            }
-                            drawTorch(screenX, screenY, rotation);
+                    drawWall(screenX, screenY, wallType);
+                    // Check if this wall has a torch
+                    if (torches.some(t => t.x === x && t.y === y)) {
+                        let rotation = 0;
+                        if (wallType === 'wall_down') {
+                            rotation = 180;
                         }
-                    } else {
-                        // Fallback for corners and isolated walls
-                        const isVoidLeft = (x - 1 < 0 || (x - 1 >= 0 && map[y][x - 1].base === 9));
-                        const isVoidRight = (x + 1 >= mapWidth || (x + 1 < mapWidth && map[y][x + 1].base === 9));
-
-                        if(isVoidLeft) wallType = 'wall_left';
-                        else if(isVoidRight) wallType = 'wall_right';
-                        else wallType = 'wall_right'; // Default for isolated walls
-                        
-                        drawWall(screenX, screenY, wallType);
+                        drawTorch(screenX, screenY, rotation);
                     }
                 } else if (baseTileType === 1) { // It's a floor
                     drawFloor(screenX, screenY);
@@ -632,6 +696,37 @@ export function drawMap() {
             }
         }
     }
+
+    // Dibujar trampas de hielo
+    traps.forEach(trap => {
+        const screenX = trap.x * tileSize - offsetX;
+        const screenY = trap.y * tileSize - offsetY;
+        
+        ctx.save();
+        ctx.fillStyle = 'rgba(0, 240, 255, 0.4)';
+        ctx.strokeStyle = '#00f0ff';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.arc(screenX + tileSize / 2, screenY + tileSize / 2, tileSize * 0.3, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.stroke();
+        
+        // Dibujar picos de hielo
+        ctx.strokeStyle = '#ffffff';
+        ctx.lineWidth = 2;
+        for (let angle = 0; angle < Math.PI * 2; angle += Math.PI / 4) {
+            const sx = screenX + tileSize / 2 + Math.cos(angle) * tileSize * 0.15;
+            const sy = screenY + tileSize / 2 + Math.sin(angle) * tileSize * 0.15;
+            const ex = screenX + tileSize / 2 + Math.cos(angle) * tileSize * 0.35;
+            const ey = screenY + tileSize / 2 + Math.sin(angle) * tileSize * 0.35;
+            
+            ctx.beginPath();
+            ctx.moveTo(sx, sy);
+            ctx.lineTo(ex, ey);
+            ctx.stroke();
+        }
+        ctx.restore();
+    });
 
     monsters.forEach(m => {
         const screenX = m.tileX * tileSize - offsetX; const screenY = m.tileY * tileSize - offsetY;
@@ -730,41 +825,77 @@ function drawMinimap() {
 
 function drawHUD() {
     const maxFloors = todosLosMapas[currentMapId].maxFloors;
-    ctx.fillStyle = 'rgba(244,228,188,0.7)'; ctx.fillRect(gameCanvas.width-170, 10, 160, 280);
-    ctx.strokeStyle = '#8B4513'; ctx.lineWidth = 2; ctx.strokeRect(gameCanvas.width-170, 10, 160, 280);
     
-    ctx.fillStyle = '#000'; ctx.font = '14px Georgia'; ctx.textAlign = 'left';
-    const startX = gameCanvas.width - 162; let yPos = 30;
-    ctx.fillText(`Piso Actual: ${currentFloor}/${maxFloors}`, startX, yPos); yPos+=18; 
-    ctx.fillText(`HP: ${Math.floor(player.hp)}/${Math.floor(player.maxHp)}`, startX, yPos); yPos+=18; 
-    ctx.fillText(`ATK: ${Math.floor(player.atk)}`, startX, yPos); yPos+=18; 
+    // Draw sci-fi panels
+    ctx.fillStyle = 'rgba(3, 12, 18, 0.85)';
+    ctx.fillRect(gameCanvas.width - 185, 10, 175, 360);
+    ctx.strokeStyle = 'rgba(0, 240, 255, 0.4)';
+    ctx.lineWidth = 1.5;
+    ctx.strokeRect(gameCanvas.width - 185, 10, 175, 360);
+    
+    // Neon header accent
+    ctx.fillStyle = '#00f0ff';
+    ctx.fillRect(gameCanvas.width - 185, 10, 175, 4);
+    
+    const startX = gameCanvas.width - 175;
+    let yPos = 32;
+    
+    const drawRow = (label, value, valColor = '#00f0ff') => {
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.65)';
+        ctx.font = '11px Orbitron, Rajdhani, sans-serif';
+        ctx.fillText(label, startX, yPos);
+        
+        ctx.fillStyle = valColor;
+        ctx.font = 'bold 11px Orbitron, Rajdhani, sans-serif';
+        ctx.fillText(value, startX + 85, yPos);
+        yPos += 18;
+    };
+
+    drawRow('PISO:', `${currentFloor}/${maxFloors}`, '#ffd700');
+    
+    const hpPercent = player.hp / player.maxHp;
+    const hpColor = hpPercent < 0.3 ? '#ef4444' : '#34d399';
+    drawRow('HP:', `${Math.floor(player.hp)}/${Math.floor(player.maxHp)}`, hpColor);
+    
+    drawRow('ATK:', `${Math.floor(player.atk)}`);
+    
     const defReduction = Math.min(75, player.def * 0.03); 
-    ctx.fillText(`DEF: ${Math.floor(player.def)} (${(defReduction * 100).toFixed(0)}%)`, startX, yPos); yPos+=18; 
-    ctx.fillText(`Velocidad: ${player.spd.toFixed(2)}`, startX, yPos); yPos+=18;
-    ctx.fillText(`Crítico: ${(player.criticalChanceBonus * 100).toFixed(0)}%`, startX, yPos); yPos+=18;
-    ctx.fillText(`Evasión: ${(player.evasion * 100).toFixed(0)}%`, startX, yPos); yPos+=18;
-    ctx.fillText(`Vel. Ataque: ${player.attackSpeedBonus}`, startX, yPos); yPos+=18;
-    ctx.fillText(`Nivel: ${player.level} (XP: ${player.xp})`, startX, yPos); yPos+=18;
+    drawRow('DEF:', `${Math.floor(player.def)} (${(defReduction * 100).toFixed(0)}%)`);
     
-    ctx.fillText('Habilidades:', startX, yPos); yPos+=18;
-    ctx.font = '12px Georgia'; const currentTime = Date.now();
+    drawRow('VEL:', player.spd.toFixed(2));
+    drawRow('CRIT:', `${(player.criticalChanceBonus * 100).toFixed(0)}%`);
+    drawRow('EVASION:', `${(player.evasion * 100).toFixed(0)}%`);
+    drawRow('VEL. ATK:', `${player.attackSpeedBonus}`);
+    drawRow('NIVEL:', `${player.level} (XP: ${player.xp})`);
     
+    // Skill section
+    ctx.fillStyle = 'rgba(0, 240, 255, 0.4)';
+    ctx.fillRect(startX, yPos - 5, 155, 1);
+    yPos += 10;
+    
+    ctx.fillStyle = '#ffffff';
+    ctx.font = 'bold 11px Orbitron, Rajdhani, sans-serif';
+    ctx.fillText('HABILIDADES:', startX, yPos);
+    yPos += 16;
+    
+    const currentTime = Date.now();
     const skillSlots = ['habilidad1', 'habilidad2', 'habilidad3'];
     skillSlots.forEach((slot, index) => {
         const equippedSkillKey = player.equipped[slot];
         const equippedSkill = skills.find(s => s.key === equippedSkillKey);
-        let skillText = equippedSkill ? equippedSkill.name : '(Ninguna)';
-        let textColor = '#666'; 
         
         if (equippedSkill) {
-            if (equippedSkill.key === 'second_wind') { // Check by key
-                skillText += player.secondWindUsedThisRun ? ' (Usada)' : ' (Equipada)';
-                textColor = player.secondWindUsedThisRun ? '#909090' : '#00008B';
+            let skillText = equippedSkill.name;
+            let valColor = '#00f0ff';
+            
+            if (equippedSkill.key === 'second_wind') {
+                skillText += player.secondWindUsedThisRun ? ' [USADA]' : ' [EQ]';
+                valColor = player.secondWindUsedThisRun ? '#64748b' : '#38bdf8';
             } else {
                 const cooldownRemaining = Math.max(0, (skillCooldowns[equippedSkill.name] - currentTime));
                 let durationEndTime = 0;
                 let minion = monsters.find(m => m.isMinion);
-                switch(equippedSkill.key) { // Use key for switch
+                switch(equippedSkill.key) {
                     case 'stealth': durationEndTime = player.stealthEndTime; break;
                     case 'invincible': durationEndTime = player.invincibleEndTime; break;
                     case 'speed': durationEndTime = player.speedBoostEndTime; break;
@@ -775,29 +906,72 @@ function drawHUD() {
 
                 if (durationRemaining > 0) {
                     skillText += ` (${(durationRemaining/1000).toFixed(1)}s)`;
-                    textColor = '#008000'; // Green for active duration
+                    valColor = '#4ade80';
                 } else if (player.skillUsageThisFloor[equippedSkill.name]) {
-                    skillText += " (Usada)";
-                    textColor = '#909090';
+                    skillText += ' [USADA]';
+                    valColor = '#64748b';
                 } else { 
                     skillText += ` [${index + 1}]`; 
-                    textColor = '#008000'; 
+                    valColor = '#34d399'; 
                 }
             }
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.5)';
+            ctx.font = '10px Orbitron, Rajdhani, sans-serif';
+            ctx.fillText(`SLOT ${index + 1}:`, startX, yPos);
+            ctx.fillStyle = valColor;
+            ctx.font = 'bold 10px Orbitron, Rajdhani, sans-serif';
+            ctx.fillText(skillText, startX + 55, yPos);
+        } else {
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.3)';
+            ctx.font = '10px Orbitron, Rajdhani, sans-serif';
+            ctx.fillText(`SLOT ${index + 1}:`, startX, yPos);
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.3)';
+            ctx.fillText('(NINGUNA)', startX + 55, yPos);
         }
-        ctx.fillStyle = textColor;
-        ctx.fillText(skillText, startX, yPos); yPos+=16;
+        yPos += 14;
     });
 
-    yPos += 5; 
-    ctx.fillStyle = '#000';
-    ctx.font = '13px Georgia';
+    // Seccion de Pasiva
+    yPos += 5;
+    ctx.fillStyle = 'rgba(0, 240, 255, 0.4)';
+    ctx.fillRect(startX, yPos - 5, 155, 1);
+    yPos += 10;
+
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.5)';
+    ctx.font = '10px Orbitron, Rajdhani, sans-serif';
+    ctx.fillText('PASIVA:', startX, yPos);
+
+    const passiveSkill = skills.find(s => s.key === player.passiveSkill);
+    let passiveText = '(NINGUNA)';
+    if (passiveSkill) {
+        passiveText = passiveSkill.name;
+    }
+    ctx.fillStyle = '#a78bfa'; // Soft Purple
+    ctx.font = 'bold 10px Orbitron, Rajdhani, sans-serif';
+    ctx.fillText(passiveText, startX + 55, yPos);
+    yPos += 14;
+
+    // Set Bonus section
+    yPos += 5;
+    ctx.fillStyle = 'rgba(0, 240, 255, 0.4)';
+    ctx.fillRect(startX, yPos - 5, 155, 1);
+    yPos += 10;
+    
     if (activeSetBonusName) {
         const bonus = setBonuses[activeSetBonusName];
-        ctx.fillText(`Conjunto: ${activeSetBonusName}`, startX, yPos); yPos += 16;
-        ctx.fillText(`Bonificación: ${bonus.message.split(': ')[1]}`, startX, yPos);
+        ctx.fillStyle = '#ffd700';
+        ctx.font = 'bold 10px Orbitron, Rajdhani, sans-serif';
+        ctx.fillText(`CONJUNTO: ${activeSetBonusName.toUpperCase()}`, startX, yPos);
+        yPos += 14;
+        
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.7)';
+        ctx.font = '9px Orbitron, Rajdhani, sans-serif';
+        const bonusMsg = bonus.message.split(': ')[1] || bonus.message;
+        ctx.fillText(bonusMsg, startX, yPos);
     } else {
-        ctx.fillText('Conjunto Activo: Ninguno', startX, yPos);
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.4)';
+        ctx.font = '10px Orbitron, Rajdhani, sans-serif';
+        ctx.fillText('SIN CONJUNTO ACTIVO', startX, yPos);
     }
 }
 

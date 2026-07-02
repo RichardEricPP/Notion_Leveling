@@ -1,0 +1,555 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rewards Store - Notion Leveling</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0f172a;
+            color: #e2e8f0;
+            overflow-x: hidden;
+        }
+
+        .font-header {
+            font-family: 'Rajdhani', sans-serif;
+        }
+
+        .neon-text {
+            text-shadow: 0 0 10px rgba(56, 189, 248, 0.5);
+        }
+
+        .card-bg {
+            background-color: #1e293b;
+            border: 1px solid #334155;
+        }
+
+        .card-bg:hover {
+            border-color: #38bdf8;
+            transform: translateY(-2px);
+            transition: all 0.3s ease;
+        }
+
+        .pixel-art {
+            image-rendering: pixelated;
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #0f172a;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #334155;
+            border-radius: 3px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #475569;
+        }
+
+        @keyframes float {
+            0% {
+                transform: translateY(0px);
+            }
+
+            50% {
+                transform: translateY(-5px);
+            }
+
+            100% {
+                transform: translateY(0px);
+            }
+        }
+
+        .float-anim {
+            animation: float 3s ease-in-out infinite;
+        }
+    </style>
+</head>
+
+<body class="min-h-screen py-8 px-4 md:px-8 max-w-6xl mx-auto">
+
+    <!-- Header -->
+    <header class="flex justify-between items-center mb-8">
+        <div class="flex items-center gap-4">
+            <a href="Menu.html"
+                class="flex items-center justify-center w-10 h-10 rounded-full bg-slate-800 hover:bg-slate-700 transition text-slate-400 hover:text-white">
+                <i class="fas fa-chevron-left"></i>
+            </a>
+            <div>
+                <h1
+                    class="text-3xl font-bold font-header text-yellow-400 tracking-wider uppercase flex items-center gap-2">
+                    <i class="fas fa-store"></i> Reward Shop
+                </h1>
+                <p class="text-slate-500 text-xs uppercase tracking-widest">Spend your hard-earned gold</p>
+            </div>
+        </div>
+
+        <!-- Gold Balance -->
+        <div class="flex items-center gap-4">
+            <button onclick="openHistory()"
+                class="bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white px-4 py-2 rounded-full text-xs font-bold transition border border-slate-700">
+                <i class="fas fa-history mr-2"></i>History
+            </button>
+
+            <button onclick="openAddModal()"
+                class="bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white w-9 h-9 rounded-full flex items-center justify-center transition border border-slate-700"
+                title="Add Custom Reward">
+                <i class="fas fa-plus"></i>
+            </button>
+
+            <div
+                class="bg-slate-900/80 border border-yellow-500/30 px-6 py-2 rounded-full flex items-center gap-3 shadow-[0_0_15px_rgba(234,179,8,0.2)]">
+                <i class="fas fa-coins text-yellow-400 text-xl float-anim"></i>
+                <div>
+                    <div class="text-[10px] text-slate-400 uppercase font-bold tracking-wider">Current Balance</div>
+                    <div class="text-2xl font-bold text-white leading-none" id="user-gold">...</div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Content Grid -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="rewards-grid">
+        <!-- Cards injected by JS -->
+    </div>
+
+    <!-- Success Modal -->
+    <div id="success-modal"
+        class="fixed inset-0 bg-black/80 flex items-center justify-center z-50 hidden opacity-0 transition-opacity duration-300">
+        <div class="bg-slate-900 border border-yellow-500 rounded-2xl p-8 max-w-sm w-full text-center transform scale-90 transition-transform duration-300"
+            id="modal-content">
+            <div class="w-20 h-20 bg-yellow-400/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                <i class="fas fa-gift text-4xl text-yellow-400"></i>
+            </div>
+            <h2 class="text-2xl font-bold text-white mb-2">Reward Claimed!</h2>
+            <p class="text-slate-400 mb-6" id="modal-msg">You have successfully purchased this item.</p>
+            <button onclick="closeModal()"
+                class="w-full py-3 rounded-lg font-bold bg-yellow-500 hover:bg-yellow-400 text-black transition">
+                Awesome!
+            </button>
+        </div>
+    </div>
+
+    <!-- Add Reward Modal -->
+    <div id="add-modal"
+        class="fixed inset-0 bg-black/80 flex items-center justify-center z-50 hidden opacity-0 transition-opacity duration-300">
+        <div class="bg-slate-900 border border-slate-700 rounded-2xl w-full max-w-sm flex flex-col transform scale-95 transition-transform duration-300 shadow-2xl"
+            id="add-content">
+            <div class="p-6 border-b border-slate-800 flex justify-between items-center bg-slate-900/90 rounded-t-2xl">
+                <h2 class="text-xl font-bold text-white font-header tracking-wide">Create Custom Reward</h2>
+                <button onclick="closeAddModal()" class="text-slate-500 hover:text-white transition"><i
+                        class="fas fa-times text-lg"></i></button>
+            </div>
+            <div class="p-6 space-y-4">
+                <div>
+                    <label class="block text-xs text-slate-400 font-bold mb-1 uppercase">Title</label>
+                    <input type="text" id="new-title"
+                        class="w-full bg-slate-800 border border-slate-700 rounded px-3 py-2 text-white focus:border-blue-500 outline-none"
+                        placeholder="e.g. Buy a new game">
+                </div>
+                <div>
+                    <label class="block text-xs text-slate-400 font-bold mb-1 uppercase">Description</label>
+                    <input type="text" id="new-desc"
+                        class="w-full bg-slate-800 border border-slate-700 rounded px-3 py-2 text-white focus:border-blue-500 outline-none"
+                        placeholder="Short description...">
+                </div>
+                <div>
+                    <label class="block text-xs text-slate-400 font-bold mb-1 uppercase">Cost</label>
+                    <input type="number" id="new-cost"
+                        class="w-full bg-slate-800 border border-slate-700 rounded px-3 py-2 text-white focus:border-blue-500 outline-none"
+                        placeholder="100">
+                </div>
+                <div>
+                    <label class="block text-xs text-slate-400 font-bold mb-1 uppercase">Category / Visual</label>
+                    <div class="grid grid-cols-4 gap-2">
+                        <button onclick="selectBanner('gaming')"
+                            class="banner-select h-12 rounded bg-cover bg-center border-2 border-transparent hover:border-blue-400 transition"
+                            style="background-image: url('../../99.Game/assets/banner_gaming.png')" data-cat="gaming"
+                            title="Gaming"></button>
+                        <button onclick="selectBanner('food')"
+                            class="banner-select h-12 rounded bg-cover bg-center border-2 border-transparent hover:border-orange-400 transition"
+                            style="background-image: url('../../99.Game/assets/banner_food.png')" data-cat="food"
+                            title="Food"></button>
+                        <button onclick="selectBanner('relax')"
+                            class="banner-select h-12 rounded bg-cover bg-center border-2 border-transparent hover:border-purple-400 transition"
+                            style="background-image: url('../../99.Game/assets/banner_relax.png')" data-cat="relax"
+                            title="Relax"></button>
+                        <button onclick="selectBanner('study')"
+                            class="banner-select h-12 rounded bg-cover bg-center border-2 border-transparent hover:border-green-400 transition"
+                            style="background-image: url('../../99.Game/assets/banner_study.png')" data-cat="study"
+                            title="Study"></button>
+
+                        <!-- New Banners -->
+                        <button onclick="selectBanner('cinema')"
+                            class="banner-select h-12 rounded bg-cover bg-center border-2 border-transparent hover:border-red-400 transition"
+                            style="background-image: url('../../99.Game/assets/banner_cinema.png')" data-cat="cinema"
+                            title="Cinema"></button>
+                        <button onclick="selectBanner('beach')"
+                            class="banner-select h-12 rounded bg-cover bg-center border-2 border-transparent hover:border-yellow-400 transition"
+                            style="background-image: url('../../99.Game/assets/banner_beach.png')" data-cat="beach"
+                            title="Beach"></button>
+                        <button onclick="selectBanner('friends')"
+                            class="banner-select h-12 rounded bg-cover bg-center border-2 border-transparent hover:border-pink-400 transition"
+                            style="background-image: url('../../99.Game/assets/banner_friends.png')" data-cat="friends"
+                            title="Friends"></button>
+                        <button onclick="selectBanner('buy')"
+                            class="banner-select h-12 rounded bg-cover bg-center border-2 border-transparent hover:border-indigo-400 transition"
+                            style="background-image: url('../../99.Game/assets/store_header.png')" data-cat="buy"
+                            title="Shopping"></button>
+                    </div>
+                </div>
+                <button onclick="createReward()"
+                    class="w-full py-3 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-lg transition mt-2">
+                    Create Reward
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- History Modal -->
+    <div id="history-modal"
+        class="fixed inset-0 bg-black/80 flex items-center justify-center z-50 hidden opacity-0 transition-opacity duration-300">
+        <div class="bg-slate-900 border border-slate-700 rounded-2xl w-full max-w-md h-[80vh] flex flex-col transform scale-95 transition-transform duration-300 shadow-2xl"
+            id="history-content">
+            <div class="p-6 border-b border-slate-800 flex justify-between items-center bg-slate-900/90 rounded-t-2xl">
+                <h2 class="text-xl font-bold text-white font-header tracking-wide"><i
+                        class="fas fa-history text-slate-400 mr-2"></i> Transaction History</h2>
+                <button onclick="closeHistory()" class="text-slate-500 hover:text-white transition"><i
+                        class="fas fa-times text-lg"></i></button>
+            </div>
+            <div class="flex-grow overflow-y-auto p-4 space-y-3" id="history-list">
+                <!-- History Items -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- DATA ---
+        let defaultRewards = [
+            {
+                id: 1,
+                title: "Day of Rest",
+                cost: 100,
+                desc: "Take a guilt-free day off.",
+                image: "../../99.Game/assets/banner_relax.png", // Using the pixel art store as generic placeholder for now
+                icon: "fa-bed",
+                color: "text-red-400"
+            },
+            {
+                id: 2,
+                title: "Cheat Meal",
+                cost: 300,
+                desc: "One meal of whatever you want.",
+                image: "../../99.Game/assets/banner_food.png",
+                icon: "fa-pizza-slice",
+                color: "text-orange-400"
+            },
+            {
+                id: 3,
+                title: "Gaming Session",
+                cost: 200,
+                desc: "Uninterrupted gaming time.",
+                image: "../../99.Game/assets/banner_gaming.png",
+                icon: "fa-gamepad",
+                color: "text-blue-400"
+            },
+            {
+                id: 4,
+                title: "Movie Night",
+                cost: 50,
+                desc: "Rent a movie or go to the cinema.",
+                image: "../../99.Game/assets/store_header.png",
+                icon: "fa-film",
+                color: "text-purple-400"
+            },
+            {
+                id: 5,
+                title: "New Book / Manga",
+                cost: 500,
+                desc: "Purchase a new physical/digital book.",
+                image: "../../99.Game/assets/banner_study.png",
+                icon: "fa-book",
+                color: "text-indigo-400"
+            },
+            {
+                id: 6,
+                title: "Coffee Treat",
+                cost: 30,
+                desc: "Fancy coffee from your favorite spot.",
+                image: "../../99.Game/assets/store_header.png",
+                icon: "fa-coffee",
+                color: "text-amber-700"
+            }
+        ];
+
+        // --- STATE ---
+        let currentGold = parseInt(localStorage.getItem('gold')) || 1250;
+        let history = JSON.parse(localStorage.getItem('rewardHistory')) || [];
+        let customRewards = JSON.parse(localStorage.getItem('customRewards')) || [];
+        let hiddenDefaultIds = JSON.parse(localStorage.getItem('hiddenRewards')) || [];
+
+        let selectedCategory = 'gaming';
+
+        // --- INIT ---
+        document.addEventListener('DOMContentLoaded', () => {
+            updateGoldUI();
+            renderRewards();
+            selectBanner('gaming');
+        });
+
+        function getMainRewards() {
+            // Filter out hidden defaults
+            const visibleDefaults = defaultRewards.filter(r => !hiddenDefaultIds.includes(r.id));
+            return [...customRewards, ...visibleDefaults];
+        }
+
+        function updateGoldUI() {
+            document.getElementById('user-gold').innerText = currentGold.toLocaleString();
+            localStorage.setItem('gold', currentGold);
+        }
+
+        function renderRewards() {
+            const grid = document.getElementById('rewards-grid');
+            grid.innerHTML = '';
+
+            // NOTE: "Create Custom" card removed as requested, moved to header button.
+
+            getMainRewards().forEach(item => {
+                const canAfford = currentGold >= item.cost;
+                const btnClass = canAfford
+                    ? "bg-slate-700 hover:bg-slate-600 text-white border border-slate-600"
+                    : "bg-slate-800 text-slate-500 cursor-not-allowed border border-slate-800";
+                const btnText = canAfford
+                    ? `Claim Reward <i class="fas fa-gift ml-2 text-yellow-400"></i>`
+                    : `Not Enough <i class="fas fa-lock ml-2"></i>`;
+
+                const card = document.createElement('div');
+                card.className = "card-bg rounded-xl overflow-hidden flex flex-col group relative transition-transform hover:-translate-y-1";
+
+                // Delete "X" Button (Appears on Hover)
+                // Pass isCustom flag to handle deletion differently
+                const isCustom = !!item.isCustom;
+                const deleteBtn = `
+                    <button onclick="deleteReward(${item.id}, ${isCustom}); event.stopPropagation();" 
+                        class="absolute top-2 right-2 z-20 bg-black/50 hover:bg-red-500 text-white w-8 h-8 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition backdrop-blur-sm"
+                        title="Remove Reward">
+                        <i class="fas fa-times"></i>
+                    </button>
+                `;
+
+                card.innerHTML = `
+                    ${deleteBtn}
+                    <div class="h-32 w-full bg-slate-800 relative overflow-hidden">
+                        <!-- Pixel Art Header with overlay -->
+                        <div class="absolute inset-0 bg-cover bg-center pixel-art opacity-60 group-hover:opacity-100 transition-opacity duration-500 transform group-hover:scale-110" 
+                             style="background-image: url('${item.image}');"></div>
+                        <div class="absolute inset-0 bg-gradient-to-t from-slate-900 to-transparent"></div>
+                        
+                        <!-- Icon Badge -->
+                        <div class="absolute bottom-3 left-4 flex items-center gap-2 z-10">
+                            <i class="fas fa-star text-red-500 text-xs shadow-black drop-shadow-md"></i>
+                            <span class="font-bold text-white text-lg tracking-wide shadow-black drop-shadow-md">${item.title}</span>
+                        </div>
+                    </div>
+                    
+                    <div class="p-5 flex-grow flex flex-col justify-between">
+                        <p class="text-slate-400 text-sm mb-4 leading-relaxed">${item.desc}</p>
+                        
+                        <div class="mt-auto">
+                            <div class="bg-yellow-500/10 text-yellow-400 text-xs font-bold px-3 py-1 rounded inline-block mb-3 border border-yellow-500/20">
+                                ${item.cost} Credits required
+                            </div>
+                            <button onclick="buyReward(${item.id})" ${!canAfford ? 'disabled' : ''} 
+                                class="w-full py-3 rounded-lg font-bold text-sm transition flex items-center justify-center ${btnClass}">
+                                ${btnText}
+                            </button>
+                        </div>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        function buyReward(id) {
+            const allRewards = getMainRewards();
+            const item = allRewards.find(r => r.id === id);
+            if (!item) return;
+
+            if (currentGold >= item.cost) {
+                currentGold -= item.cost;
+                updateGoldUI();
+
+                // Add to History
+                addToHistory(item);
+
+                // Log to System Messages
+                logSystemMessage(`REWARDS: Claimed "${item.title}" (Spent <span class="text-yellow-400 font-bold">${item.cost} Gold</span>).`, "success");
+
+                renderRewards(); // Re-render to update buttons state
+
+                // Show Success Modal
+                document.getElementById('modal-msg').innerText = `You purchased "${item.title}" for ${item.cost} Credits. Enjoy!`;
+                showModal('success-modal', 'modal-content');
+            }
+        }
+
+        // --- CUSTOM REWARD LOGIC ---
+        function selectBanner(cat) {
+            selectedCategory = cat;
+            document.querySelectorAll('.banner-select').forEach(el => el.classList.remove('border-white', 'ring-2', 'ring-white'));
+            const btn = document.querySelector(`.banner-select[data-cat="${cat}"]`);
+            if (btn) btn.classList.add('border-white', 'ring-2', 'ring-white');
+        }
+
+        function createReward() {
+            const title = document.getElementById('new-title').value;
+            const desc = document.getElementById('new-desc').value;
+            const cost = parseInt(document.getElementById('new-cost').value);
+
+            if (!title || !cost) return alert("Title and Cost are required!");
+
+            const newId = Date.now(); // Simple ID
+            const bannerMap = {
+                'gaming': '../../99.Game/assets/banner_gaming.png',
+                'food': '../../99.Game/assets/banner_food.png',
+                'relax': '../../99.Game/assets/banner_relax.png',
+                'study': '../../99.Game/assets/banner_study.png',
+                'cinema': '../../99.Game/assets/banner_cinema.png',
+                'beach': '../../99.Game/assets/banner_beach.png',
+                'friends': '../../99.Game/assets/banner_friends.png',
+                'buy': '../../99.Game/assets/store_header.png'
+            };
+
+            const newItem = {
+                id: newId,
+                title: title,
+                desc: desc || "Custom user reward",
+                cost: cost,
+                image: bannerMap[selectedCategory],
+                isCustom: true
+            };
+
+            customRewards.unshift(newItem); // Add to beginning
+            localStorage.setItem('customRewards', JSON.stringify(customRewards));
+
+            closeAddModal();
+            renderRewards();
+
+            // Clear form
+            document.getElementById('new-title').value = '';
+            document.getElementById('new-desc').value = '';
+            document.getElementById('new-cost').value = '';
+        }
+
+        function deleteReward(id, isCustom) {
+            // Removed confirmation as requested
+
+            if (isCustom) {
+                // Permanently delete custom reward
+                customRewards = customRewards.filter(r => r.id !== id);
+                localStorage.setItem('customRewards', JSON.stringify(customRewards));
+            } else {
+                // Hide default reward
+                hiddenDefaultIds.push(id);
+                localStorage.setItem('hiddenRewards', JSON.stringify(hiddenDefaultIds));
+            }
+            renderRewards();
+        }
+
+        // --- HISTORY LOGIC ---
+        function addToHistory(item) {
+            const entry = {
+                title: item.title,
+                cost: item.cost,
+                date: new Date().toLocaleString()
+            };
+            history.unshift(entry); // Add to top
+            if (history.length > 50) history.pop(); // Limit size
+            localStorage.setItem('rewardHistory', JSON.stringify(history));
+        }
+
+        function logSystemMessage(text, type = 'system') {
+            const date = new Date();
+            const year = date.getFullYear();
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const day = String(date.getDate()).padStart(2, '0');
+            const dateStr = `${year}-${month}-${day}`;
+
+            const logs = JSON.parse(localStorage.getItem('system_messages_log')) || {};
+            if (!logs[dateStr]) logs[dateStr] = [];
+
+            const timestamp = date.toISOString();
+            logs[dateStr].push({ text, type, timestamp });
+
+            localStorage.setItem('system_messages_log', JSON.stringify(logs));
+        }
+
+        // --- MODAL UTILS ---
+        function showModal(modalId, contentId) {
+            const modal = document.getElementById(modalId);
+            const content = document.getElementById(contentId);
+            modal.classList.remove('hidden');
+            setTimeout(() => {
+                modal.classList.remove('opacity-0');
+                if (content) {
+                    content.classList.remove('scale-90', 'scale-95');
+                    content.classList.add('scale-100');
+                }
+            }, 10);
+        }
+
+        function hideModal(modalId, contentId) {
+            const modal = document.getElementById(modalId);
+            const content = document.getElementById(contentId);
+            modal.classList.add('opacity-0');
+            if (content) {
+                content.classList.remove('scale-100');
+                content.classList.add('scale-95'); // Slightly smaller
+            }
+            setTimeout(() => {
+                modal.classList.add('hidden');
+            }, 300);
+        }
+
+        function openHistory() { showModal('history-modal', 'history-content'); renderHistoryList(); }
+        function closeHistory() { hideModal('history-modal', 'history-content'); }
+        function closeModal() { hideModal('success-modal', 'modal-content'); }
+        function openAddModal() { showModal('add-modal', 'add-content'); }
+        function closeAddModal() { hideModal('add-modal', 'add-content'); }
+
+        function renderHistoryList() {
+            const list = document.getElementById('history-list');
+            list.innerHTML = '';
+            if (history.length === 0) {
+                list.innerHTML = '<div class="text-slate-500 text-center py-10">No history yet.</div>';
+            } else {
+                history.forEach(h => {
+                    const row = document.createElement('div');
+                    row.className = 'flex justify-between items-center p-3 bg-slate-800 rounded-lg border border-slate-700';
+                    row.innerHTML = `
+                        <div>
+                            <div class="font-bold text-white text-sm">${h.title}</div>
+                            <div class="text-[10px] text-slate-500">${h.date}</div>
+                        </div>
+                        <div class="text-red-400 font-bold text-sm">-${h.cost}</div>
+                    `;
+                    list.appendChild(row);
+                });
+            }
+        }
+    </script>
+</body>
+
+</html>

@@ -4,6 +4,7 @@
 // --- IMPORTS ---
 import { allItems, skills, setBonuses } from './data.js';
 import { showMessage } from './ui.js';
+import { items } from './equipo.js';
 
 // --- EXPORTS ---
 
@@ -80,7 +81,10 @@ export let player = {
     walkAnimFrame: 0,
     isMoving: false,
     walkAnimCounter: 0,
-    walkAnimSpeed: 3 
+    walkAnimSpeed: 3,
+    passiveSkill: null,
+    lastRegenTime: 0,
+    lastInvinciblePassiveTime: 0
 };
 
 /**
@@ -110,7 +114,8 @@ export function savePlayerDataToLocalStorage() {
         baseDef: player.baseDef,
         criticalChanceBonus: player.criticalChanceBonus,
         stealthActive: player.stealthActive, 
-        stealthStatMultiplier: player.stealthStatMultiplier 
+        stealthStatMultiplier: player.stealthStatMultiplier,
+        passiveSkill: player.passiveSkill
     };
     for (const slot in player.equipped) {
         if (player.equipped[slot]) {
@@ -124,6 +129,145 @@ export function savePlayerDataToLocalStorage() {
         }
     }
     localStorage.setItem('dungeonCrawlerPlayerData', JSON.stringify(dataToSave));
+}
+
+/**
+ * Obtiene la habilidad inicial según el sprite/personaje seleccionado.
+ */
+export function getCharacterSkill(frame) {
+    const frameKey = (frame || '').toLowerCase();
+    if (frameKey.includes('1.png')) return 'summon';       // Sung Jin-woo -> Monarch's Domain -> summon
+    if (frameKey.includes('2.png')) return 'regeneration'; // Lee Joohee -> Divine Healing -> regeneration
+    if (frameKey.includes('3.png')) return 'invincible';   // Yoo Jin-ho -> Novice Slash -> invincible
+    if (frameKey.includes('4.png')) return 'blade_storm';  // Choi Jong-in -> Blazing Inferno -> blade_storm
+    if (frameKey.includes('5.png')) return 'speed';        // Esil Radiru -> Demon Dash -> speed
+    if (frameKey.includes('6.png')) return 'critical_hit'; // Baek Yoonho -> White Tiger Transformation -> critical_hit
+    return null;
+}
+
+/**
+ * Traduce y personaliza dinámicamente los nombres y descripciones de las habilidades según el personaje elegido.
+ */
+export function updateSkillNamesBasedOnCharacter(selectedFrame) {
+    const frameKey = (selectedFrame || '').toLowerCase();
+    
+    // Buscar cada habilidad y reestablecer sus valores por defecto en español
+    const summonSkill = skills.find(s => s.key === 'summon');
+    const regenSkill = skills.find(s => s.key === 'regeneration');
+    const invincibleSkill = skills.find(s => s.key === 'invincible');
+    const bladeStormSkill = skills.find(s => s.key === 'blade_storm');
+    const speedSkill = skills.find(s => s.key === 'speed');
+    const critSkill = skills.find(s => s.key === 'critical_hit');
+
+    if (summonSkill) {
+        summonSkill.name = 'Invocar';
+        summonSkill.effect = 'Manifiesta un súbdito leal con el 75% de tus estadísticas.';
+    }
+    if (regenSkill) {
+        regenSkill.name = 'Regeneración';
+        regenSkill.effect = 'Restaura el 75% de tu salud máxima al instante.';
+    }
+    if (invincibleSkill) {
+        invincibleSkill.name = 'Invencible';
+        invincibleSkill.effect = 'Te vuelves inmune a todo daño durante 3.5 segundos.';
+    }
+    if (bladeStormSkill) {
+        bladeStormSkill.name = 'Tormenta de Cuchillas';
+        bladeStormSkill.effect = 'Lanzas cuchillos en todas las direcciones. Daño: 50% del ataque base por cuchillo.';
+    }
+    if (speedSkill) {
+        speedSkill.name = 'Velocidad';
+        speedSkill.effect = 'Incrementa tu velocidad de movimiento en un 50% durante 10 segundos.';
+    }
+    if (critSkill) {
+        critSkill.name = 'Golpe Crítico';
+        critSkill.effect = 'El siguiente golpe que asestes será un 100% más devastador.';
+    }
+
+    // Reestablecer en equipo.js
+    if (items && items.skills) {
+        if (items.skills.summon) {
+            items.skills.summon.text = 'Invocar';
+            items.skills.summon.description = 'Manifiesta un súbdito leal con el 75% de tus estadísticas.';
+        }
+        if (items.skills.regeneration) {
+            items.skills.regeneration.text = 'Regeneración';
+            items.skills.regeneration.description = 'Restaura el 75% de tu salud máxima al instante.';
+        }
+        if (items.skills.invincible) {
+            items.skills.invincible.text = 'Invencible';
+            items.skills.invincible.description = 'Te vuelves inmune a todo daño durante 4 segundos.';
+        }
+        if (items.skills.blade_storm) {
+            items.skills.blade_storm.text = 'Tormenta de Cuchillas';
+            items.skills.blade_storm.description = 'Lanzas cuchillos en todas las direcciones. Daño: 50% del ataque base por cuchillo.';
+        }
+        if (items.skills.speed) {
+            items.skills.speed.text = 'Velocidad';
+            items.skills.speed.description = 'Incrementa tu velocidad de movimiento en un 25% durante 10 segundos.';
+        }
+        if (items.skills.critical_hit) {
+            items.skills.critical_hit.text = 'Golpe Crítico';
+            items.skills.critical_hit.description = 'El siguiente golpe que asestes será un 100% más devastador.';
+        }
+    }
+
+    // Aplicar personalización según el personaje seleccionado
+    if (frameKey.includes('1.png')) { // Sung Jin-woo -> Dominio del Monarca
+        if (summonSkill) {
+            summonSkill.name = "Dominio del Monarca";
+            summonSkill.effect = "Reanima enemigos derrotados como soldados de las sombras leales.";
+        }
+        if (items && items.skills && items.skills.summon) {
+            items.skills.summon.text = "Dominio del Monarca";
+            items.skills.summon.description = "Reanima enemigos derrotados como soldados de las sombras leales.";
+        }
+    } else if (frameKey.includes('2.png')) { // Lee Joohee -> Curación Divina
+        if (regenSkill) {
+            regenSkill.name = "Curación Divina";
+            regenSkill.effect = "Restaura el 75% de tu salud máxima usando magia divina.";
+        }
+        if (items && items.skills && items.skills.regeneration) {
+            items.skills.regeneration.text = "Curación Divina";
+            items.skills.regeneration.description = "Restaura el 75% de tu salud máxima usando magia divina.";
+        }
+    } else if (frameKey.includes('3.png')) { // Yoo Jin-ho -> Muro de Escudo
+        if (invincibleSkill) {
+            invincibleSkill.name = "Muro de Escudo";
+            invincibleSkill.effect = "Te vuelves inmune a todo daño durante 3.5 segundos protegiéndote con tu escudo.";
+        }
+        if (items && items.skills && items.skills.invincible) {
+            items.skills.invincible.text = "Muro de Escudo";
+            items.skills.invincible.description = "Te vuelves inmune a todo daño durante 4 segundos protegiéndote con tu escudo.";
+        }
+    } else if (frameKey.includes('4.png')) { // Choi Jong-in -> Infierno Abrasador
+        if (bladeStormSkill) {
+            bladeStormSkill.name = "Infierno Abrasador";
+            bladeStormSkill.effect = "Invoca pilares de fuego en todas direcciones. Daño: 50% del ataque base por pilar.";
+        }
+        if (items && items.skills && items.skills.blade_storm) {
+            items.skills.blade_storm.text = "Infierno Abrasador";
+            items.skills.blade_storm.description = "Invoca pilares de fuego en todas direcciones. Daño: 50% del ataque base por pilar.";
+        }
+    } else if (frameKey.includes('5.png')) { // Esil Radiru -> Impulso Demoniaco
+        if (speedSkill) {
+            speedSkill.name = "Impulso Demoniaco";
+            speedSkill.effect = "Desata tu poder de demonio para aumentar tu velocidad en un 50% durante 10 segundos.";
+        }
+        if (items && items.skills && items.skills.speed) {
+            items.skills.speed.text = "Impulso Demoniaco";
+            items.skills.speed.description = "Desata tu poder de demonio para aumentar tu velocidad en un 25% durante 10 segundos.";
+        }
+    } else if (frameKey.includes('6.png')) { // Baek Yoonho -> Transformación de Tigre Blanco
+        if (critSkill) {
+            critSkill.name = "Transformación de Tigre Blanco";
+            critSkill.effect = "Desata el poder de la bestia, garantizando un golpe crítico devastador.";
+        }
+        if (items && items.skills && items.skills.critical_hit) {
+            items.skills.critical_hit.text = "Transformación de Tigre Blanco";
+            items.skills.critical_hit.description = "Desata el poder de la bestia, garantizando un golpe crítico devastador.";
+        }
+    }
 }
 
 /**
@@ -160,15 +304,39 @@ export function loadPlayerDataFromLocalStorage() {
                 }
             });
         }
+
+        // Aplicar la habilidad inicial del personaje del menú como pasiva
+        const selectedFrame = localStorage.getItem('selectedCharacterFrame');
+        const charSkill = getCharacterSkill(selectedFrame);
+        if (charSkill) {
+            player.passiveSkill = charSkill;
+        } else {
+            player.passiveSkill = loadedPlayer.passiveSkill || null;
+        }
+
+        // Limpiar la habilidad pasiva de las ranuras activas
+        if (player.passiveSkill) {
+            if (player.equipped.habilidad1 === player.passiveSkill) player.equipped.habilidad1 = null;
+            if (player.equipped.habilidad2 === player.passiveSkill) player.equipped.habilidad2 = null;
+            if (player.equipped.habilidad3 === player.passiveSkill) player.equipped.habilidad3 = null;
+        }
+
         player.permanentlyLearnedSkills = Array.from(currentLearnedSkills);
 
-        // If, after validation, no skills are equipped, set the default ones.
-        if (!player.equipped.habilidad1 && !player.equipped.habilidad2 && !player.equipped.habilidad3) {
-            const initialSkills = getInitialSkillKeys();
-            player.equipped.habilidad1 = initialSkills[0] || null;
-            player.equipped.habilidad2 = initialSkills[1] || null;
-            player.equipped.habilidad3 = initialSkills[2] || null;
+        // Asegurar que cada ranura de habilidad activa tenga una habilidad válida diferente a la pasiva
+        const initialSkills = getInitialSkillKeys().filter(s => s !== player.passiveSkill);
+        if (!player.equipped.habilidad1) {
+            player.equipped.habilidad1 = initialSkills.find(s => s !== player.equipped.habilidad2 && s !== player.equipped.habilidad3) || null;
         }
+        if (!player.equipped.habilidad2) {
+            player.equipped.habilidad2 = initialSkills.find(s => s !== player.equipped.habilidad1 && s !== player.equipped.habilidad3) || null;
+        }
+        if (!player.equipped.habilidad3) {
+            player.equipped.habilidad3 = initialSkills.find(s => s !== player.equipped.habilidad1 && s !== player.equipped.habilidad2) || null;
+        }
+
+        // Actualizar los nombres e info de habilidades según el personaje
+        updateSkillNamesBasedOnCharacter(selectedFrame);
 
     } else {
         initializeNewPlayer();
@@ -187,10 +355,22 @@ function initializeNewPlayer() {
     
     // Set initial skills
     const initialSkills = getInitialSkillKeys();
-    player.permanentlyLearnedSkills = initialSkills;
-    player.equipped.habilidad1 = initialSkills[0] || null;
-    player.equipped.habilidad2 = initialSkills[1] || null;
-    player.equipped.habilidad3 = initialSkills[2] || null;
+    let currentLearnedSkills = new Set(initialSkills);
+
+    // Obtener la habilidad inicial del personaje del menú
+    const selectedFrame = localStorage.getItem('selectedCharacterFrame');
+    const charSkill = getCharacterSkill(selectedFrame);
+    player.passiveSkill = charSkill || null;
+
+    const availableActiveSkills = initialSkills.filter(s => s !== player.passiveSkill);
+    player.equipped.habilidad1 = availableActiveSkills[0] || null;
+    player.equipped.habilidad2 = availableActiveSkills[1] || null;
+    player.equipped.habilidad3 = availableActiveSkills[2] || null;
+
+    player.permanentlyLearnedSkills = Array.from(currentLearnedSkills);
+
+    // Actualizar nombres de habilidades
+    updateSkillNamesBasedOnCharacter(selectedFrame);
 }
 
 function getInitialSkillKeys() {
@@ -262,6 +442,14 @@ export function updateStats() {
     player.criticalChanceBonus = 0.05; // Reset critical chance to base
     player.evasion = 0; // Reset evasion to base
     player.attackSpeedBonus = 0; // Reset attack speed bonus to base
+
+    // Apply passive skills stats changes
+    if (player.passiveSkill === 'speed') {
+        player.spd += 2;
+    }
+    if (player.passiveSkill === 'critical_hit') {
+        player.criticalChanceBonus += 0.20;
+    }
 
     const currentTime = Date.now();
     if (player.luckBoostEndTime && currentTime < player.luckBoostEndTime) {

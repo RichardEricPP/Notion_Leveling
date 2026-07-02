@@ -71,16 +71,64 @@ document.addEventListener('DOMContentLoaded', () => {
     let selectedMapId = 1;
     let currentMapIndex = 0;
 
+    const savedRank = localStorage.getItem('selectedDungeonRank');
+    if (savedRank) {
+        const rankToMapId = {
+            'E-RANK': '1',
+            'D-RANK': '2',
+            'C-RANK': '3',
+            'B-RANK': '4',
+            'A-RANK': '5',
+            'S-RANK': '7'
+        };
+        const targetMapId = rankToMapId[savedRank.toUpperCase()];
+        if (targetMapId) {
+            const mapIds = Object.keys(todosLosMapas);
+            const foundIndex = mapIds.indexOf(targetMapId);
+            if (foundIndex !== -1) {
+                currentMapIndex = foundIndex;
+                selectedMapId = targetMapId;
+            }
+        }
+    }
+
     const mapBackground = document.getElementById('mapBackground');
     const prevMapBtn = document.getElementById('prevMap');
     const nextMapBtn = document.getElementById('nextMap');
+
+    // Map Ranks helper
+    const getMapRank = (id) => {
+        const mapRanks = {
+            1: 'E-Rank',
+            2: 'D-Rank',
+            3: 'C-Rank',
+            4: 'B-Rank',
+            5: 'A-Rank',
+            6: 'A-Rank',
+            7: 'S-Rank',
+            8: 'S-Rank',
+            9: 'S-Rank',
+            10: 'S-Rank'
+        };
+        return mapRanks[id] || 'D-Rank';
+    };
 
     // Populate map list
     for (const mapId in todosLosMapas) {
         const map = todosLosMapas[mapId];
         const mapButton = document.createElement('button');
-        mapButton.textContent = map.nombre;
         mapButton.dataset.mapId = mapId;
+        const rank = getMapRank(mapId);
+        const rankClass = rank.toLowerCase(); // 'e-rank', 's-rank', etc.
+        mapButton.innerHTML = `
+            <div class="map-card-inner-box">
+                <div class="map-rank-badge ${rankClass}">${rank}</div>
+                <div class="map-name-title">${map.nombre}</div>
+                <div class="map-meta-info">
+                    <span>PISOS: ${map.maxFloors}</span>
+                </div>
+            </div>
+        `;
         mapButton.addEventListener('click', () => {
             selectedMapId = mapId;
             mapSelectionScreen.style.display = 'none';
@@ -92,11 +140,11 @@ document.addEventListener('DOMContentLoaded', () => {
     const mapButtons = mapList.querySelectorAll('button');
     const numMaps = mapButtons.length;
     const angle = 360 / numMaps;
-    const radius = 350; // Adjust as needed
+    const radius = 550; // Adjust as needed
 
     function updateMapSelection() {
         const rotateY = -currentMapIndex * angle;
-        mapList.style.transform = `rotateY(${rotateY}deg)`;
+        mapList.style.transform = `translateZ(${-radius}px) rotateY(${rotateY}deg)`;
 
         mapButtons.forEach((button, index) => {
             const buttonAngle = index * angle;
@@ -140,7 +188,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     btnSelectMap.addEventListener('click', () => {
         difficultyScreen.style.display = 'none';
-        mapSelectionScreen.style.display = 'block';
+        mapSelectionScreen.style.display = 'flex';
     });
 
     btnReturnToDifficultyFromMapSelection.addEventListener('click', () => {
