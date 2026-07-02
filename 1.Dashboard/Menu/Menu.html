@@ -7519,8 +7519,13 @@ Consciousness: <span class="text-green-400">stable</span>.
                 
                 if (confirmResetBtn) {
                     confirmResetBtn.addEventListener('click', () => {
-                        localStorage.clear();
-                        location.reload();
+                        const wipeAudio = new Audio('/2.Music/effects/annihilate.wav');
+                        wipeAudio.play().catch(e => console.error("Audio playback failed:", e));
+                        
+                        setTimeout(() => {
+                            localStorage.clear();
+                            location.reload();
+                        }, 1200);
                     });
                 }
             }, 500);
