@@ -1,189 +1,110 @@
 # ============================================================
-# 1. LIBRERÍAS
+# 1. LIBRERÍAS / IMPORTACIÓN
 # ============================================================
 
-snippet libra
+snippet library
 	library(tidyverse)
 	library(readxl)
 	library(janitor)
 	library(corrplot)
 	$0
 
-
-# ============================================================
-# 2. IMPORTACIÓN
-# ============================================================
-
-snippet csv
-	${1:datos} <- read_csv("${2:archivo.csv}")
+snippet read_csv
+	${1:base} <- read_csv("${2:archivo.csv}")
 	$0
 
-snippet csv2
-	${1:datos} <- read_csv2("${2:archivo.csv}")
+snippet read_csv2
+	${1:base} <- read_csv2("${2:archivo.csv}")
 	$0
 
-snippet excel
-	${1:datos} <- read_excel("${2:archivo.xlsx}")
+snippet read_excel
+	${1:base} <- read_excel("${2:archivo.xlsx}")
 	$0
 
 
 # ============================================================
-# 3. INSPECCIÓN DE LA BASE
+# 2. INSPECCIÓN
 # ============================================================
 
-snippet mirar
-	glimpse(${1:datos})
-	summary(${1:datos})
-	dim(${1:datos})
-	names(${1:datos})
+snippet glimpse
+	glimpse(${1:base})
+	dim(${1:base})
+	colSums(is.na(${1:base}))
 	$0
 
-snippet nas
-	colSums(is.na(${1:datos}))
+snippet na
+	colSums(is.na(${1:base}))
 	$0
 
 
 # ============================================================
-# 4. FILTRAR / SELECCIONAR / ORDENAR
+# 3. MANEJO DE DATOS
 # ============================================================
 
-snippet filtra
-	${1:datos} |>
+snippet filter
+	${1:base} |>
 	  filter(${2:condicion})
 	$0
 
-snippet selec
-	${1:datos} |>
+snippet select
+	${1:base} |>
 	  select(${2:variable_1}, ${3:variable_2}, ${4:variable_3})
 	$0
 
-snippet top
-	${1:datos} |>
-	  arrange(desc(${2:variable})) |>
-	  head(${3:5})
+snippet arrange
+	${1:base} |>
+	  arrange(desc(${2:variable}))
 	$0
 
-
-# ============================================================
-# 5. RESÚMENES / GROUP_BY / MUTATE / CATEGORÍAS
-# ============================================================
-
-snippet resu
-	${1:datos} |>
+snippet summarise
+	${1:base} |>
 	  summarise(
-	    cantidad = n(),
-	    promedio = mean(${2:variable_num}, na.rm = TRUE),
-	    desviacion = sd(${2:variable_num}, na.rm = TRUE)
+	    n = n(),
+	    promedio = mean(${2:variable}, na.rm = TRUE),
+	    desviacion = sd(${2:variable}, na.rm = TRUE)
 	  )
 	$0
 
-snippet resug
-	${1:datos} |>
+snippet group_by
+	total <- nrow(${1:base})
+
+	${1:base} |>
 	  group_by(${2:grupo}) |>
 	  summarise(
-	    cantidad = n(),
-	    promedio = mean(${3:variable_num}, na.rm = TRUE),
-	    desviacion = sd(${3:variable_num}, na.rm = TRUE)
+	    n = n(),
+	    promedio = mean(${3:variable}, na.rm = TRUE),
+	    desviacion = sd(${3:variable}, na.rm = TRUE)
+	  ) |>
+	  mutate(
+	    porcentaje = n / total * 100
 	  )
 	$0
 
-snippet filresu
-	${1:datos} |>
-	  filter(${2:condicion}) |>
-	  summarise(
-	    cantidad = n(),
-	    promedio = mean(${3:variable_num}, na.rm = TRUE)
-	  )
-	$0
-
-snippet muta
-	${1:datos} |>
+snippet mutate
+	${1:base} |>
 	  mutate(
 	    ${2:nueva_variable} = ${3:formula}
 	  )
 	$0
 
-
-snippet categorias
-	${1:datos} |>
-	  mutate(
-	    ${2:nueva_categoria} = case_when(
-	      ${3:condicion_1} ~ "${4:Categoria 1}",
-	      ${5:condicion_2} ~ "${6:Categoria 2}",
-	      ${7:condicion_3} ~ "${8:Categoria 3}",
-	      TRUE ~ "${9:Otra}"
-	    )
-	  )
-	$0
-
-
-# ============================================================
-# 6. PORCENTAJES / FRECUENCIAS
-# ============================================================
-
-snippet porcat
-	${1:datos} |>
-	  count(${2:variable_cat}) |>
+snippet count
+	${1:base} |>
+	  count(${2:variable}) |>
 	  mutate(
 	    porcentaje = n / sum(n) * 100
 	  )
 	$0
 
-snippet tabla
-	tabyl(${1:datos}$${2:variable_cat})
-	$0
-
-snippet portotal
-	total <- nrow(${1:datos})
-	
-	${1:datos} |>
-	  filter(${2:condicion}) |>
-	  summarise(
-	    cantidad = n(),
-	    porcentaje = cantidad / total * 100
-	  )
+snippet tabyl
+	tabyl(${1:base}$${2:variable})
 	$0
 
 
 # ============================================================
-# 7. LIMPIEZA
+# 4. UNIR BASES
 # ============================================================
 
-snippet quita_na
-	${1:datos} |>
-	  drop_na(${2:variable})
-	$0
-
-snippet cambia_na
-	${1:datos} |>
-	  mutate(
-	    ${2:variable} = replace_na(${2:variable}, ${3:0})
-	  )
-	$0
-
-snippet recod
-	${1:datos} |>
-	  mutate(
-	    ${2:variable} = recode(
-	      ${2:variable},
-	      "${3:valor_antiguo}" = "${4:valor_nuevo}"
-	    )
-	  )
-	$0
-
-snippet renombra
-	${1:datos} |>
-	  rename(
-	    ${2:nombre_nuevo} = ${3:nombre_antiguo}
-	  )
-	$0
-
-
-# ============================================================
-# 8. UNIR BASES
-# ============================================================
-
-snippet une
+snippet left_join
 	${1:resultado} <- left_join(
 	  ${2:base_1},
 	  ${3:base_2},
@@ -191,7 +112,7 @@ snippet une
 	)
 	$0
 
-snippet apila
+snippet bind_rows
 	${1:resultado} <- bind_rows(
 	  ${2:base_1},
 	  ${3:base_2}
@@ -200,27 +121,33 @@ snippet apila
 
 
 # ============================================================
-# 9. PRUEBAS ESTADÍSTICAS
+# 5. PRUEBAS ESTADÍSTICAS
 # ============================================================
 
-snippet tdos
+# t.test: 2 grupos
+snippet t_test
 	t.test(
-	  ${1:variable_num} ~ ${2:grupo},
-	  data = ${3:datos}
+	  ${1:variable_numerica} ~ ${2:grupo},
+	  data = ${3:base}
 	)
 	$0
 
-snippet tuno
+# t.test: una media vs valor
+snippet t_mu
 	t.test(
-	  ${1:datos}$${2:variable_num},
+	  ${1:base}[["${2:variable_numerica}"]],
 	  mu = ${3:valor}
 	)
 	$0
 
-snippet propor
-	x <- sum(${1:datos}$${2:variable_cat} == "${3:valor}", na.rm = TRUE)
-	n <- nrow(${1:datos})
-	
+# prop.test
+snippet prop_test
+	x <- sum(
+	  ${1:base}[["${2:variable}"]] == "${3:valor}",
+	  na.rm = TRUE
+	)
+	n <- nrow(${1:base})
+
 	prop.test(
 	  x = x,
 	  n = n,
@@ -228,15 +155,17 @@ snippet propor
 	)
 	$0
 
-snippet corr
+# cor.test — fórmula limpia, SIN $
+snippet cor_test
 	cor.test(
-	  ${1:datos}$${2:variable_x},
-	  ${1:datos}$${3:variable_y}
+	  ~ ${1:variable_x} + ${2:variable_y},
+	  data = ${3:base}
 	)
 	$0
 
-snippet corrmat
-	${1:matriz_cor} <- ${2:datos} |>
+# matriz de correlaciones + corrplot
+snippet corrplot
+	${1:matriz_cor} <- ${2:base} |>
 	  select(
 	    ${3:variable_1},
 	    ${4:variable_2},
@@ -244,7 +173,7 @@ snippet corrmat
 	    ${6:variable_4}
 	  ) |>
 	  cor(use = "complete.obs")
-	
+
 	corrplot(
 	  ${1:matriz_cor},
 	  method = "color",
@@ -253,22 +182,23 @@ snippet corrmat
 	)
 	$0
 
-snippet regre
+# lm
+snippet lm
 	${1:modelo} <- lm(
-	  ${2:variable_y} ~ ${3:variable_x},
-	  data = ${4:datos}
+	  ${2:Y} ~ ${3:X},
+	  data = ${4:base}
 	)
-	
+
 	summary(${1:modelo})
 	$0
 
 
 # ============================================================
-# 10. GRÁFICOS
+# 6. GRÁFICOS
 # ============================================================
 
-snippet histo
-	ggplot(${1:datos}, aes(x = ${2:variable_num})) +
+snippet geom_histogram
+	ggplot(${1:base}, aes(x = ${2:variable})) +
 	  geom_histogram() +
 	  labs(
 	    title = "${3:Distribución}",
@@ -281,8 +211,8 @@ snippet histo
 	  )
 	$0
 
-snippet barras
-	ggplot(${1:datos}, aes(x = ${2:variable_cat})) +
+snippet geom_bar
+	ggplot(${1:base}, aes(x = ${2:variable_cat})) +
 	  geom_bar() +
 	  labs(
 	    title = "${3:Cantidad por categoría}",
@@ -295,13 +225,13 @@ snippet barras
 	  )
 	$0
 
-snippet columnas
-	${1:resumen} <- ${2:datos} |>
+snippet geom_col
+	${1:resumen} <- ${2:base} |>
 	  group_by(${3:grupo}) |>
 	  summarise(
-	    promedio = mean(${4:variable_num}, na.rm = TRUE)
+	    promedio = mean(${4:variable}, na.rm = TRUE)
 	  )
-	
+
 	ggplot(${1:resumen}, aes(x = ${3:grupo}, y = promedio)) +
 	  geom_col() +
 	  geom_text(
@@ -319,8 +249,8 @@ snippet columnas
 	  )
 	$0
 
-snippet disper
-	ggplot(${1:datos}, aes(x = ${2:variable_x}, y = ${3:variable_y})) +
+snippet geom_point
+	ggplot(${1:base}, aes(x = ${2:X}, y = ${3:Y})) +
 	  geom_point() +
 	  labs(
 	    title = "${4:Relación entre variables}",
@@ -333,8 +263,8 @@ snippet disper
 	  )
 	$0
 
-snippet disperlm
-	ggplot(${1:datos}, aes(x = ${2:variable_x}, y = ${3:variable_y})) +
+snippet geom_smooth
+	ggplot(${1:base}, aes(x = ${2:X}, y = ${3:Y})) +
 	  geom_point() +
 	  geom_smooth(method = "lm") +
 	  labs(
@@ -348,8 +278,8 @@ snippet disperlm
 	  )
 	$0
 
-snippet cajas
-	ggplot(${1:datos}, aes(x = ${2:grupo}, y = ${3:variable_num})) +
+snippet geom_boxplot
+	ggplot(${1:base}, aes(x = ${2:grupo}, y = ${3:variable})) +
 	  geom_boxplot() +
 	  labs(
 	    title = "${4:Distribución por grupo}",
@@ -362,13 +292,13 @@ snippet cajas
 	  )
 	$0
 
-snippet circular
-	${1:resumen} <- ${2:datos} |>
+snippet coord_polar
+	${1:resumen} <- ${2:base} |>
 	  count(${3:variable_cat}) |>
 	  mutate(
 	    porcentaje = n / sum(n) * 100
 	  )
-	
+
 	ggplot(${1:resumen}, aes(x = "", y = porcentaje, fill = ${3:variable_cat})) +
 	  geom_col(width = 1) +
 	  coord_polar(theta = "y") +
